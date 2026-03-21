@@ -57,9 +57,9 @@
 
 ---
 
-## PR-2: レースコード変換ユーティリティ
+## PR-2: ユーティリティ実装
 
-**目的**: 16 桁レースコード（JRA-VAN 式）と 12 桁レース ID（netkeiba 式）の相互変換を実装する
+**目的**: レースコード変換・DataFrame 整形・データ変換の各ユーティリティを実装する
 
 **実装内容**
 
@@ -68,12 +68,24 @@
   - `race_code_to_kaisai_code(race_code: str) -> str`: 16 桁レースコード → 開催コード導出
   - `extract_race_code_parts(race_code: str) -> dict`: レースコードから年・月日・競馬場・回・日目・R を抽出
 - バリデーション: 桁数チェック、数値チェック
+- `utils/dataframe.py`: DataFrame 整形用ユーティリティ
+  - `ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame`: 指定カラムリストに合わせて過不足を調整（不足カラムは NaN 埋め、余分なカラムは削除、順序を統一）
+  - `apply_types(df: pd.DataFrame, type_dict: dict) -> pd.DataFrame`: 型定義辞書に基づいて型変換
+- `utils/converters.py`: データ変換関数
+  - `convert_time_msss_to_display(value: str) -> str`: 走破タイム "MSSS" → "M:SS.S" 変換
+  - `convert_hhmm_to_display(value: str) -> str`: 発走時刻 "HHMM" → "HH:MM" 変換
+  - `convert_tenth_to_unit(value: int, unit: float) -> float`: 0.1 単位 → 実単位変換（負担重量、オッズ、ハロンタイム等）
+  - `convert_manyen_to_hyakuyen(value: int) -> int`: 万円 → 百円単位変換（賞金）
+  - `split_zogen(value: int) -> tuple[str, int]`: 増減（符号付き整数）→ 増減符号 + 増減差に分離
 
 **テスト**
 
 - 正常ケース: 16 桁 → 12 桁変換の入出力検証
 - 正常ケース: レースコードからの各要素抽出
 - 異常ケース: 不正な桁数、非数値文字列でのエラー
+- `ensure_columns`: 不足カラムの NaN 埋め、余分カラムの除去、カラム順序の統一
+- `apply_types`: 型変換の正確性
+- 各変換関数: 正常ケース・境界値（0, 負値）・NaN/空文字の扱い
 
 ---
 
@@ -104,31 +116,7 @@
 
 ---
 
-## PR-4: DataFrame 生成ユーティリティ
-
-**目的**: Provider 実装で共通して使う DataFrame 整形ユーティリティを実装する
-
-**実装内容**
-
-- `utils/dataframe.py`: DataFrame 整形用ユーティリティ
-  - `ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame`: 指定カラムリストに合わせて過不足を調整（不足カラムは NaN 埋め、余分なカラムは削除、順序を統一）
-  - `apply_types(df: pd.DataFrame, type_dict: dict) -> pd.DataFrame`: 型定義辞書に基づいて型変換
-- `utils/converters.py`: データ変換関数
-  - `convert_time_msss_to_display(value: str) -> str`: 走破タイム "MSSS" → "M:SS.S" 変換
-  - `convert_hhmm_to_display(value: str) -> str`: 発走時刻 "HHMM" → "HH:MM" 変換
-  - `convert_tenth_to_unit(value: int, unit: float) -> float`: 0.1 単位 → 実単位変換（負担重量、オッズ、ハロンタイム等）
-  - `convert_manyen_to_hyakuyen(value: int) -> int`: 万円 → 百円単位変換（賞金）
-  - `split_zogen(value: int) -> tuple[str, int]`: 増減（符号付き整数）→ 増減符号 + 増減差に分離
-
-**テスト**
-
-- `ensure_columns`: 不足カラムの NaN 埋め、余分カラムの除去、カラム順序の統一
-- `apply_types`: 型変換の正確性
-- 各変換関数: 正常ケース・境界値（0, 負値）・NaN/空文字の扱い
-
----
-
-## PR-5: ScrapingProvider — get_race_info
+## PR-4: ScrapingProvider — get_race_info
 
 **目的**: ScrapingProvider の `get_race_info` を実装する（最初の Provider メソッド）
 
@@ -153,7 +141,7 @@
 
 ---
 
-## PR-6: ScrapingProvider — get_entry
+## PR-5: ScrapingProvider — get_entry
 
 **目的**: ScrapingProvider の `get_entry`（出馬表取得）を実装する
 
@@ -174,7 +162,7 @@
 
 ---
 
-## PR-7: ScrapingProvider — get_result + get_race_result_info
+## PR-6: ScrapingProvider — get_result + get_race_result_info
 
 **目的**: ScrapingProvider のレース結果系メソッドを実装する
 
@@ -202,7 +190,7 @@
 
 ---
 
-## PR-8: ScrapingProvider — get_odds + get_payoff
+## PR-7: ScrapingProvider — get_odds + get_payoff
 
 **目的**: ScrapingProvider のオッズ・払戻系メソッドを実装する
 
@@ -227,7 +215,7 @@
 
 ---
 
-## PR-9: ScrapingProvider — get_past_performances + get_schedule
+## PR-8: ScrapingProvider — get_past_performances + get_schedule
 
 **目的**: ScrapingProvider の残りのメソッドを実装し、Provider を完成させる
 
@@ -255,7 +243,7 @@
 
 ---
 
-## PR-10: MykeibaDBProvider — get_race_info + get_entry
+## PR-9: MykeibaDBProvider — get_race_info + get_entry
 
 **目的**: MykeibaDBProvider の基本的なレース情報・出馬表取得を実装する
 
@@ -278,7 +266,7 @@
 
 ---
 
-## PR-11: MykeibaDBProvider — get_result + get_race_result_info
+## PR-10: MykeibaDBProvider — get_result + get_race_result_info
 
 **目的**: MykeibaDBProvider のレース結果系メソッドを実装する
 
@@ -303,7 +291,7 @@
 
 ---
 
-## PR-12: MykeibaDBProvider — 残りのメソッド
+## PR-11: MykeibaDBProvider — 残りのメソッド
 
 **目的**: MykeibaDBProvider の残りのメソッドを実装し、Provider を完成させる
 
@@ -328,7 +316,7 @@
 
 ---
 
-## PR-13: 両 Provider の出力一致テスト
+## PR-12: 両 Provider の出力一致テスト
 
 **目的**: ScrapingProvider と MykeibaDBProvider の出力がスキーマレベルで一致することを検証する
 
@@ -345,7 +333,7 @@
 
 ---
 
-## PR-14: `__init__.py` 整備 + README + パッケージ公開準備
+## PR-13: `__init__.py` 整備 + README + パッケージ公開準備
 
 **目的**: パッケージとしての仕上げを行う
 
