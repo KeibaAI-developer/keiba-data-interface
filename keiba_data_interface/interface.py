@@ -4,12 +4,17 @@
 Provider名を指定することで、データソースを切り替えてデータを取得できる。
 """
 
+import importlib
+
 import pandas as pd
 
 from keiba_data_interface.exceptions import KeibaDataInterfaceError
 from keiba_data_interface.protocols import DataProvider
 
-VALID_PROVIDERS = ("scraping", "mykeibadb")
+_PROVIDER_MAP: dict[str, str] = {
+    "scraping": "keiba_data_interface.providers.scraping_provider.ScrapingProvider",
+    "mykeibadb": "keiba_data_interface.providers.mykeibadb_provider.MykeibaDBProvider",
+}
 
 
 class DataInterface:
@@ -33,10 +38,6 @@ class DataInterface:
         Raises:
             KeibaDataInterfaceError: 不正なprovider名が指定された場合
         """
-        if provider not in VALID_PROVIDERS:
-            raise KeibaDataInterfaceError(
-                f"不正なprovider名です: '{provider}'" f" （有効な値: {', '.join(VALID_PROVIDERS)}）"
-            )
         self._provider: DataProvider = self._create_provider(provider)
 
     def get_race_info(self, race_code: str) -> pd.DataFrame:
@@ -138,15 +139,14 @@ class DataInterface:
             DataProviderインスタンス
 
         Raises:
-            KeibaDataInterfaceError: Providerの生成に失敗した場合
+            KeibaDataInterfaceError: 不正なprovider名が指定された場合
         """
-        if provider == "scraping":
-            from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-
-            return ScrapingProvider()
-        elif provider == "mykeibadb":
-            from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
-
-            return MykeibaDBProvider()
-        else:
-            raise KeibaDataInterfaceError(f"不正なprovider名です: '{provider}'")
+        if provider not in _PROVIDER_MAP:
+            valid = ", ".join(_PROVIDER_MAP)
+            raise KeibaDataInterfaceError(
+                f"不正なprovider名です: '{provider}' （有効な値: {valid}）"
+            )
+        module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
+        module = importlib.import_module(module_path)
+        provider_class = getattr(module, class_name)
+        return provider_class()

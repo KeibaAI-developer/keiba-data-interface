@@ -6,14 +6,28 @@ import pytest
 from keiba_data_interface.exceptions import KeibaDataInterfaceError
 from keiba_data_interface.interface import DataInterface
 from keiba_data_interface.protocols import DataProvider
+from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
+from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 
 from .conftest import _MockProvider
 
 
 # 正常系
 def test_mock_provider_satisfies_protocol(mock_provider: _MockProvider) -> None:
-    """MockProviderがDataProviderのインスタンスと判定される."""
+    """モックProviderがDataProviderのインスタンスと判定される."""
     assert isinstance(mock_provider, DataProvider)
+
+
+def test_create_scraping_provider() -> None:
+    """provider='scraping'でScrapingProviderが生成される."""
+    interface = DataInterface(provider="scraping")
+    assert isinstance(interface._provider, ScrapingProvider)
+
+
+def test_create_mykeibadb_provider() -> None:
+    """provider='mykeibadb'でMykeibaDBProviderが生成される."""
+    interface = DataInterface(provider="mykeibadb")
+    assert isinstance(interface._provider, MykeibaDBProvider)
 
 
 def test_get_race_info_delegates(

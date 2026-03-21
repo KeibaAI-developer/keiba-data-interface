@@ -3,12 +3,26 @@
 import pandas as pd
 
 from keiba_data_interface.protocols import DataProvider
+from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
+from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 
 
 # 正常系
 def test_full_provider_satisfies_protocol() -> None:
     """全メソッドを実装したクラスはDataProviderと判定される."""
     provider = _FullProvider()
+    assert isinstance(provider, DataProvider)
+
+
+def test_scraping_provider_satisfies_protocol() -> None:
+    """ScrapingProviderがDataProviderと判定される."""
+    provider = ScrapingProvider()
+    assert isinstance(provider, DataProvider)
+
+
+def test_mykeibadb_provider_satisfies_protocol() -> None:
+    """MykeibaDBProviderがDataProviderと判定される."""
+    provider = MykeibaDBProvider()
     assert isinstance(provider, DataProvider)
 
 
