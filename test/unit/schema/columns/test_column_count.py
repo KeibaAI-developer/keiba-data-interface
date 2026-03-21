@@ -1,5 +1,7 @@
 """カラム名リストを検証するテスト."""
 
+from collections import Counter
+
 import pytest
 
 from keiba_data_interface.schema.columns import (
@@ -26,7 +28,7 @@ _TABLE_PARAMS = [
 def test_column_count_matches_schema(
     columns: list[str], expected_count: int, table_name: str
 ) -> None:
-    """各テーブルのカラム数がSCHEMA.mdの定義と一致する."""
+    """各テーブルのカラム数がdoc/SCHEMA.mdの定義と一致する."""
     assert (
         len(columns) == expected_count
     ), f"{table_name}のカラム数が不一致: 期待値={expected_count}, 実際={len(columns)}"
@@ -35,5 +37,5 @@ def test_column_count_matches_schema(
 @pytest.mark.parametrize("columns, expected_count, table_name", _TABLE_PARAMS)
 def test_no_duplicate_columns(columns: list[str], expected_count: int, table_name: str) -> None:
     """各テーブルのカラム名に重複がない."""
-    duplicates = [col for col in columns if columns.count(col) > 1]
+    duplicates = [col for col, count in Counter(columns).items() if count > 1]
     assert len(duplicates) == 0, f"{table_name}に重複カラムあり: {set(duplicates)}"
