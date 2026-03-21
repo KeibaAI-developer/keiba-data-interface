@@ -11,3 +11,9 @@ class KeibaDataInterfaceError(Exception):
     """
 
     pass
+
+
+class RaceCodeError(KeibaDataInterfaceError):
+    """レースコード関連の例外."""
+
+    pass
