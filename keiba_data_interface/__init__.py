@@ -10,3 +10,11 @@ try:
     __version__ = version("keiba-data-interface")
 except (PackageNotFoundError, ImportError):
     __version__ = "unknown"
+
+from keiba_data_interface.interface import DataInterface
+from keiba_data_interface.protocols import DataProvider
+
+__all__ = [
+    "DataInterface",
+    "DataProvider",
+]

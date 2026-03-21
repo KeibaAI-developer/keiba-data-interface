@@ -113,7 +113,7 @@ class DataProvider(Protocol):
         """出馬表を取得"""
         ...
 
-    def get_odds(self, race_code: str) -> pd.DataFrame:
+    def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得"""
         ...
 
@@ -173,7 +173,7 @@ interface = DataInterface(provider='scraping')  # or 'mykeibadb'
 # ScrapingProvider使用時は内部で12桁に変換して呼び出す（利用者は意識不要）
 race_info = interface.get_race_info('2023010105010101')
 entry = interface.get_entry('2023010105010101')
-odds = interface.get_odds('2023010105010101')
+odds = interface.get_win_show_odds('2023010105010101')
 result = interface.get_result('2023010105010101')
 payoff = interface.get_payoff('2023010105010101')
 past = interface.get_past_performances('2022105102')
@@ -276,7 +276,7 @@ schedule = interface.get_schedule('2025-01-01', '2025-01-31')
 
 | 項目 | 内容 |
 |------|------|
-| 関数名 | `get_odds` |
+| 関数名 | `get_win_show_odds` |
 | 引数 | `race_code: str`（レースコード） |
 | 戻り値 | `pd.DataFrame`（出走頭数行） |
 | テーブル | 単複オッズ情報（SCHEMA.md テーブル5） |

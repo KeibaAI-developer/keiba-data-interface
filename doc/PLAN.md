@@ -98,7 +98,7 @@
 - `protocols.py`: `DataProvider` Protocol の定義（SPEC.md 3.1 に準拠）
   - `get_race_info(race_code: str) -> pd.DataFrame`
   - `get_entry(race_code: str) -> pd.DataFrame`
-  - `get_odds(race_code: str) -> pd.DataFrame`
+  - `get_win_show_odds(race_code: str) -> pd.DataFrame`
   - `get_result(race_code: str) -> pd.DataFrame`
   - `get_race_result_info(race_code: str) -> pd.DataFrame`
   - `get_payoff(race_code: str) -> pd.DataFrame`
@@ -190,13 +190,13 @@
 
 ---
 
-## PR-7: ScrapingProvider — get_odds + get_payoff
+## PR-7: ScrapingProvider — get_win_show_odds + get_payoff
 
 **目的**: ScrapingProvider のオッズ・払戻系メソッドを実装する
 
 **実装内容**
 
-- `providers/scraping_provider.py` に `get_odds` を追加
+- `providers/scraping_provider.py` に `get_win_show_odds` を追加
   - `scrape_odds_from_jra()` で取得
   - 複勝最小/最大オッズ → 複勝最低/最高オッズのリネーム
   - レースコードからヘッダカラム（開催年等）を導出
@@ -297,7 +297,7 @@
 
 **実装内容**
 
-- `get_odds`: `OddsGetter.get_odds1_tansho()` + `get_odds1_fukusho()` から取得・合体
+- `get_win_show_odds`: `OddsGetter.get_odds1_tansho()` + `get_odds1_fukusho()` から取得・合体
   - オッズの 0.1 倍 → 倍変換
 - `get_payoff`: `RaceGetter.get_haraimodoshi()` から取得
   - カラム名リネーム
