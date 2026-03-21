@@ -30,14 +30,17 @@ def ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
 def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
     """型定義辞書に基づいてDataFrameの型を変換する.
 
+    入力DataFrameは変更しない。
+
     Args:
         df (pd.DataFrame): 入力DataFrame
         type_dict (dict[str, str]): カラム名 → pandas型文字列の辞書
 
     Returns:
-        pd.DataFrame: 型変換されたDataFrame
+        pd.DataFrame: 型変換された新しいDataFrame
     """
+    result = df.copy()
     for col, dtype in type_dict.items():
-        if col in df.columns:
-            df[col] = df[col].astype(pandas_dtype(dtype))
-    return df
+        if col in result.columns:
+            result[col] = result[col].astype(pandas_dtype(dtype))
+    return result

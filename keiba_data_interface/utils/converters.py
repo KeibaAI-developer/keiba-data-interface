@@ -56,19 +56,18 @@ def convert_hhmm_to_display(value: str) -> str:
     return f"{value[:2]}:{value[2:]}"
 
 
-def convert_tenth_to_unit(value: int, unit: float) -> float:
+def convert_tenth_to_unit(value: int) -> float:
     """0.1単位の整数値を実単位に変換する.
 
     負担重量、オッズ、ハロンタイム等の0.1単位整数値を実数に変換する。
 
     Args:
         value (int): 0.1単位の整数値（例: 560）
-        unit (float): 変換単位（例: 0.1）
 
     Returns:
         float: 実単位の値（例: 56.0）
     """
-    return round(value * unit, 1)
+    return value / 10
 
 
 def convert_manyen_to_hyakuyen(value: int) -> int:

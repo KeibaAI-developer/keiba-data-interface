@@ -50,3 +50,11 @@ def test_apply_types_with_na() -> None:
     result = apply_types(df, {"A": "Int64"})
     assert result["A"].dtype == pd.Int64Dtype()
     assert pd.isna(result["A"].iloc[1])
+
+
+def test_apply_types_does_not_modify_input() -> None:
+    """入力DataFrameが変更されない."""
+    df = pd.DataFrame({"A": [1, 2, 3]})
+    original_dtype = df["A"].dtype
+    apply_types(df, {"A": "Float64"})
+    assert df["A"].dtype == original_dtype
