@@ -1,5 +1,6 @@
 """convert_hhmm_to_display関数のテスト."""
 
+import pandas as pd
 import pytest
 
 from keiba_data_interface.utils.converters import convert_hhmm_to_display
@@ -38,3 +39,23 @@ def test_convert_hhmm_to_display_too_long() -> None:
     """5桁の入力でValueErrorが発生する."""
     with pytest.raises(ValueError, match="4桁"):
         convert_hhmm_to_display("15400")
+
+
+def test_convert_hhmm_to_display_empty_string() -> None:
+    """空文字列でValueErrorが発生する."""
+    with pytest.raises(ValueError, match="空文字列"):
+        convert_hhmm_to_display("")
+
+
+@pytest.mark.parametrize(
+    "nan_value",
+    [
+        float("nan"),
+        pd.NA,
+        None,
+    ],
+)
+def test_convert_hhmm_to_display_nan_values(nan_value: object) -> None:
+    """NaN系欠損値でTypeErrorが発生する."""
+    with pytest.raises(TypeError, match="文字列"):
+        convert_hhmm_to_display(nan_value)  # type: ignore[arg-type]

@@ -55,3 +55,12 @@ def test_ensure_columns_empty_dataframe() -> None:
     result = ensure_columns(df, ["A", "B"])
     assert list(result.columns) == ["A", "B"]
     assert len(result) == 0
+
+
+def test_ensure_columns_does_not_modify_input() -> None:
+    """入力DataFrameが変更されない."""
+    df = pd.DataFrame({"A": [1], "B": [2]})
+    original_columns = list(df.columns)
+    ensure_columns(df, ["A", "B", "C"])
+    assert list(df.columns) == original_columns
+    assert "C" not in df.columns

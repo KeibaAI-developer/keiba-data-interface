@@ -13,7 +13,7 @@ from keiba_data_interface.utils.converters import split_zogen
         (10, "+", 10),
         (-4, "-", 4),
         (-1, "-", 1),
-        (0, "", 0),
+        (0, " ", 0),
     ],
 )
 def test_split_zogen_normal(value: int, expected_sign: str, expected_diff: int) -> None:

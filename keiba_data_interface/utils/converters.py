@@ -14,8 +14,13 @@ def convert_time_msss_to_display(value: str) -> str:
         str: "M:SS.S"形式の走破タイム（例: "2:31.5"）
 
     Raises:
-        ValueError: 入力が数値文字列でない場合、または桁数が不正な場合
+        TypeError: 入力が文字列でない場合（NaN、pd.NA等）
+        ValueError: 入力が空文字列、数値文字列でない場合、または桁数が不正な場合
     """
+    if not isinstance(value, str):
+        raise TypeError(f"走破タイムは文字列である必要があります: {type(value).__name__}")
+    if not value:
+        raise ValueError("走破タイムに空文字列は指定できません")
     if not value.isdigit():
         raise ValueError(f"走破タイムは数字のみで構成される必要があります: {value}")
     if len(value) < 3 or len(value) > 4:
@@ -37,8 +42,13 @@ def convert_hhmm_to_display(value: str) -> str:
         str: "HH:MM"形式の発走時刻（例: "15:40"）
 
     Raises:
-        ValueError: 入力が数値文字列でない場合、または4桁でない場合
+        TypeError: 入力が文字列でない場合（NaN、pd.NA等）
+        ValueError: 入力が空文字列、数値文字列でない場合、または4桁でない場合
     """
+    if not isinstance(value, str):
+        raise TypeError(f"発走時刻は文字列である必要があります: {type(value).__name__}")
+    if not value:
+        raise ValueError("発走時刻に空文字列は指定できません")
     if not value.isdigit():
         raise ValueError(f"発走時刻は数字のみで構成される必要があります: {value}")
     if len(value) != 4:
@@ -84,7 +94,7 @@ def split_zogen(value: int) -> tuple[str, int]:
         value (int): 増減値（例: 2, -4, 0）
 
     Returns:
-        str: 増減符号（"+", "-", ""）
+        str: 増減符号（"+", "-", " "）
         int: 増減差（絶対値）
     """
     if value > 0:
@@ -92,4 +102,4 @@ def split_zogen(value: int) -> tuple[str, int]:
     elif value < 0:
         return "-", abs(value)
     else:
-        return "", 0
+        return " ", 0

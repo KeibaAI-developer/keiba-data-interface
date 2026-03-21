@@ -11,18 +11,20 @@ def ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     """指定カラムリストに合わせてDataFrameのカラムを調整する.
 
     不足カラムはNaN埋め、余分なカラムは削除し、カラム順序を統一する。
+    入力DataFrameは変更しない。
 
     Args:
         df (pd.DataFrame): 入力DataFrame
         columns (list[str]): 期待するカラムリスト
 
     Returns:
-        pd.DataFrame: カラムが調整されたDataFrame
+        pd.DataFrame: カラムが調整された新しいDataFrame
     """
+    result = df.copy()
     for col in columns:
-        if col not in df.columns:
-            df[col] = pd.NA
-    return df[columns].copy()
+        if col not in result.columns:
+            result[col] = pd.NA
+    return result[columns].copy()
 
 
 def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
