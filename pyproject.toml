@@ -25,10 +25,12 @@ classifiers = [
 
 dependencies = [
     "pandas>=2.0.0",
-    "keiba-scraping",
 ]
 
 [project.optional-dependencies]
+scraping = [
+    "keiba-scraping",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
