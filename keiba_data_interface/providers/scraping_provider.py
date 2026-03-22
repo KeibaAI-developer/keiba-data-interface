@@ -1,5 +1,7 @@
 """ScrapingProvider: keiba-scrapingを使用したデータ取得Provider."""
 
+import asyncio
+import inspect
 import re
 from datetime import date, timedelta
 from typing import Any
@@ -40,27 +42,6 @@ _IJO_KUBUN_MAP: dict[str, str] = {
 }
 
 
-def _parse_time_to_seconds(time_str: str) -> float:
-    """走破タイム文字列("M:SS.S")を秒に変換する.
-
-    Args:
-        time_str (str): "M:SS.S"形式の走破タイム
-
-    Returns:
-        float: 秒単位の走破タイム
-
-    Raises:
-        ValueError: 走破タイム形式が不正な場合
-    """
-    m = re.match(r"(\d+):(\d+)\.(\d)", time_str)
-    if not m:
-        raise ValueError(f"走破タイム形式が不正です: {time_str}")
-    minutes = int(m.group(1))
-    seconds = int(m.group(2))
-    tenths = int(m.group(3))
-    return minutes * 60 + seconds + tenths / 10
-
-
 class ScrapingProvider:
     """keiba-scrapingを使用したデータ取得Provider."""
 
@@ -87,13 +68,13 @@ class ScrapingProvider:
             from scraping import EntryPageScraper
 
             scraper_class = EntryPageScraper
-        self._scraper_class = scraper_class
+        self._scraper_class: type[Any] = scraper_class
 
         if result_scraper_class is None:
             from scraping import ResultPageScraper
 
             result_scraper_class = ResultPageScraper
-        self._result_scraper_class = result_scraper_class
+        self._result_scraper_class: type[Any] = result_scraper_class
 
         if odds_func is None:
             from scraping import scrape_odds_from_jra
@@ -105,13 +86,13 @@ class ScrapingProvider:
             from scraping import PastPerformancesScraper
 
             past_performances_scraper_class = PastPerformancesScraper
-        self._past_performances_scraper_class = past_performances_scraper_class
+        self._past_performances_scraper_class: type[Any] = past_performances_scraper_class
 
         if race_schedule_scraper_class is None:
             from scraping import RaceScheduleScraper
 
             race_schedule_scraper_class = RaceScheduleScraper
-        self._race_schedule_scraper_class = race_schedule_scraper_class
+        self._race_schedule_scraper_class: type[Any] = race_schedule_scraper_class
 
     def get_race_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -153,9 +134,6 @@ class ScrapingProvider:
         Returns:
             pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム）
         """
-        import asyncio
-        import inspect
-
         race_id = race_code_to_race_id(race_code)
         result = self._odds_func(race_id)
         if inspect.iscoroutine(result):
@@ -247,7 +225,7 @@ class ScrapingProvider:
                 all_rows.append(converted)
             current += timedelta(days=1)
         if not all_rows:
-            return ensure_columns(pd.DataFrame(), SCHEDULE_COLUMNS)
+            return apply_types(ensure_columns(pd.DataFrame(), SCHEDULE_COLUMNS), SCHEDULE_TYPES)
         result = pd.concat(all_rows, ignore_index=True)
         return result
 
@@ -343,13 +321,7 @@ class ScrapingProvider:
 
         for _, row in raw.iterrows():
             converted: dict[str, object] = {}
-            converted["レースコード"] = race_code
-            converted["開催年"] = parts["年"]
-            converted["開催月日"] = parts["月日"]
-            converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
-            converted["開催回"] = int(parts["回"])
-            converted["開催日目"] = int(parts["日目"])
-            converted["レース番号"] = int(parts["R"])
+            self._set_header_columns(converted, race_code, parts)
             converted["枠番"] = row["枠"]
             converted["馬番"] = row["馬番"]
             converted["血統登録番号"] = row["馬ID"]
@@ -365,11 +337,7 @@ class ScrapingProvider:
             converted["馬体重"] = row["馬体重"]
 
             # 増減 → 増減符号 + 増減差
-            zogen = row["増減"]
-            if pd.notna(zogen):
-                fugo, sa = split_zogen(int(zogen))
-                converted["増減符号"] = fugo
-                converted["増減差"] = sa
+            self._set_zogen(converted, row["増減"])
 
             # 出走区分 → 異常区分
             shutsuso_kubun = row["出走区分"]
@@ -410,13 +378,7 @@ class ScrapingProvider:
         rows: list[dict[str, object]] = []
         for _, row in raw.iterrows():
             converted: dict[str, object] = {}
-            converted["レースコード"] = race_code
-            converted["開催年"] = parts["年"]
-            converted["開催月日"] = parts["月日"]
-            converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
-            converted["開催回"] = int(parts["回"])
-            converted["開催日目"] = int(parts["日目"])
-            converted["レース番号"] = int(parts["R"])
+            self._set_header_columns(converted, race_code, parts)
             converted["枠番"] = row["枠"]
             converted["馬番"] = row["馬番"]
             converted["血統登録番号"] = row["馬ID"]
@@ -432,32 +394,14 @@ class ScrapingProvider:
             converted["馬体重"] = row["馬体重"]
 
             # 増減 → 増減符号 + 増減差
-            zogen = row["増減"]
-            if pd.notna(zogen):
-                fugo, sa = split_zogen(int(zogen))
-                converted["増減符号"] = fugo
-                converted["増減差"] = sa
+            self._set_zogen(converted, row["増減"])
 
             # 異常区分の判定
             ijo_kubun = row.get("異常区分", "")
             chakusa = row.get("着差", "")
             chakujun_raw = row.get("着順")
 
-            # 降着判定: 着差テキストが "N位降着" パターン
-            is_kokaku = (
-                pd.notna(chakusa)
-                and isinstance(chakusa, str)
-                and re.search(r"\d+位降着", chakusa) is not None
-            )
-
-            if is_kokaku:
-                converted["異常区分"] = "降着"
-            elif pd.notna(ijo_kubun) and str(ijo_kubun) in _IJO_KUBUN_MAP:
-                converted["異常区分"] = _IJO_KUBUN_MAP[str(ijo_kubun)]
-            elif pd.notna(ijo_kubun) and str(ijo_kubun):
-                converted["異常区分"] = str(ijo_kubun)
-            else:
-                converted["異常区分"] = ""
+            is_kokaku = self._set_ijo_kubun(converted, ijo_kubun, chakusa)
 
             # 結果固有カラム
             if pd.notna(chakujun_raw) and str(chakujun_raw).isdigit():
@@ -727,30 +671,14 @@ class ScrapingProvider:
                 converted["馬体重"] = row["馬体重"]
 
             # 増減 → 増減符号 + 増減差
-            zogen = row.get("増減")
-            if pd.notna(zogen):
-                fugo, sa = split_zogen(int(zogen))
-                converted["増減符号"] = fugo
-                converted["増減差"] = sa
+            self._set_zogen(converted, row.get("増減"))
 
             # 異常区分
             ijo_kubun = row.get("異常区分", "")
             chakusa = row.get("着差", "")
             chakujun_raw = row.get("着順")
 
-            is_kokaku = (
-                pd.notna(chakusa)
-                and isinstance(chakusa, str)
-                and re.search(r"\d+位降着", chakusa) is not None
-            )
-            if is_kokaku:
-                converted["異常区分"] = "降着"
-            elif pd.notna(ijo_kubun) and str(ijo_kubun) in _IJO_KUBUN_MAP:
-                converted["異常区分"] = _IJO_KUBUN_MAP[str(ijo_kubun)]
-            elif pd.notna(ijo_kubun) and str(ijo_kubun):
-                converted["異常区分"] = str(ijo_kubun)
-            else:
-                converted["異常区分"] = ""
+            is_kokaku = self._set_ijo_kubun(converted, ijo_kubun, chakusa)
 
             # 結果カラム
             if pd.notna(chakujun_raw) and str(chakujun_raw).isdigit():
@@ -844,3 +772,67 @@ class ScrapingProvider:
         result = ensure_columns(result, SCHEDULE_COLUMNS)
         result = apply_types(result, SCHEDULE_TYPES)
         return result
+
+    @staticmethod
+    def _set_header_columns(
+        converted: dict[str, object], race_code: str, parts: dict[str, str]
+    ) -> None:
+        """レースコードからヘッダカラムを設定する."""
+        converted["レースコード"] = race_code
+        converted["開催年"] = parts["年"]
+        converted["開催月日"] = parts["月日"]
+        converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
+        converted["開催回"] = int(parts["回"])
+        converted["開催日目"] = int(parts["日目"])
+        converted["レース番号"] = int(parts["R"])
+
+    @staticmethod
+    def _set_zogen(converted: dict[str, object], zogen: Any) -> None:
+        """増減符号と増減差を設定する."""
+        if pd.notna(zogen):
+            fugo, sa = split_zogen(int(zogen))
+            converted["増減符号"] = fugo
+            converted["増減差"] = sa
+
+    @staticmethod
+    def _set_ijo_kubun(
+        converted: dict[str, object],
+        ijo_kubun: Any,
+        chakusa: Any,
+    ) -> bool:
+        """異常区分を設定し、降着かどうかを返す."""
+        is_kokaku = (
+            pd.notna(chakusa)
+            and isinstance(chakusa, str)
+            and re.search(r"\d+位降着", chakusa) is not None
+        )
+        if is_kokaku:
+            converted["異常区分"] = "降着"
+        elif pd.notna(ijo_kubun) and str(ijo_kubun) in _IJO_KUBUN_MAP:
+            converted["異常区分"] = _IJO_KUBUN_MAP[str(ijo_kubun)]
+        elif pd.notna(ijo_kubun) and str(ijo_kubun):
+            converted["異常区分"] = str(ijo_kubun)
+        else:
+            converted["異常区分"] = ""
+        return is_kokaku
+
+
+def _parse_time_to_seconds(time_str: str) -> float:
+    """走破タイム文字列("M:SS.S")を秒に変換する.
+
+    Args:
+        time_str (str): "M:SS.S"形式の走破タイム
+
+    Returns:
+        float: 秒単位の走破タイム
+
+    Raises:
+        ValueError: 走破タイム形式が不正な場合
+    """
+    m = re.match(r"(\d+):(\d+)\.(\d)", time_str)
+    if not m:
+        raise ValueError(f"走破タイム形式が不正です: {time_str}")
+    minutes = int(m.group(1))
+    seconds = int(m.group(2))
+    tenths = int(m.group(3))
+    return minutes * 60 + seconds + tenths / 10

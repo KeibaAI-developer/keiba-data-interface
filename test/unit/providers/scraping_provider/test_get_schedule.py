@@ -50,9 +50,9 @@ def test_kaisai_code_derived(
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 
     codes = set(result["開催コード"].tolist())
-    # 中山: レースID=202505010101 → year=2025, keibajo=05, kai=01, nichime=01
-    # 京都: レースID=202506020101 → year=2025, keibajo=06, kai=02, nichime=01
-    assert "20250105050101" in codes or any("0501" in c for c in codes)
+    # 中山: レースID=202505010101 → 開催コード=20250105050101
+    # 京都: レースID=202506020101 → 開催コード=20250105060201
+    assert codes == {"20250105050101", "20250105060201"}
 
 
 def test_multiple_days(

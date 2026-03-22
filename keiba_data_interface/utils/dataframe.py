@@ -21,9 +21,10 @@ def ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
         pd.DataFrame: カラムが調整された新しいDataFrame
     """
     result = df.copy()
-    for col in columns:
-        if col not in result.columns:
-            result[col] = pd.NA
+    missing = [col for col in columns if col not in result.columns]
+    if missing:
+        missing_df = pd.DataFrame({col: pd.NA for col in missing}, index=result.index)
+        result = pd.concat([result, missing_df], axis=1)
     return result[columns].copy()
 
 

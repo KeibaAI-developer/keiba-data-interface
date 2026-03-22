@@ -260,3 +260,26 @@ def test_kakutoku_honshokin_nan_for_ijo_kubun(
     result = provider_full.get_result(race_code)
 
     assert pd.isna(result.iloc[0]["獲得本賞金"])
+
+
+def test_time_sa_nan_when_all_chushi(
+    provider_full: ScrapingProvider,
+    mock_result_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """全馬競走中止の場合、全行のタイム差がNaNになる."""
+    from .conftest import _create_scraping_result
+
+    raw = _create_scraping_result()
+    raw.loc[0, "着順"] = "中止"
+    raw.loc[0, "タイム"] = None
+    raw.loc[0, "異常区分"] = "中止"
+    raw.loc[1, "着順"] = "中止"
+    raw.loc[1, "タイム"] = None
+    raw.loc[1, "異常区分"] = "中止"
+    mock_result_scraper.get_result.return_value = raw
+
+    result = provider_full.get_result(race_code)
+
+    assert pd.isna(result.iloc[0]["タイム差"])
+    assert pd.isna(result.iloc[1]["タイム差"])
