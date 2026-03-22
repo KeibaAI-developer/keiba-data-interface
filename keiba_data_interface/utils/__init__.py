@@ -11,6 +11,7 @@ from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 from keiba_data_interface.utils.race_code import (
     RaceCodeError,
     extract_race_code_parts,
+    keibajo_code_to_name,
     race_code_to_kaisai_code,
     race_code_to_race_id,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "convert_time_msss_to_display",
     "ensure_columns",
     "extract_race_code_parts",
+    "keibajo_code_to_name",
     "race_code_to_kaisai_code",
     "race_code_to_race_id",
     "split_zogen",

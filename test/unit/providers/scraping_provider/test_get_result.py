@@ -180,3 +180,83 @@ def test_cockaku_chakusa_not_mapped_to_chakusa1(
     result = provider_full.get_result(race_code)
 
     assert pd.isna(result.iloc[0]["着差1"])
+
+
+def test_header_columns_from_race_code(
+    provider_full: ScrapingProvider,
+    mock_result_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """ヘッダカラムがレースコードから正しく導出される."""
+    from .conftest import _create_scraping_result
+
+    mock_result_scraper.get_result.return_value = _create_scraping_result()
+
+    result = provider_full.get_result(race_code)
+
+    row = result.iloc[0]
+    assert row["開催年"] == "2025"
+    assert row["開催月日"] == "0502"
+    assert row["競馬場"] == "中山"
+    assert row["開催回"] == 2
+    assert row["開催日目"] == 12
+    assert row["レース番号"] == 11
+
+
+def test_kakutoku_honshokin_derived(
+    provider_full: ScrapingProvider,
+    mock_scraper: MagicMock,
+    mock_result_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """着順とRaceInfo賞金から獲得本賞金が正しく導出される."""
+    from .conftest import _create_scraping_race_info, _create_scraping_result
+
+    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_result_scraper.get_result.return_value = _create_scraping_result()
+
+    result = provider_full.get_result(race_code)
+
+    # 1着: 32000万円 → 3200000百円
+    assert result.iloc[0]["獲得本賞金"] == 3200000
+    # 2着: 12800万円 → 1280000百円
+    assert result.iloc[1]["獲得本賞金"] == 1280000
+
+
+def test_kakutoku_honshokin_nan_for_6th_and_below(
+    provider_full: ScrapingProvider,
+    mock_scraper: MagicMock,
+    mock_result_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """6着以下の獲得本賞金はNaNになる."""
+    from .conftest import _create_scraping_race_info, _create_scraping_result
+
+    raw = _create_scraping_result()
+    raw.loc[1, "着順"] = "6"
+    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_result_scraper.get_result.return_value = raw
+
+    result = provider_full.get_result(race_code)
+
+    assert pd.isna(result.iloc[1]["獲得本賞金"])
+
+
+def test_kakutoku_honshokin_nan_for_ijo_kubun(
+    provider_full: ScrapingProvider,
+    mock_scraper: MagicMock,
+    mock_result_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """異常区分が空でない馬の獲得本賞金はNaNになる."""
+    from .conftest import _create_scraping_race_info, _create_scraping_result
+
+    raw = _create_scraping_result()
+    raw.loc[0, "異常区分"] = "失格"
+    raw.loc[0, "着順"] = "失格"
+    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_result_scraper.get_result.return_value = raw
+
+    result = provider_full.get_result(race_code)
+
+    assert pd.isna(result.iloc[0]["獲得本賞金"])

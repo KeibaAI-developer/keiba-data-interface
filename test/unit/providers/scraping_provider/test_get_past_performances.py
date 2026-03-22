@@ -115,3 +115,32 @@ def test_zogen_split(
     row = result.iloc[0]
     assert row["増減符号"] == "+"
     assert row["増減差"] == 2
+
+
+def test_horse_id_stored(
+    provider_full: ScrapingProvider,
+    mock_past_scraper: MagicMock,
+) -> None:
+    """血統登録番号が全行に格納される."""
+    from .conftest import _create_scraping_past_performances
+
+    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+
+    result = provider_full.get_past_performances("2021105001")
+
+    assert result.iloc[0]["血統登録番号"] == "2021105001"
+
+
+def test_race_code_derived(
+    provider_full: ScrapingProvider,
+    mock_past_scraper: MagicMock,
+) -> None:
+    """レースIDと日付からレースコードが正しく構築される."""
+    from .conftest import _create_scraping_past_performances
+
+    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+
+    result = provider_full.get_past_performances("2021105001")
+
+    # レースID=202505011201, 日付=2025-01-05 → レースコード=2025010505011201
+    assert result.iloc[0]["レースコード"] == "2025010505011201"

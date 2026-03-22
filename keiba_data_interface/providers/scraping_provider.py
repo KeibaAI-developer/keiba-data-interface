@@ -24,7 +24,11 @@ from keiba_data_interface.schema.types import (
 )
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen, split_zogen
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import extract_race_code_parts, race_code_to_race_id
+from keiba_data_interface.utils.race_code import (
+    extract_race_code_parts,
+    keibajo_code_to_name,
+    race_code_to_race_id,
+)
 
 # 異常区分変換マッピング（scraping出力 → 統一スキーマ）
 _IJO_KUBUN_MAP: dict[str, str] = {
@@ -170,9 +174,15 @@ class ScrapingProvider:
             pd.DataFrame: レース結果（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
+
+        # 賞金情報を取得して着順→獲得本賞金マッピングを構築
+        scraper_entry = self._scraper_class(race_id)
+        raw_race_info = scraper_entry.get_race_info()
+        prize_map = self._build_prize_map(raw_race_info)
+
         scraper = self._result_scraper_class(race_id)
         raw = scraper.get_result()
-        return self._convert_result(raw, race_code)
+        return self._convert_result(raw, race_code, prize_map)
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
@@ -213,7 +223,7 @@ class ScrapingProvider:
         """
         scraper = self._past_performances_scraper_class(horse_id)
         raw = scraper.get_past_performances()
-        return self._convert_past_performances(raw)
+        return self._convert_past_performances(raw, horse_id)
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
@@ -336,6 +346,9 @@ class ScrapingProvider:
             converted["レースコード"] = race_code
             converted["開催年"] = parts["年"]
             converted["開催月日"] = parts["月日"]
+            converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
+            converted["開催回"] = int(parts["回"])
+            converted["開催日目"] = int(parts["日目"])
             converted["レース番号"] = int(parts["R"])
             converted["枠番"] = row["枠"]
             converted["馬番"] = row["馬番"]
@@ -370,8 +383,20 @@ class ScrapingProvider:
         result = apply_types(result, HORSE_RACE_INFO_TYPES)
         return result
 
-    def _convert_result(self, raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
-        """get_result用: scraping出力を統一スキーマに変換する."""
+    def _convert_result(
+        self,
+        raw: pd.DataFrame,
+        race_code: str,
+        prize_map: dict[int, int] | None = None,
+    ) -> pd.DataFrame:
+        """get_result用: scraping出力を統一スキーマに変換する.
+
+        Args:
+            raw: ResultPageScraper.get_result()の出力
+            race_code: 16桁レースコード
+            prize_map: 着順→獲得本賞金(百円単位)のマッピング。
+                Noneの場合は獲得本賞金を設定しない。
+        """
         parts = extract_race_code_parts(race_code)
 
         # 1着タイムを取得（タイム差計算用）
@@ -388,6 +413,9 @@ class ScrapingProvider:
             converted["レースコード"] = race_code
             converted["開催年"] = parts["年"]
             converted["開催月日"] = parts["月日"]
+            converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
+            converted["開催回"] = int(parts["回"])
+            converted["開催日目"] = int(parts["日目"])
             converted["レース番号"] = int(parts["R"])
             converted["枠番"] = row["枠"]
             converted["馬番"] = row["馬番"]
@@ -465,12 +493,36 @@ class ScrapingProvider:
                 horse_time = _parse_time_to_seconds(str(row["タイム"]))
                 converted["タイム差"] = round(horse_time - first_time, 1)
 
+            # 獲得本賞金の導出
+            if (
+                prize_map is not None
+                and pd.notna(chakujun_raw)
+                and str(chakujun_raw).isdigit()
+                and converted.get("異常区分") == ""
+            ):
+                chakujun = int(chakujun_raw)
+                if chakujun in prize_map:
+                    converted["獲得本賞金"] = prize_map[chakujun]
+
             rows.append(converted)
 
         result = pd.DataFrame(rows)
         result = ensure_columns(result, HORSE_RACE_INFO_COLUMNS)
         result = apply_types(result, HORSE_RACE_INFO_TYPES)
         return result
+
+    @staticmethod
+    def _build_prize_map(raw_race_info: pd.DataFrame) -> dict[int, int]:
+        """レース情報から着順→獲得本賞金(百円単位)のマッピングを構築する."""
+        prize_map: dict[int, int] = {}
+        if len(raw_race_info) == 0:
+            return prize_map
+        row = raw_race_info.iloc[0]
+        for i in range(1, 6):
+            col = f"{i}着賞金"
+            if col in row.index and pd.notna(row[col]):
+                prize_map[i] = convert_manyen_to_hyakuyen(int(row[col]))
+        return prize_map
 
     def _convert_race_result_info(
         self, raw_lap: pd.DataFrame, raw_corner: pd.DataFrame, race_code: str
@@ -516,6 +568,7 @@ class ScrapingProvider:
             converted["レースコード"] = race_code
             converted["開催年"] = parts["年"]
             converted["開催月日"] = parts["月日"]
+            converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
             converted["開催回"] = int(parts["回"])
             converted["開催日目"] = int(parts["日目"])
             converted["レース番号"] = int(parts["R"])
@@ -546,6 +599,9 @@ class ScrapingProvider:
         converted["レースコード"] = race_code
         converted["開催年"] = parts["年"]
         converted["開催月日"] = parts["月日"]
+        converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
+        converted["開催回"] = int(parts["回"])
+        converted["開催日目"] = int(parts["日目"])
         converted["レース番号"] = int(parts["R"])
 
         def _map_single(
@@ -615,7 +671,7 @@ class ScrapingProvider:
         result = apply_types(result, PAYOFF_TYPES)
         return result
 
-    def _convert_past_performances(self, raw: pd.DataFrame) -> pd.DataFrame:
+    def _convert_past_performances(self, raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
         """get_past_performances用: scraping出力を統一スキーマに変換する."""
         if len(raw) == 0:
             return apply_types(
@@ -626,6 +682,19 @@ class ScrapingProvider:
         rows: list[dict[str, object]] = []
         for _, row in raw.iterrows():
             converted: dict[str, object] = {}
+
+            # 血統登録番号
+            converted["血統登録番号"] = horse_id
+
+            # レースIDからレースコードを構築
+            race_id_raw = row.get("レースID")
+            if pd.notna(race_id_raw) and pd.notna(row.get("日付")):
+                dt = row["日付"]
+                if isinstance(dt, date):
+                    monthday = f"{dt.month:02d}{dt.day:02d}"
+                    race_id_str = str(race_id_raw)
+                    # レースコード = 年(4) + 月日(4) + 競馬場(2) + 回(2) + 日目(2) + R(2)
+                    converted["レースコード"] = race_id_str[:4] + monthday + race_id_str[4:]
 
             # 日付 → 開催年 + 開催月日
             if pd.notna(row.get("日付")):

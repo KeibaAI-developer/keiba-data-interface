@@ -18,6 +18,38 @@
 
 from keiba_data_interface.exceptions import RaceCodeError
 
+# 競馬場コード → 競馬場名マッピング
+_KEIBAJO_CODE_TO_NAME: dict[str, str] = {
+    "01": "札幌",
+    "02": "函館",
+    "03": "福島",
+    "04": "新潟",
+    "05": "東京",
+    "06": "中山",
+    "07": "中京",
+    "08": "京都",
+    "09": "阪神",
+    "10": "小倉",
+}
+
+
+def keibajo_code_to_name(code: str) -> str:
+    """競馬場コード（2桁）を競馬場名に変換する.
+
+    Args:
+        code (str): 競馬場コード（2桁、例: "06"）
+
+    Returns:
+        str: 競馬場名（例: "中山"）
+
+    Raises:
+        RaceCodeError: 未知の競馬場コードの場合
+    """
+    name = _KEIBAJO_CODE_TO_NAME.get(code)
+    if name is None:
+        raise RaceCodeError(f"未知の競馬場コードです: {code}")
+    return name
+
 
 def race_code_to_race_id(race_code: str) -> str:
     """16桁レースコードを12桁レースIDに変換する.
