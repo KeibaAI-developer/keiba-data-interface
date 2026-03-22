@@ -18,14 +18,15 @@ class ScrapingProvider:
         """ScrapingProviderを初期化する.
 
         Args:
-            scraper_class: スクレイパークラス。Noneの場合はEntryPageScraperを使用する。
+            scraper_class (EntryPageScraper): スクレイパークラス。
+                Noneの場合はEntryPageScraperを使用する。
                 テスト時にモッククラスを注入するために使用する。
         """
         if scraper_class is None:
             from scraping import EntryPageScraper
 
             scraper_class = EntryPageScraper
-        self._scraper_class = scraper_class
+        self._scraper_class: type[EntryPageScraper] = scraper_class
 
     def get_race_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -48,7 +49,7 @@ class ScrapingProvider:
         """出馬表を取得する.
 
         Args:
-            race_code: 16桁レースコード
+            race_code (str): 16桁レースコード
 
         Raises:
             NotImplementedError: 未実装
@@ -59,7 +60,7 @@ class ScrapingProvider:
         """単複オッズを取得する.
 
         Args:
-            race_code: 16桁レースコード
+            race_code (str): 16桁レースコード
 
         Raises:
             NotImplementedError: 未実装
@@ -70,7 +71,7 @@ class ScrapingProvider:
         """レース結果（馬毎）を取得する.
 
         Args:
-            race_code: 16桁レースコード
+            race_code (str): 16桁レースコード
 
         Raises:
             NotImplementedError: 未実装
@@ -81,7 +82,7 @@ class ScrapingProvider:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
 
         Args:
-            race_code: 16桁レースコード
+            race_code (str): 16桁レースコード
 
         Raises:
             NotImplementedError: 未実装
@@ -92,7 +93,7 @@ class ScrapingProvider:
         """払戻情報を取得する.
 
         Args:
-            race_code: 16桁レースコード
+            race_code (str): 16桁レースコード
 
         Raises:
             NotImplementedError: 未実装
@@ -103,7 +104,7 @@ class ScrapingProvider:
         """過去成績（馬柱）を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id (str): 馬ID
 
         Raises:
             NotImplementedError: 未実装
@@ -114,8 +115,8 @@ class ScrapingProvider:
         """開催スケジュールを取得する.
 
         Args:
-            start_date: 開始日（YYYY-MM-DD形式）
-            end_date: 終了日（YYYY-MM-DD形式）
+            start_date (str): 開始日（YYYY-MM-DD形式）
+            end_date (str): 終了日（YYYY-MM-DD形式）
 
         Raises:
             NotImplementedError: 未実装
