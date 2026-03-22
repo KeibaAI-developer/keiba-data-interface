@@ -1,4 +1,4 @@
-"""ScrapingProvider.get_race_infoテスト用のfixture."""
+"""ScrapingProviderテスト用のfixture."""
 
 from datetime import date
 from unittest.mock import MagicMock
@@ -62,6 +62,264 @@ def _create_scraping_race_info(
     )
 
 
+def _create_scraping_entry() -> pd.DataFrame:
+    """scraping出力の典型的な出馬表DataFrameを生成する."""
+    return pd.DataFrame(
+        [
+            {
+                "レースID": "202506021211",
+                "出走区分": "出走",
+                "枠": 1,
+                "馬番": 1,
+                "馬名": "テスト馬1",
+                "性別": "牡",
+                "年齢": 4,
+                "斤量": 58.0,
+                "騎手": "テスト騎手1",
+                "所属": "栗東",
+                "厩舎": "テスト厩舎1",
+                "馬体重": 480,
+                "増減": 2,
+                "馬ID": "2021105001",
+                "騎手ID": "01234",
+                "厩舎ID": "01111",
+            },
+            {
+                "レースID": "202506021211",
+                "出走区分": "出走",
+                "枠": 2,
+                "馬番": 2,
+                "馬名": "テスト馬2",
+                "性別": "牝",
+                "年齢": 5,
+                "斤量": 56.0,
+                "騎手": "テスト騎手2",
+                "所属": "美浦",
+                "厩舎": "テスト厩舎2",
+                "馬体重": 440,
+                "増減": -4,
+                "馬ID": "2020105002",
+                "騎手ID": "05678",
+                "厩舎ID": "02222",
+            },
+        ]
+    )
+
+
+def _create_scraping_result() -> pd.DataFrame:
+    """scraping出力の典型的なレース結果DataFrameを生成する."""
+    return pd.DataFrame(
+        [
+            {
+                "レースID": "202506021211",
+                "異常区分": "出走",
+                "着順": "1",
+                "枠": 2,
+                "馬番": 3,
+                "馬名": "テスト馬1",
+                "性別": "牡",
+                "年齢": 4,
+                "斤量": 58.0,
+                "騎手": "テスト騎手1",
+                "タイム": "3:12.5",
+                "着差": "",
+                "人気": "1",
+                "単勝オッズ": 3.5,
+                "後3F": 35.2,
+                "1コーナー通過順": 3,
+                "2コーナー通過順": 2,
+                "3コーナー通過順": 2,
+                "4コーナー通過順": 1,
+                "所属": "栗東",
+                "厩舎": "テスト厩舎1",
+                "馬体重": 480,
+                "増減": 2,
+                "馬ID": "2021105001",
+                "騎手ID": "01234",
+                "厩舎ID": "01111",
+            },
+            {
+                "レースID": "202506021211",
+                "異常区分": "出走",
+                "着順": "2",
+                "枠": 1,
+                "馬番": 1,
+                "馬名": "テスト馬2",
+                "性別": "牝",
+                "年齢": 5,
+                "斤量": 56.0,
+                "騎手": "テスト騎手2",
+                "タイム": "3:13.0",
+                "着差": "クビ",
+                "人気": "3",
+                "単勝オッズ": 8.2,
+                "後3F": 35.5,
+                "1コーナー通過順": 5,
+                "2コーナー通過順": 5,
+                "3コーナー通過順": 4,
+                "4コーナー通過順": 3,
+                "所属": "美浦",
+                "厩舎": "テスト厩舎2",
+                "馬体重": 440,
+                "増減": -4,
+                "馬ID": "2020105002",
+                "騎手ID": "05678",
+                "厩舎ID": "02222",
+            },
+        ]
+    )
+
+
+def _create_scraping_odds() -> pd.DataFrame:
+    """scraping出力の典型的なオッズDataFrameを生成する."""
+    return pd.DataFrame(
+        [
+            {
+                "馬番": 1,
+                "単勝オッズ": 3.5,
+                "単勝人気": 1,
+                "複勝最小オッズ": 1.5,
+                "複勝最大オッズ": 2.0,
+                "複勝人気": 1,
+            },
+            {
+                "馬番": 2,
+                "単勝オッズ": 8.2,
+                "単勝人気": 3,
+                "複勝最小オッズ": 2.5,
+                "複勝最大オッズ": 4.0,
+                "複勝人気": 3,
+            },
+        ]
+    )
+
+
+def _create_scraping_lap_time() -> pd.DataFrame:
+    """scraping出力の典型的なラップタイムDataFrameを生成する."""
+    data: dict[str, object] = {"レースID": "202506021211", "ペース": "M"}
+    # 2000mレースの場合: 100m〜2000mに値, 2100m以降はNaN
+    for dist in range(100, 5001, 100):
+        col = f"{dist}m"
+        if dist <= 2000:
+            data[col] = 12.0 + (dist % 400) / 100
+        else:
+            data[col] = None
+    data["レース前3F"] = 35.5
+    data["レース後3F"] = 34.8
+    return pd.DataFrame([data])
+
+
+def _create_scraping_corner() -> pd.DataFrame:
+    """scraping出力の典型的なコーナー通過順DataFrameを生成する."""
+    return pd.DataFrame(
+        [
+            {
+                "レースID": "202506021211",
+                "1コーナー通過順": "3-1-2",
+                "2コーナー通過順": "3-1-2",
+                "3コーナー通過順": "1-3-2",
+                "4コーナー通過順": "1-2-3",
+            }
+        ]
+    )
+
+
+def _create_scraping_past_performances() -> pd.DataFrame:
+    """scraping出力の典型的な過去成績DataFrameを生成する."""
+    return pd.DataFrame(
+        [
+            {
+                "レースID": "202505011201",
+                "日付": date(2025, 1, 5),
+                "競馬場": "中山",
+                "回": 1,
+                "開催日": 1,
+                "R": 12,
+                "レース名": "テストレース",
+                "天候": "晴",
+                "頭数": 16,
+                "枠": 3,
+                "馬番": 5,
+                "単勝オッズ": 5.0,
+                "人気": "2",
+                "着順": "1",
+                "異常区分": "出走",
+                "騎手": "テスト騎手",
+                "騎手ID": "01234",
+                "斤量": 57.0,
+                "芝ダ": "芝",
+                "距離": 2000,
+                "馬場": "良",
+                "タイム": "2:00.5",
+                "着差": "",
+                "1コーナー通過順": 3,
+                "2コーナー通過順": 3,
+                "3コーナー通過順": 2,
+                "4コーナー通過順": 1,
+                "レース前3F": 35.5,
+                "レース後3F": 34.8,
+                "後3F": 34.5,
+                "馬体重": 480,
+                "増減": 2,
+                "勝ち馬(2着馬)": "ライバル馬",
+                "賞金": 1000,
+                "主催": "JRA",
+                "間隔日数": 28,
+            },
+        ]
+    )
+
+
+def _create_scraping_schedule() -> pd.DataFrame:
+    """scraping出力の典型的な開催スケジュールDataFrameを生成する."""
+    return pd.DataFrame(
+        [
+            {
+                "レースID": "202505010101",
+                "日付": date(2025, 1, 5),
+                "競馬場": "中山",
+                "回": 1,
+                "開催日": 1,
+                "R": 1,
+                "レース名": "3歳未勝利",
+                "芝ダ": "芝",
+                "距離": 2000,
+                "頭数": 16,
+                "馬場": "良",
+                "発走時刻": "10:00",
+            },
+            {
+                "レースID": "202505010102",
+                "日付": date(2025, 1, 5),
+                "競馬場": "中山",
+                "回": 1,
+                "開催日": 1,
+                "R": 2,
+                "レース名": "3歳未勝利",
+                "芝ダ": "ダ",
+                "距離": 1800,
+                "頭数": 14,
+                "馬場": "良",
+                "発走時刻": "10:30",
+            },
+            {
+                "レースID": "202506020101",
+                "日付": date(2025, 1, 5),
+                "競馬場": "京都",
+                "回": 2,
+                "開催日": 1,
+                "R": 1,
+                "レース名": "3歳新馬",
+                "芝ダ": "芝",
+                "距離": 1600,
+                "頭数": 12,
+                "馬場": "良",
+                "発走時刻": "10:10",
+            },
+        ]
+    )
+
+
 @pytest.fixture()
 def turf_race_info() -> pd.DataFrame:
     """芝レースのscraping出力を返すfixture."""
@@ -88,9 +346,69 @@ def mock_scraper_cls(mock_scraper: MagicMock) -> MagicMock:
 
 
 @pytest.fixture()
+def mock_result_scraper() -> MagicMock:
+    """ResultPageScraperインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_result_scraper_cls(mock_result_scraper: MagicMock) -> MagicMock:
+    """ResultPageScraperクラスのモックを返すfixture."""
+    return MagicMock(return_value=mock_result_scraper)
+
+
+@pytest.fixture()
+def mock_odds_func() -> MagicMock:
+    """scrape_odds_from_jra関数のモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_past_scraper() -> MagicMock:
+    """PastPerformancesScraperインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_past_scraper_cls(mock_past_scraper: MagicMock) -> MagicMock:
+    """PastPerformancesScraperクラスのモックを返すfixture."""
+    return MagicMock(return_value=mock_past_scraper)
+
+
+@pytest.fixture()
+def mock_schedule_scraper() -> MagicMock:
+    """RaceScheduleScraperインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_schedule_scraper_cls(mock_schedule_scraper: MagicMock) -> MagicMock:
+    """RaceScheduleScraperクラスのモックを返すfixture."""
+    return MagicMock(return_value=mock_schedule_scraper)
+
+
+@pytest.fixture()
 def provider(mock_scraper_cls: MagicMock) -> ScrapingProvider:
-    """ScrapingProviderインスタンスを返すfixture."""
+    """ScrapingProvider（EntryPageScraper用メソッド向け）を返すfixture."""
     return ScrapingProvider(scraper_class=mock_scraper_cls)
+
+
+@pytest.fixture()
+def provider_full(
+    mock_scraper_cls: MagicMock,
+    mock_result_scraper_cls: MagicMock,
+    mock_odds_func: MagicMock,
+    mock_past_scraper_cls: MagicMock,
+    mock_schedule_scraper_cls: MagicMock,
+) -> ScrapingProvider:
+    """全モック注入済みScrapingProviderを返すfixture."""
+    return ScrapingProvider(
+        scraper_class=mock_scraper_cls,
+        result_scraper_class=mock_result_scraper_cls,
+        odds_func=mock_odds_func,
+        past_performances_scraper_class=mock_past_scraper_cls,
+        race_schedule_scraper_class=mock_schedule_scraper_cls,
+    )
 
 
 @pytest.fixture()
