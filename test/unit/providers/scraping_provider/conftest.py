@@ -1,6 +1,7 @@
 """ScrapingProvider.get_race_infoテスト用のfixture."""
 
 from datetime import date
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -74,9 +75,22 @@ def dirt_race_info() -> pd.DataFrame:
 
 
 @pytest.fixture()
-def provider() -> ScrapingProvider:
+def mock_scraper() -> MagicMock:
+    """EntryPageScraperインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_scraper_cls(mock_scraper: MagicMock) -> MagicMock:
+    """EntryPageScraperクラスのモックを返すfixture."""
+    mock_cls = MagicMock(return_value=mock_scraper)
+    return mock_cls
+
+
+@pytest.fixture()
+def provider(mock_scraper_cls: MagicMock) -> ScrapingProvider:
     """ScrapingProviderインスタンスを返すfixture."""
-    return ScrapingProvider()
+    return ScrapingProvider(scraper_class=mock_scraper_cls)
 
 
 @pytest.fixture()

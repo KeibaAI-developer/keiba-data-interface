@@ -1,6 +1,6 @@
 """ScrapingProvider.get_race_info関数のテスト."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
 
@@ -11,80 +11,71 @@ from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
 # 正常系
 def test_output_columns_match_schema(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """出力DataFrameのカラム構成がRACE_INFO_COLUMNSと一致する."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     assert list(result.columns) == RACE_INFO_COLUMNS
 
 
 def test_output_is_single_row(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """出力DataFrameが1行である."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     assert len(result) == 1
 
 
 def test_race_code_is_16_digits(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """レースコードに引数の16桁がそのまま格納される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     assert result.iloc[0]["レースコード"] == race_code
 
 
 def test_race_id_converted_to_12_digits(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    mock_scraper_cls: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """EntryPageScraperに12桁レースIDが渡される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        provider.get_race_info(race_code)
+    provider.get_race_info(race_code)
 
-    mock_cls.assert_called_once_with("202506021211")
+    mock_scraper_cls.assert_called_once_with("202506021211")
 
 
 def test_date_split_to_year_and_monthday(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """日付が開催年と開催月日に正しく分割される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     assert row["開催年"] == "2025"
@@ -93,16 +84,14 @@ def test_date_split_to_year_and_monthday(
 
 def test_direct_mapping_columns(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """そのままマッピングされるカラムが正しく変換される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     assert row["競馬場"] == "京都"
@@ -124,51 +113,43 @@ def test_direct_mapping_columns(
 
 def test_track_concatenation(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """芝ダと左右が結合されてトラックカラムになる."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     assert result.iloc[0]["トラック"] == "芝左"
 
 
 def test_course_division_concatenation(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     race_code: str,
 ) -> None:
     """コースと内外が結合されてコース区分カラムになる."""
     from .conftest import _create_scraping_race_info
 
-    raw = _create_scraping_race_info(course="B", uchisoto="内")
+    mock_scraper.get_race_info.return_value = _create_scraping_race_info(course="B", uchisoto="内")
 
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = raw
-        mock_cls.return_value = mock_scraper
-
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     assert result.iloc[0]["コース区分"] == "B内"
 
 
 def test_prize_money_conversion(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """賞金が万円単位から百円単位に正しく変換される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     assert row["本賞金1着"] == 3200000
@@ -180,16 +161,14 @@ def test_prize_money_conversion(
 
 def test_turf_race_baba_assignment(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """芝レースで馬場状態が芝馬場状態に格納される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     assert row["芝馬場状態"] == "良"
@@ -198,16 +177,14 @@ def test_turf_race_baba_assignment(
 
 def test_dirt_race_baba_assignment(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     dirt_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """ダートレースで馬場状態がダート馬場状態に格納される."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = dirt_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = dirt_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     assert pd.isna(row["芝馬場状態"])
@@ -216,16 +193,14 @@ def test_dirt_race_baba_assignment(
 
 def test_missing_columns_filled_with_nan(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
     """不足カラムがNaN埋めされる."""
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = turf_race_info
-        mock_cls.return_value = mock_scraper
+    mock_scraper.get_race_info.return_value = turf_race_info
 
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     # scrapingでは取得できないカラムはNaNになる
@@ -240,19 +215,15 @@ def test_missing_columns_filled_with_nan(
 
 def test_steeplechase_baba_assignment(
     provider: ScrapingProvider,
+    mock_scraper: MagicMock,
     race_code: str,
 ) -> None:
     """障害レースで馬場状態が芝馬場状態に格納される."""
     from .conftest import _create_scraping_race_info
 
-    raw = _create_scraping_race_info(shiba_da="障", baba="稍")
+    mock_scraper.get_race_info.return_value = _create_scraping_race_info(shiba_da="障", baba="稍")
 
-    with patch("keiba_data_interface.providers.scraping_provider.EntryPageScraper") as mock_cls:
-        mock_scraper = MagicMock()
-        mock_scraper.get_race_info.return_value = raw
-        mock_cls.return_value = mock_scraper
-
-        result = provider.get_race_info(race_code)
+    result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
     assert row["芝馬場状態"] == "稍"
