@@ -25,6 +25,7 @@ classifiers = [
 
 dependencies = [
     "pandas>=2.0.0",
+    "keiba-scraping",
 ]
 
 [project.optional-dependencies]
