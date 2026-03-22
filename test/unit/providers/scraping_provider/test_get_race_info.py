@@ -228,3 +228,57 @@ def test_steeplechase_baba_assignment(
     row = result.iloc[0]
     assert row["芝馬場状態"] == "稍"
     assert pd.isna(row["ダート馬場状態"])
+
+
+def test_date_differs_from_race_code_year_and_monthday_come_from_race_code(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """rawの日付がrace_codeと異なる場合でも開催年/開催月日はrace_codeから導出される."""
+    from datetime import date
+
+    from .conftest import _create_scraping_race_info
+
+    # race_code=2025050206021211 に対して日付を意図的にずらす
+    raw = _create_scraping_race_info()
+    raw["日付"] = date(2099, 12, 31)
+    mock_scraper.get_race_info.return_value = raw
+
+    result = provider.get_race_info(race_code)
+
+    row = result.iloc[0]
+    assert row["開催年"] == "2025"
+    assert row["開催月日"] == "0502"
+
+
+# 準正常系
+def test_empty_raw_raises_value_error(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """スクレイパが空DataFrameを返した場合にValueErrorが発生する."""
+    import pytest
+
+    mock_scraper.get_race_info.return_value = pd.DataFrame()
+
+    with pytest.raises(ValueError, match="空のDataFrame"):
+        provider.get_race_info(race_code)
+
+
+def test_multiple_rows_raw_raises_value_error(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """スクレイパが複数行のDataFrameを返した場合にValueErrorが発生する."""
+    import pytest
+
+    mock_scraper.get_race_info.return_value = pd.concat(
+        [turf_race_info, turf_race_info], ignore_index=True
+    )
+
+    with pytest.raises(ValueError, match="2行"):
+        provider.get_race_info(race_code)

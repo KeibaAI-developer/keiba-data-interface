@@ -132,8 +132,23 @@ class ScrapingProvider:
 
         Returns:
             pd.DataFrame: 統一スキーマに変換されたDataFrame
+
+        Raises:
+            ValueError: rawが0行または2行以上の場合
         """
         parts = extract_race_code_parts(race_code)
+
+        if len(raw) == 0:
+            raise ValueError(
+                f"EntryPageScraper.get_race_info() が空のDataFrameを返しました。"
+                f"race_code={race_code!r}"
+            )
+        if len(raw) > 1:
+            raise ValueError(
+                f"EntryPageScraper.get_race_info() は1行のDataFrameを返す必要がありますが、"
+                f"{len(raw)}行返しました。race_code={race_code!r}"
+            )
+
         row = raw.iloc[0]
 
         converted: dict[str, object] = {}

@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 scraping = [
-    "keiba-scraping",
+    "keiba-scraping>=1.0.0",
 ]
 dev = [
     "pytest>=7.0.0",
