@@ -16,7 +16,9 @@ def test_full_provider_satisfies_protocol() -> None:
 
 def test_scraping_provider_satisfies_protocol() -> None:
     """ScrapingProviderがDataProviderと判定される."""
-    provider = ScrapingProvider()
+    from unittest.mock import MagicMock
+
+    provider = ScrapingProvider(scraper_class=MagicMock())
     assert isinstance(provider, DataProvider)
 
 

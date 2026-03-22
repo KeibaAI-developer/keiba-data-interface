@@ -5,6 +5,7 @@ Provider名を指定することで、データソースを切り替えてデー
 """
 
 import importlib
+from typing import Any
 
 import pandas as pd
 
@@ -24,21 +25,23 @@ class DataInterface:
 
     Args:
         provider: データソース名（'scraping' または 'mykeibadb'）
+        scraper_class: スクレイパークラス（テスト用・省略時は自動選択）
 
     Raises:
         KeibaDataInterfaceError: 不正なprovider名が指定された場合
     """
 
-    def __init__(self, provider: str) -> None:
+    def __init__(self, provider: str, scraper_class: type[Any] | None = None) -> None:
         """コンストラクタ.
 
         Args:
             provider: データソース名（'scraping' または 'mykeibadb'）
+            scraper_class: スクレイパークラス（テスト用・省略時は自動選択）
 
         Raises:
             KeibaDataInterfaceError: 不正なprovider名が指定された場合
         """
-        self._provider: DataProvider = self._create_provider(provider)
+        self._provider: DataProvider = self._create_provider(provider, scraper_class)
 
     def get_race_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -129,11 +132,14 @@ class DataInterface:
         """
         return self._provider.get_schedule(start_date, end_date)
 
-    def _create_provider(self, provider: str) -> DataProvider:
+    def _create_provider(
+        self, provider: str, scraper_class: type[Any] | None = None
+    ) -> DataProvider:
         """Provider名に対応するProviderインスタンスを生成する.
 
         Args:
             provider: データソース名
+            scraper_class: スクレイパークラス（テスト用・省略時は自動選択）
 
         Returns:
             DataProviderインスタンス
@@ -149,4 +155,6 @@ class DataInterface:
         module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
         module = importlib.import_module(module_path)
         provider_class = getattr(module, class_name)
+        if scraper_class is not None:
+            return provider_class(scraper_class=scraper_class)
         return provider_class()
