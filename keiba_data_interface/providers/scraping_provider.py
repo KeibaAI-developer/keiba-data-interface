@@ -1,9 +1,9 @@
 """ScrapingProvider: keiba-scrapingを使用したデータ取得Provider."""
 
 import asyncio
-import inspect
+from collections.abc import Coroutine
 from datetime import date, timedelta
-from typing import cast
+from typing import TypeVar
 
 import pandas as pd
 from scraping import (
@@ -75,11 +75,7 @@ class ScrapingProvider:
             pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        result = scrape_odds_from_jra(race_id)
-        if inspect.iscoroutine(result):
-            raw: pd.DataFrame = asyncio.run(result)
-        else:
-            raw = cast(pd.DataFrame, result)
+        raw = _run_async(scrape_odds_from_jra(race_id))
         return convert_odds(raw, race_code)
 
     def get_result(self, race_code: str) -> pd.DataFrame:
@@ -168,3 +164,31 @@ class ScrapingProvider:
             return apply_types(ensure_columns(pd.DataFrame(), SCHEDULE_COLUMNS), SCHEDULE_TYPES)
         result = pd.concat(all_rows, ignore_index=True)
         return result
+
+
+_T = TypeVar("_T")
+
+
+def _run_async(coro: Coroutine[object, object, _T]) -> _T:
+    """コルーチンを同期的に実行する.
+
+    既存のイベントループが動作中の場合（Jupyter等）は新しいスレッドで
+    イベントループを作成して実行し、そうでない場合は asyncio.run() を使用する。
+
+    Args:
+        coro: 実行するコルーチン
+
+    Returns:
+        コルーチンの実行結果
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop is not None and loop.is_running():
+        import concurrent.futures
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(asyncio.run, coro).result()
+    return asyncio.run(coro)
