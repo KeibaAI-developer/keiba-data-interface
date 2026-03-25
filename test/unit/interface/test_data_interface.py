@@ -20,9 +20,7 @@ def test_mock_provider_satisfies_protocol(mock_provider: _MockProvider) -> None:
 
 def test_create_scraping_provider() -> None:
     """provider='scraping'でScrapingProviderが生成される."""
-    from unittest.mock import MagicMock
-
-    interface = DataInterface(provider="scraping", scraper_class=MagicMock())
+    interface = DataInterface(provider="scraping")
     assert isinstance(interface._provider, ScrapingProvider)
 
 
