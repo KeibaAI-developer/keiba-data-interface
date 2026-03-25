@@ -4,9 +4,16 @@ import asyncio
 import inspect
 import re
 from datetime import date, timedelta
-from typing import Any
+from typing import cast
 
 import pandas as pd
+from scraping import (
+    EntryPageScraper,
+    PastPerformancesScraper,
+    RaceScheduleScraper,
+    ResultPageScraper,
+    scrape_odds_from_jra,
+)
 
 from keiba_data_interface.schema.columns import (
     HORSE_RACE_INFO_COLUMNS,
@@ -45,55 +52,6 @@ _IJO_KUBUN_MAP: dict[str, str] = {
 class ScrapingProvider:
     """keiba-scrapingを使用したデータ取得Provider."""
 
-    def __init__(
-        self,
-        scraper_class: type[Any] | None = None,
-        result_scraper_class: type[Any] | None = None,
-        odds_func: Any | None = None,
-        past_performances_scraper_class: type[Any] | None = None,
-        race_schedule_scraper_class: type[Any] | None = None,
-    ) -> None:
-        """ScrapingProviderを初期化する.
-
-        Args:
-            scraper_class: EntryPageScraperクラス。Noneの場合はデフォルトを使用。
-            result_scraper_class: ResultPageScraperクラス。Noneの場合はデフォルトを使用。
-            odds_func: scrape_odds_from_jra関数。Noneの場合はデフォルトを使用。
-            past_performances_scraper_class: PastPerformancesScraperクラス。
-                Noneの場合はデフォルトを使用。
-            race_schedule_scraper_class: RaceScheduleScraperクラス。
-                Noneの場合はデフォルトを使用。
-        """
-        if scraper_class is None:
-            from scraping import EntryPageScraper
-
-            scraper_class = EntryPageScraper
-        self._scraper_class: type[Any] = scraper_class
-
-        if result_scraper_class is None:
-            from scraping import ResultPageScraper
-
-            result_scraper_class = ResultPageScraper
-        self._result_scraper_class: type[Any] = result_scraper_class
-
-        if odds_func is None:
-            from scraping import scrape_odds_from_jra
-
-            odds_func = scrape_odds_from_jra
-        self._odds_func: Any = odds_func
-
-        if past_performances_scraper_class is None:
-            from scraping import PastPerformancesScraper
-
-            past_performances_scraper_class = PastPerformancesScraper
-        self._past_performances_scraper_class: type[Any] = past_performances_scraper_class
-
-        if race_schedule_scraper_class is None:
-            from scraping import RaceScheduleScraper
-
-            race_schedule_scraper_class = RaceScheduleScraper
-        self._race_schedule_scraper_class: type[Any] = race_schedule_scraper_class
-
     def get_race_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
@@ -107,7 +65,7 @@ class ScrapingProvider:
             pd.DataFrame: レース基本情報（1行、RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        scraper = self._scraper_class(race_id)
+        scraper = EntryPageScraper(race_id)
         raw = scraper.get_race_info()
         return self._convert_race_info(raw, race_code)
 
@@ -121,7 +79,7 @@ class ScrapingProvider:
             pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        scraper = self._scraper_class(race_id)
+        scraper = EntryPageScraper(race_id)
         raw = scraper.get_entry()
         return self._convert_entry(raw, race_code)
 
@@ -135,11 +93,11 @@ class ScrapingProvider:
             pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        result = self._odds_func(race_id)
+        result = scrape_odds_from_jra(race_id)
         if inspect.iscoroutine(result):
             raw: pd.DataFrame = asyncio.run(result)
         else:
-            raw = result
+            raw = cast(pd.DataFrame, result)
         return self._convert_odds(raw, race_code)
 
     def get_result(self, race_code: str) -> pd.DataFrame:
@@ -154,11 +112,11 @@ class ScrapingProvider:
         race_id = race_code_to_race_id(race_code)
 
         # 賞金情報を取得して着順→獲得本賞金マッピングを構築
-        scraper_entry = self._scraper_class(race_id)
+        scraper_entry = EntryPageScraper(race_id)
         raw_race_info = scraper_entry.get_race_info()
         prize_map = self._build_prize_map(raw_race_info)
 
-        scraper = self._result_scraper_class(race_id)
+        scraper = ResultPageScraper(race_id)
         raw = scraper.get_result()
         return self._convert_result(raw, race_code, prize_map)
 
@@ -172,7 +130,7 @@ class ScrapingProvider:
             pd.DataFrame: レース結果情報（1行、RACE_RESULT_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        scraper = self._result_scraper_class(race_id)
+        scraper = ResultPageScraper(race_id)
         raw_lap = scraper.get_lap_time()
         raw_corner = scraper.get_corner()
         return self._convert_race_result_info(raw_lap, raw_corner, race_code)
@@ -187,7 +145,7 @@ class ScrapingProvider:
             pd.DataFrame: 払戻情報（1行、PAYOFF_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        scraper = self._result_scraper_class(race_id)
+        scraper = ResultPageScraper(race_id)
         return self._convert_payoff(scraper, race_code)
 
     def get_past_performances(self, horse_id: str) -> pd.DataFrame:
@@ -199,7 +157,7 @@ class ScrapingProvider:
         Returns:
             pd.DataFrame: 過去成績（出走回数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
-        scraper = self._past_performances_scraper_class(horse_id)
+        scraper = PastPerformancesScraper(horse_id)
         raw = scraper.get_past_performances()
         return self._convert_past_performances(raw, horse_id)
 
@@ -218,7 +176,7 @@ class ScrapingProvider:
         all_rows: list[pd.DataFrame] = []
         current = start
         while current <= end:
-            scraper = self._race_schedule_scraper_class(current.year, current.month, current.day)
+            scraper = RaceScheduleScraper(current.year, current.month, current.day)
             raw = scraper.get_race_schedule()
             if len(raw) > 0:
                 converted = self._convert_schedule(raw)
@@ -536,7 +494,7 @@ class ScrapingProvider:
         result = apply_types(result, ODDS_TYPES)
         return result
 
-    def _convert_payoff(self, scraper: Any, race_code: str) -> pd.DataFrame:
+    def _convert_payoff(self, scraper: ResultPageScraper, race_code: str) -> pd.DataFrame:
         """get_payoff用: 8券種の払戻データを1行のDataFrameに結合する."""
         parts = extract_race_code_parts(race_code)
         converted: dict[str, object] = {}
@@ -787,7 +745,7 @@ class ScrapingProvider:
         converted["レース番号"] = int(parts["R"])
 
     @staticmethod
-    def _set_zogen(converted: dict[str, object], zogen: Any) -> None:
+    def _set_zogen(converted: dict[str, object], zogen: int | float | None) -> None:
         """増減符号と増減差を設定する."""
         if pd.notna(zogen):
             fugo, sa = split_zogen(int(zogen))
@@ -797,8 +755,8 @@ class ScrapingProvider:
     @staticmethod
     def _set_ijo_kubun(
         converted: dict[str, object],
-        ijo_kubun: Any,
-        chakusa: Any,
+        ijo_kubun: str | None,
+        chakusa: str | None,
     ) -> bool:
         """異常区分を設定し、降着かどうかを返す."""
         is_kokaku = (

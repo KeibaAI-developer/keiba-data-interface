@@ -1,7 +1,8 @@
 """ScrapingProviderテスト用のfixture."""
 
+from collections.abc import Generator
 from datetime import date
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -339,10 +340,17 @@ def mock_scraper() -> MagicMock:
 
 
 @pytest.fixture()
-def mock_scraper_cls(mock_scraper: MagicMock) -> MagicMock:
-    """EntryPageScraperクラスのモックを返すfixture."""
-    mock_cls = MagicMock(return_value=mock_scraper)
-    return mock_cls
+def mock_scraper_cls(mock_scraper: MagicMock) -> Generator[MagicMock, None, None]:
+    """EntryPageScraperをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: EntryPageScraperクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.scraping_provider.EntryPageScraper",
+        return_value=mock_scraper,
+    ) as mock_cls:
+        yield mock_cls
 
 
 @pytest.fixture()
@@ -352,15 +360,30 @@ def mock_result_scraper() -> MagicMock:
 
 
 @pytest.fixture()
-def mock_result_scraper_cls(mock_result_scraper: MagicMock) -> MagicMock:
-    """ResultPageScraperクラスのモックを返すfixture."""
-    return MagicMock(return_value=mock_result_scraper)
+def mock_result_scraper_cls(mock_result_scraper: MagicMock) -> Generator[MagicMock, None, None]:
+    """ResultPageScraperをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: ResultPageScraperクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.scraping_provider.ResultPageScraper",
+        return_value=mock_result_scraper,
+    ) as mock_cls:
+        yield mock_cls
 
 
 @pytest.fixture()
-def mock_odds_func() -> MagicMock:
-    """scrape_odds_from_jra関数のモックを返すfixture."""
-    return MagicMock()
+def mock_odds_func() -> Generator[MagicMock, None, None]:
+    """scrape_odds_from_jraをパッチしたモック関数を返すfixture.
+
+    Yields:
+        MagicMock: scrape_odds_from_jraのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.scraping_provider.scrape_odds_from_jra"
+    ) as mock_func:
+        yield mock_func
 
 
 @pytest.fixture()
@@ -370,9 +393,17 @@ def mock_past_scraper() -> MagicMock:
 
 
 @pytest.fixture()
-def mock_past_scraper_cls(mock_past_scraper: MagicMock) -> MagicMock:
-    """PastPerformancesScraperクラスのモックを返すfixture."""
-    return MagicMock(return_value=mock_past_scraper)
+def mock_past_scraper_cls(mock_past_scraper: MagicMock) -> Generator[MagicMock, None, None]:
+    """PastPerformancesScraperをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: PastPerformancesScraperクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        return_value=mock_past_scraper,
+    ) as mock_cls:
+        yield mock_cls
 
 
 @pytest.fixture()
@@ -382,15 +413,23 @@ def mock_schedule_scraper() -> MagicMock:
 
 
 @pytest.fixture()
-def mock_schedule_scraper_cls(mock_schedule_scraper: MagicMock) -> MagicMock:
-    """RaceScheduleScraperクラスのモックを返すfixture."""
-    return MagicMock(return_value=mock_schedule_scraper)
+def mock_schedule_scraper_cls(mock_schedule_scraper: MagicMock) -> Generator[MagicMock, None, None]:
+    """RaceScheduleScraperをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: RaceScheduleScraperクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.scraping_provider.RaceScheduleScraper",
+        return_value=mock_schedule_scraper,
+    ) as mock_cls:
+        yield mock_cls
 
 
 @pytest.fixture()
 def provider(mock_scraper_cls: MagicMock) -> ScrapingProvider:
     """ScrapingProvider（EntryPageScraper用メソッド向け）を返すfixture."""
-    return ScrapingProvider(scraper_class=mock_scraper_cls)
+    return ScrapingProvider()
 
 
 @pytest.fixture()
@@ -401,14 +440,8 @@ def provider_full(
     mock_past_scraper_cls: MagicMock,
     mock_schedule_scraper_cls: MagicMock,
 ) -> ScrapingProvider:
-    """全モック注入済みScrapingProviderを返すfixture."""
-    return ScrapingProvider(
-        scraper_class=mock_scraper_cls,
-        result_scraper_class=mock_result_scraper_cls,
-        odds_func=mock_odds_func,
-        past_performances_scraper_class=mock_past_scraper_cls,
-        race_schedule_scraper_class=mock_schedule_scraper_cls,
-    )
+    """全モックをパッチ済みのScrapingProviderを返すfixture."""
+    return ScrapingProvider()
 
 
 @pytest.fixture()
