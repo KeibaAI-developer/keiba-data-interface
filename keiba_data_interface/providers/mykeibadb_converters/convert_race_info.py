@@ -86,15 +86,27 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame
+
+    Raises:
+        ValueError: rawが0行または2行以上の場合
     """
-    df = raw.rename(columns=RACE_INFO_RENAME)
+    if len(raw) == 0:
+        raise ValueError("get_race_shosai()が空のDataFrameを返しました")
+    if len(raw) > 1:
+        raise ValueError(
+            f"get_race_shosai()は1行のDataFrameを返す必要がありますが、{len(raw)}行返しました"
+        )
+
+    df = raw.copy()
 
     # 発走時刻 "HHMM" → "HH:MM" 変換
-    for col in ["発走時刻", "変更前発走時刻"]:
+    for col in ["hasso_jikoku", "henkomae_hasso_jikoku"]:
         if col in df.columns:
             df[col] = df[col].apply(
                 lambda v: convert_hhmm_to_display(str(v)) if pd.notna(v) and str(v).strip() else v
             )
+
+    df = df.rename(columns=RACE_INFO_RENAME)
 
     df = ensure_columns(df, RACE_INFO_COLUMNS)
     df = apply_types(df, RACE_INFO_TYPES)

@@ -11,7 +11,15 @@ from keiba_data_interface.providers.mykeibadb_converters import convert_entry, c
 
 
 class MykeibaDBProvider:
-    """mykeibadb-pythonを使用したデータ取得Provider."""
+    """mykeibadb-pythonを使用したデータ取得Provider.
+
+    Attributes:
+        _race_getter (RaceGetter): JRA-VANデータ取得用のRaceGetterインスタンス
+    """
+
+    def __init__(self) -> None:
+        """コンストラクタ."""
+        self._race_getter = RaceGetter()
 
     def get_race_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -24,8 +32,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: レース基本情報（1行、RACE_INFO_COLUMNSのカラム）
         """
-        getter = RaceGetter()
-        raw = getter.get_race_shosai(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=True)
         return convert_race_info(raw)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
@@ -40,8 +47,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
-        getter = RaceGetter()
-        raw = getter.get_umagoto_race_joho(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=True)
         return convert_entry(raw)
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:

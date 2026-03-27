@@ -1,5 +1,7 @@
 """DataProvider Protocolのテスト."""
 
+from unittest.mock import patch
+
 import pandas as pd
 
 from keiba_data_interface.protocols import DataProvider
@@ -22,8 +24,9 @@ def test_scraping_provider_satisfies_protocol() -> None:
 
 def test_mykeibadb_provider_satisfies_protocol() -> None:
     """MykeibaDBProviderがDataProviderと判定される."""
-    provider = MykeibaDBProvider()
-    assert isinstance(provider, DataProvider)
+    with patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"):
+        provider = MykeibaDBProvider()
+        assert isinstance(provider, DataProvider)
 
 
 def test_incomplete_provider_does_not_satisfy_protocol() -> None:

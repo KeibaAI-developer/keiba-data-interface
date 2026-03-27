@@ -1,5 +1,7 @@
 """DataInterfaceクラスのテスト."""
 
+from unittest.mock import patch
+
 import pandas as pd
 import pytest
 
@@ -26,8 +28,9 @@ def test_create_scraping_provider() -> None:
 
 def test_create_mykeibadb_provider() -> None:
     """provider='mykeibadb'でMykeibaDBProviderが生成される."""
-    interface = DataInterface(provider="mykeibadb")
-    assert isinstance(interface._provider, MykeibaDBProvider)
+    with patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"):
+        interface = DataInterface(provider="mykeibadb")
+        assert isinstance(interface._provider, MykeibaDBProvider)
 
 
 def test_get_race_info_delegates(

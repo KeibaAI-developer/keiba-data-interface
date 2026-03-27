@@ -98,24 +98,8 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
     """
     df = raw.copy()
 
-    # 負担重量 0.1kg → kg 変換
-    if "futan_juryo" in df.columns:
-        df["futan_juryo"] = df["futan_juryo"].apply(
-            lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) else v
-        )
-    if "henkomae_futan_juryo" in df.columns:
-        df["henkomae_futan_juryo"] = df["henkomae_futan_juryo"].apply(
-            lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) else v
-        )
-
-    # 単勝オッズ 0.1倍 → 倍 変換
-    if "tansho_odds" in df.columns:
-        df["tansho_odds"] = df["tansho_odds"].apply(
-            lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) else v
-        )
-
-    # 後3ハロン / 後4ハロン 0.1秒 → 秒 変換
-    for col in ["kohan_3f", "kohan_4f"]:
+    # 0.1単位 → 実数単位 変換（負担重量, 単勝オッズ, 後3F, 後4F）
+    for col in _VALUE_CONVERT_RENAME:
         if col in df.columns:
             df[col] = df[col].apply(lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) else v)
 
