@@ -33,6 +33,7 @@ RACE_INFO_RENAME: dict[str, str] = {
     "kyosomei_kubun": "競走名区分",
     "jusho_kaiji": "重賞回次",
     "grade": "グレード",
+    "henkomae_grade": "変更前グレード",
     "kyoso_shubetsu": "競走種別",
     "kyoso_kigo": "競走記号",
     "juryo_shubetsu": "重量種別",
@@ -45,6 +46,7 @@ RACE_INFO_RENAME: dict[str, str] = {
     "kyori": "距離",
     "henkomae_kyori": "変更前距離",
     "track": "トラック",
+    "henkomae_track": "変更前トラック",
     "course_kubun": "コース区分",
     "henkomae_course_kubun": "変更前コース区分",
     "honshokin1": "本賞金1着",
@@ -90,11 +92,20 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
     Raises:
         ValueError: rawが0行または2行以上の場合
     """
+    race_code_info = ""
+    if "race_code" in raw.columns:
+        unique_race_codes = raw["race_code"].dropna().unique()
+        if len(unique_race_codes) == 1:
+            race_code_info = f" (race_code={unique_race_codes[0]})"
+        elif len(unique_race_codes) > 1:
+            race_code_info = f" (race_code一覧={unique_race_codes.tolist()})"
+
     if len(raw) == 0:
-        raise ValueError("get_race_shosai()が空のDataFrameを返しました")
+        raise ValueError(f"get_race_shosai()が空のDataFrameを返しました{race_code_info}")
     if len(raw) > 1:
         raise ValueError(
-            f"get_race_shosai()は1行のDataFrameを返す必要がありますが、{len(raw)}行返しました"
+            f"get_race_shosai()は1行のDataFrameを返す必要がありますが、"
+            f"{len(raw)}行返しました{race_code_info}"
         )
 
     df = raw.copy()

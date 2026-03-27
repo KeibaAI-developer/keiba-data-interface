@@ -77,7 +77,7 @@ ENTRY_RENAME: dict[str, str] = {
 }
 
 # 値変換が必要なカラムのリネームマッピング
-# _ENTRY_RENAMEに含めず、値変換後に別途リネームする
+# ENTRY_RENAMEに含めず、値変換後に別途リネームする
 _VALUE_CONVERT_RENAME: dict[str, str] = {
     "futan_juryo": "負担重量",
     "henkomae_futan_juryo": "変更前負担重量",
