@@ -31,6 +31,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install git+https://github.com/KeibaAI-developer/keiba-scraping.git
+        pip install git+https://github.com/KeibaAI-developer/mykeibadb-python.git
         pip install -e .[dev]
 
     - name: Run isort check
@@ -85,6 +86,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install git+https://github.com/KeibaAI-developer/keiba-scraping.git
+        pip install git+https://github.com/KeibaAI-developer/mykeibadb-python.git
         pip install -e .[dev]
 
     - name: Run unit test
