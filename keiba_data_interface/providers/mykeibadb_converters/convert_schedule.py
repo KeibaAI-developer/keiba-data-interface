@@ -9,8 +9,8 @@ from keiba_data_interface.schema.columns import SCHEDULE_COLUMNS
 from keiba_data_interface.schema.types import SCHEDULE_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
-# KAISAI_SCHEDULE → 開催スケジュール情報のカラムリネームマッピング
-_SCHEDULE_RENAME: dict[str, str] = {
+# KAISAI_SCHEDULE → 開催スケジュール情報の基本カラムリネームマッピング
+_BASE_SCHEDULE_RENAME: dict[str, str] = {
     "kaisai_code": "開催コード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
@@ -23,7 +23,7 @@ _SCHEDULE_RENAME: dict[str, str] = {
 
 def _build_schedule_rename() -> dict[str, str]:
     """開催スケジュールの完全なリネームマッピングを構築する."""
-    rename = dict(_SCHEDULE_RENAME)
+    rename = dict(_BASE_SCHEDULE_RENAME)
 
     for i in range(1, 4):
         rename[f"jusho{i}_tokubetsu_kyoso_bango"] = f"重賞{i}特別競走番号"
@@ -42,7 +42,7 @@ def _build_schedule_rename() -> dict[str, str]:
     return rename
 
 
-SCHEDULE_RENAME: dict[str, str] = _build_schedule_rename()
+_SCHEDULE_RENAME: dict[str, str] = _build_schedule_rename()
 
 
 def convert_schedule(raw: pd.DataFrame) -> pd.DataFrame:
@@ -60,7 +60,7 @@ def convert_schedule(raw: pd.DataFrame) -> pd.DataFrame:
             SCHEDULE_TYPES,
         )
 
-    df = raw.rename(columns=SCHEDULE_RENAME)
+    df = raw.rename(columns=_SCHEDULE_RENAME)
     df = ensure_columns(df, SCHEDULE_COLUMNS)
     df = apply_types(df, SCHEDULE_TYPES)
     return df

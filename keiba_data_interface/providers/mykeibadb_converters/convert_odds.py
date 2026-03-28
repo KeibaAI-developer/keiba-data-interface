@@ -3,6 +3,8 @@
 ODDS1_TANSHOとODDS1_FUKUSHOの出力をマージして統一スキーマに変換する。
 """
 
+from typing import Any
+
 import pandas as pd
 
 from keiba_data_interface.schema.columns import ODDS_COLUMNS
@@ -29,6 +31,9 @@ _FUKUSHO_RENAME: dict[str, str] = {
     "ninki": "複勝人気",
 }
 
+# 複勝側のみのカラム（マージ時に単勝側から除外する）
+_FUKUSHO_ONLY_COLS: set[str] = {"複勝最低オッズ", "複勝最高オッズ", "複勝人気"}
+
 
 def convert_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.DataFrame:
     """ODDS1_TANSHOとODDS1_FUKUSHOの出力をマージして統一スキーマに変換する.
@@ -43,27 +48,17 @@ def convert_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.Data
     # 単勝側: ヘッダ＋馬番＋オッズ＋人気
     df_t = raw_tansho.rename(columns=_TANSHO_RENAME).copy()
     if "odds" in raw_tansho.columns:
-        df_t["単勝オッズ"] = raw_tansho["odds"].apply(
-            lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) and int(v) > 0 else pd.NA
-        )
+        df_t["単勝オッズ"] = raw_tansho["odds"].apply(_convert_odds_value)
 
     # 複勝側: 馬番＋オッズ＋人気
     df_f = raw_fukusho.rename(columns=_FUKUSHO_RENAME).copy()
     if "odds_saitei" in raw_fukusho.columns:
-        df_f["複勝最低オッズ"] = raw_fukusho["odds_saitei"].apply(
-            lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) and int(v) > 0 else pd.NA
-        )
+        df_f["複勝最低オッズ"] = raw_fukusho["odds_saitei"].apply(_convert_odds_value)
     if "odds_saikou" in raw_fukusho.columns:
-        df_f["複勝最高オッズ"] = raw_fukusho["odds_saikou"].apply(
-            lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) and int(v) > 0 else pd.NA
-        )
+        df_f["複勝最高オッズ"] = raw_fukusho["odds_saikou"].apply(_convert_odds_value)
 
     # マージ（馬番で結合）
-    keep_cols_t = [
-        c
-        for c in ODDS_COLUMNS
-        if c in df_t.columns and c != "複勝最低オッズ" and c != "複勝最高オッズ" and c != "複勝人気"
-    ]
+    keep_cols_t = [c for c in ODDS_COLUMNS if c in df_t.columns and c not in _FUKUSHO_ONLY_COLS]
     keep_cols_f = ["馬番", "複勝最低オッズ", "複勝最高オッズ", "複勝人気"]
     keep_cols_f = [c for c in keep_cols_f if c in df_f.columns]
 
@@ -71,3 +66,10 @@ def convert_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.Data
     result = ensure_columns(result, ODDS_COLUMNS)
     result = apply_types(result, ODDS_TYPES)
     return result
+
+
+def _convert_odds_value(value: Any) -> Any:
+    """オッズ値を0.1倍単位から倍単位に変換する（0やNAはpd.NAを返す）."""
+    if pd.notna(value) and int(value) > 0:
+        return convert_tenth_to_unit(int(value))
+    return pd.NA

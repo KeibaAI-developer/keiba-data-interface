@@ -9,8 +9,8 @@ from keiba_data_interface.schema.columns import PAYOFF_COLUMNS
 from keiba_data_interface.schema.types import PAYOFF_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
-# HARAIMODOSHI → 払戻情報のカラムリネームマッピング
-_PAYOFF_RENAME: dict[str, str] = {
+# HARAIMODOSHI → 払戻情報の基本カラムリネームマッピング
+_BASE_PAYOFF_RENAME: dict[str, str] = {
     "race_code": "レースコード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
@@ -61,7 +61,7 @@ _HENKAN_FLAG_MAP: dict[str, str] = {
 
 def _build_payoff_rename() -> dict[str, str]:
     """払戻情報の完全なリネームマッピングを構築する."""
-    rename = dict(_PAYOFF_RENAME)
+    rename = dict(_BASE_PAYOFF_RENAME)
     rename.update(_FUSEIRITSU_MAP)
     rename.update(_TOKUBARAI_MAP)
     rename.update(_HENKAN_FLAG_MAP)
@@ -137,7 +137,7 @@ def _build_payoff_rename() -> dict[str, str]:
     return rename
 
 
-PAYOFF_RENAME: dict[str, str] = _build_payoff_rename()
+_PAYOFF_RENAME: dict[str, str] = _build_payoff_rename()
 
 
 def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
@@ -159,7 +159,7 @@ def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
             f"get_haraimodoshi()は1行のDataFrameを返す必要がありますが、" f"{len(raw)}行返しました"
         )
 
-    df = raw.rename(columns=PAYOFF_RENAME)
+    df = raw.rename(columns=_PAYOFF_RENAME)
     df = ensure_columns(df, PAYOFF_COLUMNS)
     df = apply_types(df, PAYOFF_TYPES)
     return df
