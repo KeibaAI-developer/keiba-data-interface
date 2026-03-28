@@ -78,7 +78,7 @@ def test_soha_time_zero_not_converted(
 
     result = provider.get_result(race_code)
 
-    # "0000"はint値0として扱われ、変換されない
+    # "0000"はintに変換すると0となり、変換条件(int > 0)を満たさないため変換されない
     assert result.iloc[0]["走破タイム"] == "0000"
 
 

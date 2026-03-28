@@ -162,3 +162,54 @@ def test_odds_zero_becomes_na(
     assert pd.isna(result.iloc[0]["単勝オッズ"])
     assert pd.isna(result.iloc[0]["複勝最低オッズ"])
     assert pd.isna(result.iloc[0]["複勝最高オッズ"])
+
+
+def test_both_empty_returns_empty_schema(
+    provider: MykeibaDBProvider,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """単勝・複勝両方空の場合スキーマカラム付き空DataFrameが返る."""
+    mock_odds_getter.get_odds1_tansho.return_value = pd.DataFrame()
+    mock_odds_getter.get_odds1_fukusho.return_value = pd.DataFrame()
+
+    result = provider.get_win_show_odds(race_code)
+
+    assert len(result) == 0
+    assert list(result.columns) == ODDS_COLUMNS
+
+
+def test_tansho_empty_returns_fukusho_only(
+    provider: MykeibaDBProvider,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """単勝が空で複勝にデータがある場合、複勝のみから組み立てる."""
+    mock_odds_getter.get_odds1_tansho.return_value = pd.DataFrame()
+    mock_odds_getter.get_odds1_fukusho.return_value = create_odds1_fukusho_df()
+
+    result = provider.get_win_show_odds(race_code)
+
+    assert len(result) == 2
+    assert list(result.columns) == ODDS_COLUMNS
+    assert result.iloc[0]["馬番"] == 1
+    assert result.iloc[0]["複勝最低オッズ"] == 1.5
+    assert pd.isna(result.iloc[0]["単勝オッズ"])
+
+
+def test_fukusho_empty_returns_tansho_only(
+    provider: MykeibaDBProvider,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """複勝が空で単勝にデータがある場合、単勝のみから組み立てる."""
+    mock_odds_getter.get_odds1_tansho.return_value = create_odds1_tansho_df()
+    mock_odds_getter.get_odds1_fukusho.return_value = pd.DataFrame()
+
+    result = provider.get_win_show_odds(race_code)
+
+    assert len(result) == 2
+    assert list(result.columns) == ODDS_COLUMNS
+    assert result.iloc[0]["馬番"] == 1
+    assert result.iloc[0]["単勝オッズ"] == 3.8
+    assert pd.isna(result.iloc[0]["複勝最低オッズ"])

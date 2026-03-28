@@ -35,8 +35,11 @@ _FUKUSHO_RENAME: dict[str, str] = {
 _FUKUSHO_ONLY_COLS: set[str] = {"複勝最低オッズ", "複勝最高オッズ", "複勝人気"}
 
 
-def convert_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.DataFrame:
+def convert_win_show_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.DataFrame:
     """ODDS1_TANSHOとODDS1_FUKUSHOの出力をマージして統一スキーマに変換する.
+
+    両方空の場合はスキーマカラム付き空DataFrameを返す。
+    片方が空の場合はもう片方のみから組み立てる。
 
     Args:
         raw_tansho (pd.DataFrame): OddsGetter.get_odds1_tansho()の出力（convert_codes=True）
@@ -45,16 +48,24 @@ def convert_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.Data
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（ODDS_COLUMNSのカラム）
     """
+    empty_result = apply_types(ensure_columns(pd.DataFrame(), ODDS_COLUMNS), ODDS_TYPES)
+
+    tansho_empty = len(raw_tansho) == 0
+    fukusho_empty = len(raw_fukusho) == 0
+
+    if tansho_empty and fukusho_empty:
+        return empty_result
+
     # 単勝側: ヘッダ＋馬番＋オッズ＋人気
     df_t = raw_tansho.rename(columns=_TANSHO_RENAME).copy()
-    if "odds" in raw_tansho.columns:
+    if "odds" in raw_tansho.columns and not tansho_empty:
         df_t["単勝オッズ"] = raw_tansho["odds"].apply(_convert_odds_value)
 
     # 複勝側: 馬番＋オッズ＋人気
     df_f = raw_fukusho.rename(columns=_FUKUSHO_RENAME).copy()
-    if "odds_saitei" in raw_fukusho.columns:
+    if "odds_saitei" in raw_fukusho.columns and not fukusho_empty:
         df_f["複勝最低オッズ"] = raw_fukusho["odds_saitei"].apply(_convert_odds_value)
-    if "odds_saikou" in raw_fukusho.columns:
+    if "odds_saikou" in raw_fukusho.columns and not fukusho_empty:
         df_f["複勝最高オッズ"] = raw_fukusho["odds_saikou"].apply(_convert_odds_value)
 
     # マージ（馬番で結合）
@@ -62,8 +73,14 @@ def convert_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -> pd.Data
     keep_cols_f = ["馬番", "複勝最低オッズ", "複勝最高オッズ", "複勝人気"]
     keep_cols_f = [c for c in keep_cols_f if c in df_f.columns]
 
-    result = df_t[keep_cols_t].merge(df_f[keep_cols_f], on="馬番", how="outer")
-    result = ensure_columns(result, ODDS_COLUMNS)
+    if tansho_empty:
+        result = ensure_columns(df_f[keep_cols_f], ODDS_COLUMNS)
+    elif fukusho_empty:
+        result = ensure_columns(df_t[keep_cols_t], ODDS_COLUMNS)
+    else:
+        result = df_t[keep_cols_t].merge(df_f[keep_cols_f], on="馬番", how="outer")
+        result = ensure_columns(result, ODDS_COLUMNS)
+
     result = apply_types(result, ODDS_TYPES)
     return result
 

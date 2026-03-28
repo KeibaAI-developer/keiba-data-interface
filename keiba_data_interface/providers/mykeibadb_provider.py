@@ -11,13 +11,13 @@ from mykeibadb import OddsGetter, RaceGetter
 
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_entry,
-    convert_odds,
     convert_past_performances,
     convert_payoff,
     convert_race_info,
     convert_race_result_info,
     convert_result,
     convert_schedule,
+    convert_win_show_odds,
 )
 
 
@@ -77,7 +77,7 @@ class MykeibaDBProvider:
         """
         raw_tansho = self._odds_getter.get_odds1_tansho(race_code=race_code, convert_codes=True)
         raw_fukusho = self._odds_getter.get_odds1_fukusho(race_code=race_code, convert_codes=True)
-        return convert_odds(raw_tansho, raw_fukusho)
+        return convert_win_show_odds(raw_tansho, raw_fukusho)
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
