@@ -25,6 +25,12 @@ def mock_race_getter() -> MagicMock:
 
 
 @pytest.fixture()
+def mock_odds_getter() -> MagicMock:
+    """OddsGetterインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
 def mock_race_getter_cls(mock_race_getter: MagicMock) -> Generator[MagicMock, None, None]:
     """RaceGetterをパッチしたモッククラスを返すfixture.
 
@@ -39,7 +45,24 @@ def mock_race_getter_cls(mock_race_getter: MagicMock) -> Generator[MagicMock, No
 
 
 @pytest.fixture()
-def provider(mock_race_getter_cls: MagicMock) -> MykeibaDBProvider:
+def mock_odds_getter_cls(mock_odds_getter: MagicMock) -> Generator[MagicMock, None, None]:
+    """OddsGetterをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: OddsGetterクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
+        return_value=mock_odds_getter,
+    ) as mock_cls:
+        yield mock_cls
+
+
+@pytest.fixture()
+def provider(
+    mock_race_getter_cls: MagicMock,
+    mock_odds_getter_cls: MagicMock,
+) -> MykeibaDBProvider:
     """テスト用MykeibaDBProviderインスタンス."""
     return MykeibaDBProvider()
 
@@ -315,3 +338,227 @@ def create_umagoto_race_joho_df() -> pd.DataFrame:
         "kyakushitsu": "先",
     }
     return pd.DataFrame([horse1, horse2])
+
+
+def create_race_shosai_with_result_info_df(
+    kyori: int = 2000,
+) -> pd.DataFrame:
+    """mykeibadb RACE_SHOSAI出力のレース結果情報付き典型データを生成する.
+
+    get_race_result_info()テスト用に、ラップタイム・コーナー情報を含む
+    RACE_SHOSAIデータを生成する。
+
+    Args:
+        kyori (int): レース距離（メートル）
+
+    Returns:
+        pd.DataFrame: RACE_SHOSAI出力形式（ラップタイム・コーナー情報付き）
+    """
+    df = create_race_shosai_df()
+    data = df.iloc[0].to_dict()
+    data["kyori"] = kyori
+
+    # ラップタイム（0.1秒単位）
+    if kyori == 2000:
+        # 10ハロン（各200m）
+        laps = [129, 118, 119, 121, 120, 119, 121, 119, 118, 116]
+    elif kyori == 2500:
+        # 先頭100m + 12ハロン（各200m）
+        laps = [73, 118, 119, 121, 120, 119, 121, 119, 118, 116, 118, 119, 121]
+    else:
+        laps = []
+
+    for i in range(1, 26):
+        data[f"lap_time{i}"] = laps[i - 1] if i <= len(laps) else 0
+
+    # ハロンタイム（0.1秒単位）
+    data["zenhan_3f"] = 366
+    data["zenhan_4f"] = 487
+    data["kohan_3f"] = 353
+    data["kohan_4f"] = 474
+
+    # コーナー情報
+    data["corner1"] = "3コーナー奥"
+    data["shukaisu1"] = 1
+    data["kaku_tsuka_juni1"] = "5-3(1,8)-2-4-6"
+    data["corner2"] = "4コーナー"
+    data["shukaisu2"] = 1
+    data["kaku_tsuka_juni2"] = "3-5(1,8)-2-4-6"
+    data["corner3"] = "向正面"
+    data["shukaisu3"] = 1
+    data["kaku_tsuka_juni3"] = "3(1,5)-8-2-4-6"
+    data["corner4"] = "4コーナー"
+    data["shukaisu4"] = 1
+    data["kaku_tsuka_juni4"] = "1-3-5-8-2-4-6"
+
+    # レコード更新区分
+    data["record_koshin_kubun"] = "1"
+
+    return pd.DataFrame([data])
+
+
+def create_odds1_tansho_df() -> pd.DataFrame:
+    """mykeibadb ODDS1_TANSHO出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=True時のODDS1_TANSHO出力形式（2頭分）
+    """
+    base = {
+        "race_code": RACE_CODE,
+        "kaisai_nen": "2025",
+        "kaisai_gappi": "0502",
+        "keibajo_code": "06",
+        "kaisai_kaiji": 5,
+        "kaisai_nichiji": 8,
+        "race_bango": 11,
+        "keibajo": "中山",
+    }
+    return pd.DataFrame(
+        [
+            {**base, "umaban": 1, "odds": 38, "ninki": 3},
+            {**base, "umaban": 3, "odds": 125, "ninki": 8},
+        ]
+    )
+
+
+def create_odds1_fukusho_df() -> pd.DataFrame:
+    """mykeibadb ODDS1_FUKUSHO出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=True時のODDS1_FUKUSHO出力形式（2頭分）
+    """
+    base = {
+        "race_code": RACE_CODE,
+        "kaisai_nen": "2025",
+        "kaisai_gappi": "0502",
+        "keibajo_code": "06",
+        "kaisai_kaiji": 5,
+        "kaisai_nichiji": 8,
+        "race_bango": 11,
+        "keibajo": "中山",
+    }
+    return pd.DataFrame(
+        [
+            {**base, "umaban": 1, "odds_saitei": 15, "odds_saikou": 22, "ninki": 2},
+            {**base, "umaban": 3, "odds_saitei": 45, "odds_saikou": 78, "ninki": 7},
+        ]
+    )
+
+
+def create_haraimodoshi_df() -> pd.DataFrame:
+    """mykeibadb HARAIMODOSHI出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=True時のHARAIMODOSHI出力形式（1行）
+    """
+    data: dict[str, object] = {
+        "race_code": RACE_CODE,
+        "kaisai_nen": "2025",
+        "kaisai_gappi": "0502",
+        "keibajo_code": "06",
+        "keibajo": "中山",
+        "kaisai_kaiji": 5,
+        "kaisai_nichiji": 8,
+        "race_bango": 11,
+        "toroku_tosu": 16,
+        "shusso_tosu": 16,
+        # 不成立フラグ
+        "fuseiritsu_flag_tansho": "0",
+        "fuseiritsu_flag_fukusho": "0",
+        "fuseiritsu_flag_wakuren": "0",
+        "fuseiritsu_flag_umaren": "0",
+        "fuseiritsu_flag_wide": "0",
+        "fuseiritsu_flag_umatan": "0",
+        "fuseiritsu_flag_sanrenpuku": "0",
+        "fuseiritsu_flag_sanrentan": "0",
+        # 特払フラグ
+        "tokubarai_flag_tansho": "0",
+        "tokubarai_flag_fukusho": "0",
+        "tokubarai_flag_wakuren": "0",
+        "tokubarai_flag_umaren": "0",
+        "tokubarai_flag_wide": "0",
+        "tokubarai_flag_umatan": "0",
+        "tokubarai_flag_sanrenpuku": "0",
+        "tokubarai_flag_sanrentan": "0",
+        # 返還フラグ
+        "henkan_flag_tansho": "0",
+        "henkan_flag_fukusho": "0",
+        "henkan_flag_wakuren": "0",
+        "henkan_flag_umaren": "0",
+        "henkan_flag_wide": "0",
+        "henkan_flag_umatan": "0",
+        "henkan_flag_sanrenpuku": "0",
+        "henkan_flag_sanrentan": "0",
+        # 単勝
+        "tansho1_umaban": 5,
+        "tansho1_haraimodoshikin": 380,
+        "tansho1_ninkijun": 1,
+        # 複勝
+        "fukusho1_umaban": 5,
+        "fukusho1_haraimodoshikin": 150,
+        "fukusho1_ninkijun": 1,
+        "fukusho2_umaban": 3,
+        "fukusho2_haraimodoshikin": 450,
+        "fukusho2_ninkijun": 5,
+        "fukusho3_umaban": 8,
+        "fukusho3_haraimodoshikin": 210,
+        "fukusho3_ninkijun": 3,
+        # 馬連
+        "umaren1_kumiban1": 3,
+        "umaren1_kumiban2": 5,
+        "umaren1_haraimodoshikin": 2530,
+        "umaren1_ninkijun": 7,
+        # 3連単
+        "sanrentan1_kumiban1": 5,
+        "sanrentan1_kumiban2": 3,
+        "sanrentan1_kumiban3": 8,
+        "sanrentan1_haraimodoshikin": 45680,
+        "sanrentan1_ninkijun": 42,
+    }
+    return pd.DataFrame([data])
+
+
+def create_kaisai_schedule_df() -> pd.DataFrame:
+    """mykeibadb KAISAI_SCHEDULE出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=True時のKAISAI_SCHEDULE出力形式（2行）
+    """
+    return pd.DataFrame(
+        [
+            {
+                "kaisai_code": "2025050206050800",
+                "kaisai_nen": "2025",
+                "kaisai_gappi": "0502",
+                "keibajo_code": "06",
+                "keibajo": "中山",
+                "kaisai_kaiji": 5,
+                "kaisai_nichiji": 8,
+                "yobi_code": "0",
+                "yobi": "日",
+                "jusho1_tokubetsu_kyoso_bango": 1234,
+                "jusho1_kyosomei_hondai": "皐月賞",
+                "jusho1_kyosomei_ryakusho_10": "皐月賞",
+                "jusho1_kyosomei_ryakusho_6": "皐月賞",
+                "jusho1_kyosomei_ryakusho_3": "皐月",
+                "jusho1_jusho_kaiji": 85,
+                "jusho1_grade": "GI",
+                "jusho1_kyoso_shubetsu": "サラ系３歳",
+                "jusho1_kyoso_kigo": "(国際)(指定)",
+                "jusho1_juryo_shubetsu": "定量",
+                "jusho1_kyori": 2000,
+                "jusho1_track": "芝・右",
+            },
+            {
+                "kaisai_code": "2025050205050800",
+                "kaisai_nen": "2025",
+                "kaisai_gappi": "0502",
+                "keibajo_code": "05",
+                "keibajo": "東京",
+                "kaisai_kaiji": 5,
+                "kaisai_nichiji": 8,
+                "yobi_code": "0",
+                "yobi": "日",
+            },
+        ]
+    )

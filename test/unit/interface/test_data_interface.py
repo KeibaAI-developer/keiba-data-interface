@@ -28,7 +28,10 @@ def test_create_scraping_provider() -> None:
 
 def test_create_mykeibadb_provider() -> None:
     """provider='mykeibadb'でMykeibaDBProviderが生成される."""
-    with patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"):
+    with (
+        patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"),
+        patch("keiba_data_interface.providers.mykeibadb_provider.OddsGetter"),
+    ):
         interface = DataInterface(provider="mykeibadb")
         assert isinstance(interface._provider, MykeibaDBProvider)
 

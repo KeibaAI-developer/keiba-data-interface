@@ -24,7 +24,10 @@ def test_scraping_provider_satisfies_protocol() -> None:
 
 def test_mykeibadb_provider_satisfies_protocol() -> None:
     """MykeibaDBProviderがDataProviderと判定される."""
-    with patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"):
+    with (
+        patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"),
+        patch("keiba_data_interface.providers.mykeibadb_provider.OddsGetter"),
+    ):
         provider = MykeibaDBProvider()
         assert isinstance(provider, DataProvider)
 
