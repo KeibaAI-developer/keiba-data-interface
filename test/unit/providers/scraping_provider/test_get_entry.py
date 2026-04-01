@@ -76,8 +76,8 @@ def test_column_mapping(
     assert row["調教師名略称"] == "テスト厩舎1"
     assert row["調教師コード"] == "01111"
     assert row["馬名"] == "テスト馬1"
-    assert row["性別"] == "牡"
-    assert row["所属"] == "栗東"
+    assert row["性別コード"] == "1"
+    assert row["所属コード"] == "2"
     assert row["枠番"] == 1
     assert row["馬番"] == 1
     assert row["馬体重"] == 480
@@ -167,7 +167,7 @@ def test_ijo_kubun_shutsuso(
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["異常区分"] == ""
+    assert result.iloc[0]["異常区分コード"] == "0"
 
 
 def test_ijo_kubun_torikeshi(
@@ -184,7 +184,7 @@ def test_ijo_kubun_torikeshi(
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["異常区分"] == "出走取消"
+    assert result.iloc[0]["異常区分コード"] == "1"
 
 
 def test_ijo_kubun_jogai(
@@ -201,7 +201,7 @@ def test_ijo_kubun_jogai(
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["異常区分"] == "競走除外"
+    assert result.iloc[0]["異常区分コード"] == "3"
 
 
 def test_missing_columns_filled_with_nan(

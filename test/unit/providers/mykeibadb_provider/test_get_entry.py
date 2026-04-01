@@ -118,11 +118,10 @@ def test_code_converted_columns_renamed(
 
     row = result.iloc[0]
     assert row["競馬場"] == "中山"
-    assert row["性別"] == "牡"
     assert row["品種"] == "サラブレッド"
-    assert row["毛色"] == "鹿毛"
-    assert row["所属"] == "栗東"
-    assert row["異常区分"] == ""
+    assert row["性別コード"] == "1"
+    assert row["所属コード"] == "2"
+    assert row["異常区分コード"] == "0"
     assert row["脚質判定"] == "差"
 
 
@@ -174,7 +173,7 @@ def test_second_horse_data(
     assert row["馬番"] == 3
     assert row["血統登録番号"] == "2021105002"
     assert row["馬名"] == "テスト馬2"
-    assert row["性別"] == "牝"
-    assert row["所属"] == "美浦"
+    assert row["性別コード"] == "2"
+    assert row["所属コード"] == "1"
     assert row["負担重量"] == 56.0
     assert row["着差1"] == "クビ"

@@ -98,7 +98,7 @@ def test_result_columns_mapped(
     assert row["確定着順"] == 1
     assert row["走破タイム"] == "2:00.5"
     assert row["後3ハロン"] == 34.5
-    assert row["異常区分"] == ""
+    assert row["異常区分コード"] == "0"
 
 
 def test_zogen_split(

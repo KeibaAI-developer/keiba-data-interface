@@ -51,8 +51,8 @@ def test_time_sa_normal(
 
     result = provider_full.get_result(race_code)
 
-    # 1着: 3:12.5 = 192.5秒、2着: 3:13.0 = 193.0秒 → 差: 0.5
-    assert result.iloc[0]["タイム差"] == 0.0
+    # 1着: 3:12.5 = 192.5秒、2着: 3:13.0 = 193.0秒 → 1着は-(2着-1着)=-0.5
+    assert result.iloc[0]["タイム差"] == -0.5
     assert result.iloc[1]["タイム差"] == 0.5
 
 
@@ -89,7 +89,7 @@ def test_ijo_kubun_kokaku(
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[0]["異常区分"] == "降着"
+    assert result.iloc[0]["異常区分コード"] == "7"
 
 
 def test_ijo_kubun_chushi(
@@ -107,7 +107,7 @@ def test_ijo_kubun_chushi(
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["異常区分"] == "競走中止"
+    assert result.iloc[1]["異常区分コード"] == "4"
 
 
 def test_ijo_kubun_shikkaku(
@@ -125,7 +125,7 @@ def test_ijo_kubun_shikkaku(
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["異常区分"] == "失格"
+    assert result.iloc[1]["異常区分コード"] == "5"
 
 
 def test_result_columns_mapped(
