@@ -258,11 +258,11 @@ UMAGOTO_RACE_JOHOテーブル全体に対応する。行数は出走頭数（出
 | 10 | 血統登録番号 | str | ○ | KETTO_TOROKU_BANGO | 馬ID |
 | 11 | 馬名 | str | ○ | BAMEI | |
 | 12 | 馬記号 | str | × | UMAKIGO_CODE→馬記号名 | コード変換後 |
-| 13 | 性別 | str | ○ | SEIBETSU_CODE→性別名 | "牡","牝","セ"。コード変換後 |
+| 13 | 性別コード | str | ○ | SEIBETSU_CODE | "1"=牡,"2"=牝,"3"=セン。コードで保持 |
 | 14 | 品種 | str | × | HINSHU_CODE→品種名 | "サラブレッド"等。コード変換後 |
 | 15 | 毛色 | str | × | MOSHOKU_CODE→毛色名 | "鹿毛","栗毛"等。コード変換後 |
 | 16 | 馬齢 | int | ○ | BAREI | |
-| 17 | 所属 | str | ○ | TOZAI_SHOZOKU_CODE→所属名 | "美浦","栗東","地方","海外"。コード変換後 |
+| 17 | 所属コード | str | ○ | TOZAI_SHOZOKU_CODE | "1"=関東,"2"=関西,"3"=地方招待,"4"=外国招待。コードで保持 |
 | 18 | 調教師コード | str | ○ | CHOKYOSHI_CODE | JRA調教師コード |
 | 19 | 調教師名略称 | str | ○ | CHOKYOSHIMEI_RYAKUSHO | |
 | 20 | 馬主コード | str | × | BANUSHI_CODE | |
@@ -660,8 +660,8 @@ KAISAI_SCHEDULEテーブル全体に対応する。行数は開催場数。
 | 馬体重増減 | 符号`"+"`+差`"002"` | `2` | 符号＋差 → 符号付き整数 |
 | 天候 | コード→名称変換済 | そのまま | `convert_codes=True` 使用 |
 | 馬場状態 | コード→名称変換済 | そのまま | `convert_codes=True` 使用 |
-| 性別 | コード→略称変換済 | そのまま | `convert_codes=True` 使用 |
-| 所属 | コード→名称変換済 | そのまま | `convert_codes=True` 使用 |
+| 性別コード | SEIBETSU_CODEをそのまま保持 | 性別文字列→コード変換 | 内部ではコードで保持し表示時に名称変換 |
+| 所属コード | TOZAI_SHOZOKU_CODEをそのまま保持 | 所属文字列→コード変換 | 内部ではコードで保持し表示時に名称変換 |
 | 異常区分 | コード→名称変換済 | そのまま | `convert_codes=True` 使用 |
 
 ### scraping → 統一スキーマへの変換
