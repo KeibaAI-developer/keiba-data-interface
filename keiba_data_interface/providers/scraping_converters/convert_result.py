@@ -3,6 +3,8 @@
 import pandas as pd
 
 from keiba_data_interface.providers.scraping_converters.common import (
+    SEIBETSU_TO_CODE,
+    TOZAI_SHOZOKU_TO_CODE,
     parse_time_to_seconds,
     set_header_columns,
     set_ijo_kubun,
@@ -32,13 +34,18 @@ def convert_result(
     """
     parts = extract_race_code_parts(race_code)
 
-    # 1着タイムを取得（タイム差計算用）
+    # 1着・2着タイムを取得（タイム差計算用）
     first_time: float | None = None
+    second_time: float | None = None
     for _, row in raw.iterrows():
         if pd.notna(row.get("着順")) and str(row["着順"]).isdigit():
-            if int(row["着順"]) == 1 and pd.notna(row.get("タイム")):
+            chakujun = int(row["着順"])
+            if chakujun == 1 and pd.notna(row.get("タイム")):
                 first_time = parse_time_to_seconds(str(row["タイム"]))
-                break
+            elif chakujun == 2 and pd.notna(row.get("タイム")):
+                second_time = parse_time_to_seconds(str(row["タイム"]))
+        if first_time is not None and second_time is not None:
+            break
 
     rows: list[dict[str, object]] = []
     for _, row in raw.iterrows():
@@ -48,12 +55,13 @@ def convert_result(
         converted["馬番"] = row["馬番"]
         converted["血統登録番号"] = row["馬ID"]
         converted["馬名"] = row["馬名"]
-        converted["性別"] = row["性別"]
+        converted["性別コード"] = SEIBETSU_TO_CODE.get(str(row["性別"]), str(row["性別"]))
         converted["馬齢"] = row["年齢"]
         converted["負担重量"] = row["斤量"]
         converted["騎手名略称"] = row["騎手"]
         converted["騎手コード"] = row["騎手ID"]
-        converted["所属"] = row["所属"]
+        shozoku = str(row["所属"]) if pd.notna(row["所属"]) else ""
+        converted["所属コード"] = TOZAI_SHOZOKU_TO_CODE.get(shozoku, shozoku)
         converted["調教師名略称"] = row["厩舎"]
         converted["調教師コード"] = row["厩舎ID"]
         converted["馬体重"] = row["馬体重"]
@@ -97,17 +105,26 @@ def convert_result(
         if (
             first_time is not None
             and pd.notna(row.get("タイム"))
-            and converted.get("異常区分") == ""
+            and converted.get("異常区分コード") == "0"
         ):
             horse_time = parse_time_to_seconds(str(row["タイム"]))
-            converted["タイム差"] = round(horse_time - first_time, 1)
+            if (
+                pd.notna(chakujun_raw)
+                and str(chakujun_raw).isdigit()
+                and int(chakujun_raw) == 1
+                and second_time is not None
+            ):
+                # 1着馬: 2着との差を負の値で表現
+                converted["タイム差"] = round(first_time - second_time, 1)
+            else:
+                converted["タイム差"] = round(horse_time - first_time, 1)
 
         # 獲得本賞金の導出
         if (
             prize_map is not None
             and pd.notna(chakujun_raw)
             and str(chakujun_raw).isdigit()
-            and converted.get("異常区分") == ""
+            and converted.get("異常区分コード") == "0"
         ):
             chakujun = int(chakujun_raw)
             if chakujun in prize_map:

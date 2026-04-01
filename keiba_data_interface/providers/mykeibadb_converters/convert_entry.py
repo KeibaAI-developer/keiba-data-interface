@@ -24,11 +24,11 @@ ENTRY_RENAME: dict[str, str] = {
     "ketto_toroku_bango": "血統登録番号",
     "bamei": "馬名",
     "umakigo": "馬記号",
-    "seibetsu": "性別",
+    "seibetsu_code": "性別コード",
     "hinshu": "品種",
     "moshoku": "毛色",
     "barei": "馬齢",
-    "tozai_shozoku": "所属",
+    "tozai_shozoku_code": "所属コード",
     "chokyoshi_code": "調教師コード",
     "chokyoshimei_ryakusho": "調教師名略称",
     "banushi_code": "馬主コード",
@@ -44,7 +44,7 @@ ENTRY_RENAME: dict[str, str] = {
     "bataiju": "馬体重",
     "zogen_fugo": "増減符号",
     "zogen_sa": "増減差",
-    "ijo_kubun": "異常区分",
+    "ijo_kubun_code": "異常区分コード",
     "nyusen_juni": "入線順位",
     "kakutei_chakujun": "確定着順",
     "dochaku_kubun": "同着区分",
@@ -88,7 +88,31 @@ _VALUE_CONVERT_RENAME: dict[str, str] = {
 
 
 def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
-    """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する.
+    """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する（get_entry用）.
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame
+    """
+    df = convert_base(raw)
+
+    # 異常区分コード: 4以上（競走中止・失格・降着等）はエントリー時点では未確定なので0に正規化
+    if "異常区分コード" in df.columns:
+        df["異常区分コード"] = df["異常区分コード"].apply(
+            lambda v: "0" if pd.notna(v) and int(v) >= 4 else (str(int(v)) if pd.notna(v) else v)
+        )
+
+    return df
+
+
+def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
+    """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する（共通処理）.
+
+    convert_entryとconvert_resultの共通処理。
+    カラムリネーム・値変換・スキーマ適用を行う。
+    異常区分コードは元の値をそのまま保持する。
 
     Args:
         raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
@@ -105,6 +129,12 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
 
     df = df.rename(columns=ENTRY_RENAME)
     df = df.rename(columns=_VALUE_CONVERT_RENAME)
+
+    # 異常区分コード: str型に統一
+    if "異常区分コード" in df.columns:
+        df["異常区分コード"] = df["異常区分コード"].apply(
+            lambda v: str(int(v)) if pd.notna(v) and str(v).strip() else "0"
+        )
 
     df = ensure_columns(df, HORSE_RACE_INFO_COLUMNS)
     df = apply_types(df, HORSE_RACE_INFO_TYPES)

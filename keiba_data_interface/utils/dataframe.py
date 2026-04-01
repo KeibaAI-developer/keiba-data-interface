@@ -32,6 +32,7 @@ def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
     """型定義辞書に基づいてDataFrameの型を変換する.
 
     入力DataFrameは変更しない。
+    数値型への変換時、空白のみの文字列はNAに変換してから型変換する。
 
     Args:
         df (pd.DataFrame): 入力DataFrame
@@ -43,5 +44,11 @@ def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
     result = df.copy()
     for col, dtype in type_dict.items():
         if col in result.columns:
-            result[col] = result[col].astype(pandas_dtype(dtype))
+            target_dtype = pandas_dtype(dtype)
+            is_numeric = pd.api.types.is_numeric_dtype(target_dtype)
+            if is_numeric and result[col].dtype == object:
+                result[col] = result[col].map(
+                    lambda v: pd.NA if isinstance(v, str) and len(v) > 0 and v.strip() == "" else v
+                )
+            result[col] = result[col].astype(target_dtype)
     return result

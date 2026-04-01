@@ -7,13 +7,37 @@ import pandas as pd
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen, split_zogen
 from keiba_data_interface.utils.race_code import keibajo_code_to_name
 
-# 異常区分変換マッピング（scraping出力 → 統一スキーマ）
-IJO_KUBUN_MAP: dict[str, str] = {
-    "出走": "",
-    "取消": "出走取消",
-    "除外": "競走除外",
-    "中止": "競走中止",
-    "失格": "失格",
+# 異常区分変換マッピング（scraping出力 → JRA-VANコード）
+# 降着(7)は着差テキストのパターン検出で判定するため別処理
+IJO_KUBUN_TO_CODE: dict[str, str] = {
+    "出走": "0",
+    "取消": "1",
+    "除外": "3",
+    "中止": "4",
+    "失格": "5",
+}
+
+# 出走区分 → 異常区分コード変換マッピング（get_entry用: JRA-VANコード）
+# レース前に確定できるもののみ: 出走=0, 出走取消=1, 競走除外=3
+SHUTSUSO_TO_IJO_CODE: dict[str, str] = {
+    "出走": "0",
+    "取消": "1",
+    "除外": "3",
+}
+
+# 性別文字列 → 性別コード変換マッピング（scraping出力 → JRA-VANコード）
+SEIBETSU_TO_CODE: dict[str, str] = {
+    "牡": "1",
+    "牝": "2",
+    "セ": "3",
+}
+
+# 所属文字列 → 東西所属コード変換マッピング（scraping出力 → JRA-VANコード）
+TOZAI_SHOZOKU_TO_CODE: dict[str, str] = {
+    "美浦": "1",
+    "栗東": "2",
+    "地方": "3",
+    "海外": "4",
 }
 
 
@@ -72,10 +96,10 @@ def set_ijo_kubun(
     ijo_kubun: str | None,
     chakusa: str | None,
 ) -> bool:
-    """異常区分を設定し、降着かどうかを返す.
+    """異常区分コードを設定し、降着かどうかを返す.
 
     Args:
-        converted (dict[str, object]): 変換先の辞書（この辞書に異常区分を追加する）
+        converted (dict[str, object]): 変換先の辞書（この辞書に異常区分コードを追加する）
         ijo_kubun (str | None): scraping出力の異常区分
         chakusa (str | None): scraping出力の着差（降着判定に使用）
 
@@ -88,13 +112,13 @@ def set_ijo_kubun(
         and re.search(r"\d+位降着", chakusa) is not None
     )
     if is_kokaku:
-        converted["異常区分"] = "降着"
-    elif pd.notna(ijo_kubun) and str(ijo_kubun) in IJO_KUBUN_MAP:
-        converted["異常区分"] = IJO_KUBUN_MAP[str(ijo_kubun)]
+        converted["異常区分コード"] = "7"
+    elif pd.notna(ijo_kubun) and str(ijo_kubun) in IJO_KUBUN_TO_CODE:
+        converted["異常区分コード"] = IJO_KUBUN_TO_CODE[str(ijo_kubun)]
     elif pd.notna(ijo_kubun) and str(ijo_kubun):
-        converted["異常区分"] = str(ijo_kubun)
+        converted["異常区分コード"] = str(ijo_kubun)
     else:
-        converted["異常区分"] = ""
+        converted["異常区分コード"] = "0"
     return is_kokaku
 
 
