@@ -29,7 +29,7 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
         df["走破タイム"] = df["走破タイム"].apply(_convert_soha_time)
 
     if "タイム差" in df.columns:
-        df["タイム差"] = df["タイム差"].apply(_convert_time_sa)
+        df["タイム差"] = df["タイム差"].apply(_convert_time_sa).astype("Float64")
 
     # コーナー順位の0→NaN変換（競走中止等でコーナー通過がない場合）
     for i in range(1, 5):

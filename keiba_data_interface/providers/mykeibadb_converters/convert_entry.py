@@ -86,6 +86,12 @@ _VALUE_CONVERT_RENAME: dict[str, str] = {
     "kohan_4f": "後4ハロン",
 }
 
+# 0.1単位変換時に NaN に変換するセンチネル値（カラム名→センチネル整数値）
+_TENTH_SENTINELS: dict[str, int] = {
+    "tansho_odds": 0,  # 0=オッズ未設定（取消等）
+    "kohan_3f": 999,  # 999=計測不能（競走中止等）
+}
+
 
 def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
     """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する（get_entry用）.
@@ -123,9 +129,20 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
     df = raw.copy()
 
     # 0.1単位 → 実数単位 変換（負担重量, 単勝オッズ, 後3F, 後4F）
+    # センチネル値を持つカラムはセンチネル値を NaN に変換する
     for col in _VALUE_CONVERT_RENAME:
         if col in df.columns:
-            df[col] = df[col].apply(lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) else v)
+            sentinel = _TENTH_SENTINELS.get(col)
+            if sentinel is not None:
+                df[col] = df[col].apply(
+                    lambda v, s=sentinel: (
+                        None if pd.isna(v) or int(v) == s else convert_tenth_to_unit(int(v))
+                    )
+                )
+            else:
+                df[col] = df[col].apply(
+                    lambda v: convert_tenth_to_unit(int(v)) if pd.notna(v) else v
+                )
 
     df = df.rename(columns=ENTRY_RENAME)
     df = df.rename(columns=_VALUE_CONVERT_RENAME)
@@ -138,4 +155,30 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
 
     df = ensure_columns(df, HORSE_RACE_INFO_COLUMNS)
     df = apply_types(df, HORSE_RACE_INFO_TYPES)
+
+    # 増減差: JRA-VAN の 999（計測不能）→ NaN、DB上 NULL（増減なし）→ 0
+    if "増減差" in df.columns:
+        df["増減差"] = (
+            df["増減差"]
+            .apply(lambda v: pd.NA if not pd.isna(v) and v == 999 else (0 if pd.isna(v) else v))
+            .astype("Int64")
+        )
+
+    # 増減差・増減符号: 以下の場合は体重計測なし→NaNに変換
+    # 1. 出走取消/発走除外/競走除外の馬で増減差=0（体重未計測でDBに0が格納されているケース）
+    # 2. 外国招待馬（所属コード="4"）で増減差=0（海外馬は前走体重情報がないためDB上0が格納）
+    if "増減差" in df.columns:
+        nan_zero_mask = pd.Series(False, index=df.index)
+        if "異常区分コード" in df.columns:
+            nan_zero_mask |= df["異常区分コード"].isin(["1", "2", "3"]) & (df["増減差"] == 0)
+        if "所属コード" in df.columns:
+            nan_zero_mask |= (df["所属コード"] == "4") & (df["増減差"] == 0)
+        df.loc[nan_zero_mask, "増減差"] = pd.NA
+        if "増減符号" in df.columns:
+            df.loc[nan_zero_mask, "増減符号"] = pd.NA
+
+    # 増減符号: 増減差が NaN の残りの行も NaN に統一
+    if "増減符号" in df.columns and "増減差" in df.columns:
+        df.loc[df["増減差"].isna(), "増減符号"] = pd.NA
+
     return df

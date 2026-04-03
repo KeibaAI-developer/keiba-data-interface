@@ -4,10 +4,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 テスト対象: レース27件, 馬10件
 
-検出差異総数: **1210件**
+検出差異総数: **1129件**
 
 - 未知差異（要対応）: **5件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 1205件
+- 既知差異（KNOWN_DIFF_*で許容済み）: 1124件
 
 ---
 
@@ -58,9 +58,7 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | グレード | get_race_info | 値不一致 | 21 | 21 | 'G1' | 'GI' |
 | コース区分 | get_race_info | 値不一致 | 6 | 6 | 'C外' | 'C ' |
 | タイム差 | get_past_performances | NaN不一致 | 5 | 15 | NaN | 0.4000 |
-| タイム差 | get_past_performances | 型不一致 | 5 | 5 | Float64 | float64 |
 | タイム差 | get_result | NaN不一致 | 7 | 19 | NaN | 999.9000 |
-| タイム差 | get_result | 型不一致 | 27 | 27 | Float64 | float64 |
 | ダート馬場状態 | get_race_info | NaN不一致 | 24 | 24 | NaN | '' |
 | トラック | get_race_info | 値不一致 | 27 | 27 | '芝右' | '芝・右' |
 | ワイド1人気順 | get_payoff | 値不一致 | 4 | 4 | 5 | 6 |
@@ -69,17 +67,9 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 出走頭数 | get_payoff | NaN不一致 | 27 | 27 | NaN | 16 |
 | 出走頭数 | get_race_info | 値不一致 | 2 | 2 | 18 | 16 |
 | 単勝1人気順 | get_payoff | 値不一致 | 1 | 1 | 2 | 1 |
-| 単勝オッズ | get_past_performances | NaN不一致 | 2 | 2 | NaN | 0 |
-| 単勝オッズ | get_result | NaN不一致 | 2 | 3 | NaN | 0 |
 | 単勝人気順 | get_past_performances | NaN不一致 | 2 | 6 | NaN | 1 |
 | 単勝人気順 | get_result | NaN不一致 | 2 | 6 | NaN | 0 |
 | 単勝人気順 | get_result | 値不一致 | 3 | 6 | 8 | 9 |
-| 増減差 | get_past_performances | NaN不一致 | 5 | 5 | 0 | NaN |
-| 増減差 | get_result | NaN不一致 | 7 | 14 | NaN | 999 |
-| 増減符号 | get_past_performances | NaN不一致 | 1 | 1 | NaN | ' ' |
-| 増減符号 | get_result | NaN不一致 | 6 | 10 | NaN | ' ' |
-| 後3ハロン | get_past_performances | NaN不一致 | 3 | 3 | NaN | 99.9000 |
-| 後3ハロン | get_result | NaN不一致 | 6 | 11 | NaN | 99.9000 |
 | 性別コード | get_past_performances | NaN不一致 | 5 | 15 | NaN | '1' |
 | 所属コード | get_past_performances | NaN不一致 | 5 | 15 | NaN | '2' |
 | 曜日 | get_race_info | 値不一致 | 2 | 2 | '日' | '祝' |
