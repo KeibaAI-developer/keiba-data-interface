@@ -72,7 +72,6 @@ KNOWN_DIFF_RACE_RESULT_INFO: set[str] = {
     "4コーナー通過順",  # 同上
 }
 KNOWN_DIFF_PAYOFF: set[str] = {
-    "出走頭数",  # scraping converterが出走頭数を取得していない
     "複勝1人気順",  # netkeibaとJRA-VANで同率人気の扱いが異なる場合がある
     "複勝2人気順",  # 同上
     "複勝3人気順",  # 同上
@@ -227,7 +226,6 @@ def _build_payoff_scraping_columns() -> list[str]:
         "開催回",
         "開催日目",
         "レース番号",
-        "出走頭数",
     ]
     # 単勝1〜3
     for i in range(1, 4):

@@ -372,7 +372,7 @@ HARAIMODOSHIテーブル全体に対応する。1行のDataFrame。全券種を1
 | 6 | 開催日目 | int | ○ | KAISAI_NICHIJI | |
 | 7 | レース番号 | int | ○ | RACE_BANGO | |
 | 8 | 登録頭数 | int | × | TOROKU_TOSU | |
-| 9 | 出走頭数 | int | ○ | SHUSSO_TOSU | |
+| 9 | 出走頭数 | int | × | SHUSSO_TOSU | |
 | 10 | 不成立フラグ単勝 | str | × | FUSEIRITSU_FLAG_TANSHO | |
 | 11 | 不成立フラグ複勝 | str | × | FUSEIRITSU_FLAG_FUKUSHO | |
 | 12 | 不成立フラグ枠連 | str | × | FUSEIRITSU_FLAG_WAKUREN | |
