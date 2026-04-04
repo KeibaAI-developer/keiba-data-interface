@@ -162,4 +162,8 @@ def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
     df = raw.rename(columns=_PAYOFF_RENAME)
     df = ensure_columns(df, PAYOFF_COLUMNS)
     df = apply_types(df, PAYOFF_TYPES)
+    # 組番・馬番が 0 の場合は NaN に変換する（未設定を表す）
+    kumiban_cols = [c for c in df.columns if c.endswith(("馬番", "組番1", "組番2", "組番3"))]
+    for col in kumiban_cols:
+        df[col] = df[col].replace(0, pd.NA)
     return df
