@@ -15,9 +15,9 @@ def test_output_columns_match_schema(
     race_code: str,
 ) -> None:
     """出力DataFrameのカラム構成がHORSE_RACE_INFO_COLUMNSと一致する."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -30,9 +30,9 @@ def test_output_row_count(
     race_code: str,
 ) -> None:
     """出力DataFrameの行数が入力と一致する."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -45,9 +45,9 @@ def test_time_sa_normal(
     race_code: str,
 ) -> None:
     """タイム差が1着タイムとの差から正しく計算される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -62,9 +62,9 @@ def test_time_sa_excluded_for_chushi(
     race_code: str,
 ) -> None:
     """競走中止馬のタイム差はNaNになる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "異常区分"] = "中止"
     raw.loc[1, "着順"] = "中止"
     raw.loc[1, "タイム"] = None
@@ -81,9 +81,9 @@ def test_ijo_kubun_kokaku(
     race_code: str,
 ) -> None:
     """降着が着差テキストから正しく検出される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "着差"] = "1位降着"
     mock_result_scraper.get_result.return_value = raw
 
@@ -98,9 +98,9 @@ def test_ijo_kubun_chushi(
     race_code: str,
 ) -> None:
     """競走中止の異常区分が正しく変換される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "異常区分"] = "中止"
     raw.loc[1, "着順"] = "中止"
     mock_result_scraper.get_result.return_value = raw
@@ -116,9 +116,9 @@ def test_ijo_kubun_shikkaku(
     race_code: str,
 ) -> None:
     """失格の異常区分が正しく変換される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "異常区分"] = "失格"
     raw.loc[1, "着順"] = "失格"
     mock_result_scraper.get_result.return_value = raw
@@ -134,9 +134,9 @@ def test_result_columns_mapped(
     race_code: str,
 ) -> None:
     """結果固有カラムが正しくマッピングされる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -156,9 +156,9 @@ def test_chakusa_mapped(
     race_code: str,
 ) -> None:
     """着差が着差コード1に正しくマッピングされる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -171,9 +171,9 @@ def test_cockaku_chakusa_not_mapped_to_chakusa1(
     race_code: str,
 ) -> None:
     """降着の場合、着差テキストは着差コード1にマッピングされない."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "着差"] = "1位降着"
     mock_result_scraper.get_result.return_value = raw
 
@@ -188,9 +188,9 @@ def test_header_columns_from_race_code(
     race_code: str,
 ) -> None:
     """ヘッダカラムがレースコードから正しく導出される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -210,10 +210,10 @@ def test_kakutoku_honshokin_derived(
     race_code: str,
 ) -> None:
     """着順とRaceInfo賞金から獲得本賞金が正しく導出される."""
-    from .conftest import _create_scraping_race_info, _create_scraping_result
+    from .conftest import create_scraping_race_info, create_scraping_result
 
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_scraper.get_race_info.return_value = create_scraping_race_info()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -230,11 +230,11 @@ def test_kakutoku_honshokin_nan_for_6th_and_below(
     race_code: str,
 ) -> None:
     """6着以下の獲得本賞金は0になる."""
-    from .conftest import _create_scraping_race_info, _create_scraping_result
+    from .conftest import create_scraping_race_info, create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "着順"] = "6"
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_scraper.get_race_info.return_value = create_scraping_race_info()
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
@@ -249,12 +249,12 @@ def test_kakutoku_honshokin_nan_for_ijo_kubun(
     race_code: str,
 ) -> None:
     """異常区分が空でない馬の獲得本賞金は0になる."""
-    from .conftest import _create_scraping_race_info, _create_scraping_result
+    from .conftest import create_scraping_race_info, create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "異常区分"] = "失格"
     raw.loc[0, "着順"] = "失格"
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_scraper.get_race_info.return_value = create_scraping_race_info()
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
@@ -268,9 +268,9 @@ def test_time_sa_nan_when_all_chushi(
     race_code: str,
 ) -> None:
     """全馬競走中止の場合、全行のタイム差がNaNになる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "着順"] = "中止"
     raw.loc[0, "タイム"] = None
     raw.loc[0, "異常区分"] = "中止"

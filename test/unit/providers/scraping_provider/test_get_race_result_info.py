@@ -15,10 +15,10 @@ def test_output_columns_match_schema(
     race_code: str,
 ) -> None:
     """出力DataFrameのカラム構成がRACE_RESULT_INFO_COLUMNSと一致する."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -31,10 +31,10 @@ def test_output_is_single_row(
     race_code: str,
 ) -> None:
     """出力DataFrameが1行である."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -47,10 +47,10 @@ def test_lap_time_stored_correctly(
     race_code: str,
 ) -> None:
     """ラップタイムが100m刻みカラムに正しく格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -69,10 +69,10 @@ def test_lap_time_beyond_distance_is_nan(
     race_code: str,
 ) -> None:
     """レース距離を超えるラップタイムカラムはNaN."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -87,10 +87,10 @@ def test_harlon_from_lap(
     race_code: str,
 ) -> None:
     """前3ハロン・後3ハロンがラップタイムから格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -105,10 +105,10 @@ def test_corner_passing_order(
     race_code: str,
 ) -> None:
     """コーナー通過順が正しく格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -125,10 +125,10 @@ def test_race_code_stored(
     race_code: str,
 ) -> None:
     """レースコードが格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -141,10 +141,10 @@ def test_missing_columns_filled_with_nan(
     race_code: str,
 ) -> None:
     """不足カラムがNaN埋めされる."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 

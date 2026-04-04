@@ -14,9 +14,9 @@ def test_output_columns_match_schema(
     mock_schedule_scraper: MagicMock,
 ) -> None:
     """出力DataFrameのカラム構成がSCHEDULE_COLUMNSと一致する."""
-    from .conftest import _create_scraping_schedule
+    from .conftest import create_scraping_schedule
 
-    mock_schedule_scraper.get_race_schedule.return_value = _create_scraping_schedule()
+    mock_schedule_scraper.get_race_schedule.return_value = create_scraping_schedule()
 
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 
@@ -28,9 +28,9 @@ def test_aggregation_to_kaisaijo(
     mock_schedule_scraper: MagicMock,
 ) -> None:
     """レース単位から開催場単位に正しく集約される."""
-    from .conftest import _create_scraping_schedule
+    from .conftest import create_scraping_schedule
 
-    mock_schedule_scraper.get_race_schedule.return_value = _create_scraping_schedule()
+    mock_schedule_scraper.get_race_schedule.return_value = create_scraping_schedule()
 
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 
@@ -43,9 +43,9 @@ def test_kaisai_code_derived(
     mock_schedule_scraper: MagicMock,
 ) -> None:
     """開催コードがレースIDから正しく導出される."""
-    from .conftest import _create_scraping_schedule
+    from .conftest import create_scraping_schedule
 
-    mock_schedule_scraper.get_race_schedule.return_value = _create_scraping_schedule()
+    mock_schedule_scraper.get_race_schedule.return_value = create_scraping_schedule()
 
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 
@@ -61,9 +61,9 @@ def test_multiple_days(
     mock_schedule_scraper: MagicMock,
 ) -> None:
     """複数日の日付範囲で各日のスクレイパが呼び出される."""
-    from .conftest import _create_scraping_schedule
+    from .conftest import create_scraping_schedule
 
-    mock_schedule_scraper.get_race_schedule.return_value = _create_scraping_schedule()
+    mock_schedule_scraper.get_race_schedule.return_value = create_scraping_schedule()
 
     provider_full.get_schedule("2025-01-05", "2025-01-06")
 
@@ -91,9 +91,9 @@ def test_keibajo_name_stored(
     mock_schedule_scraper: MagicMock,
 ) -> None:
     """競馬場名が正しく格納される."""
-    from .conftest import _create_scraping_schedule
+    from .conftest import create_scraping_schedule
 
-    mock_schedule_scraper.get_race_schedule.return_value = _create_scraping_schedule()
+    mock_schedule_scraper.get_race_schedule.return_value = create_scraping_schedule()
 
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 
@@ -107,9 +107,9 @@ def test_date_to_year_and_monthday(
     mock_schedule_scraper: MagicMock,
 ) -> None:
     """日付が開催年と開催月日に正しく分割される."""
-    from .conftest import _create_scraping_schedule
+    from .conftest import create_scraping_schedule
 
-    mock_schedule_scraper.get_race_schedule.return_value = _create_scraping_schedule()
+    mock_schedule_scraper.get_race_schedule.return_value = create_scraping_schedule()
 
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 

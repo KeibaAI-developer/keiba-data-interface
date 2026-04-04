@@ -131,9 +131,9 @@ def test_course_division_concatenation(
     race_code: str,
 ) -> None:
     """コースと内外が結合されてコース区分カラムになる."""
-    from .conftest import _create_scraping_race_info
+    from .conftest import create_scraping_race_info
 
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info(course="B", uchisoto="内")
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(course="B", uchisoto="内")
 
     result = provider.get_race_info(race_code)
 
@@ -219,9 +219,9 @@ def test_steeplechase_baba_assignment(
     race_code: str,
 ) -> None:
     """障害レースで馬場状態が芝馬場状態に格納される."""
-    from .conftest import _create_scraping_race_info
+    from .conftest import create_scraping_race_info
 
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info(shiba_da="障", baba="稍")
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(shiba_da="障", baba="稍")
 
     result = provider.get_race_info(race_code)
 
@@ -238,10 +238,10 @@ def test_date_differs_from_race_code_year_and_monthday_come_from_race_code(
     """rawの日付がrace_codeと異なる場合でも開催年/開催月日はrace_codeから導出される."""
     from datetime import date
 
-    from .conftest import _create_scraping_race_info
+    from .conftest import create_scraping_race_info
 
     # race_code=2025050206021211 に対して日付を意図的にずらす
-    raw = _create_scraping_race_info()
+    raw = create_scraping_race_info()
     raw["日付"] = date(2099, 12, 31)
     mock_scraper.get_race_info.return_value = raw
 
