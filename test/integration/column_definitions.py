@@ -40,9 +40,9 @@ KNOWN_DIFF_HORSE_RACE: set[str] = {
     "所属コード",  # past_perf: scrapingが取得していないカラム（NaN差異）
     "調教師名略称",  # 略称の長さが異なる
     "騎手名略称",  # 略称の長さが異なる
-    "着差コード1",  # scraping="1/2" vs mykeibadb="1/2馬身"
+    "着差コード1",  # past_perf: scraping非対応カラム（NaN差異）
     "獲得本賞金",  # scrapingは賞金なし=NA vs mykeibadb=0
-    "タイム差",  # 単位差異（scraping=秒, mykeibadb=0.1秒単位）
+    "タイム差",  # 単位差異（scraping=秒, mykeibadb=0.1秒単位）および符号差異
     "増減差",  # mykeibadbは「計測不能」を999で表現、scrapingはNA
     "増減符号",  # scraping=NaN vs mykeibadb=空文字（馬体重未発表時の表現差異）
     "異常区分コード",  # mykeibadb=4以上（競走中止等）をscraping側と同様に0に正規化済み
@@ -202,6 +202,12 @@ ENTRY_ONLY_EXCLUDE: set[str] = {
 PAST_PERF_ADDITIONAL_SCRAPING_COLUMNS: list[str] = [
     "相手1馬名",
 ]
+
+# get_past_performances時にscraping非対応のため除外するカラム
+# (着差コード1はscrapingの着差カラムはタイム差として使用するため、着差コード1は常にNaNになる)
+PAST_PERF_EXCLUDE: set[str] = {
+    "着差コード1",
+}
 
 
 # テーブル4: 払戻情報（scraping ○ カラム）

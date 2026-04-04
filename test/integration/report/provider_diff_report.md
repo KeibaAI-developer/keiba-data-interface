@@ -4,10 +4,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 テスト対象: レース27件, 馬10件
 
-検出差異総数: **1010件**
+検出差異総数: **955件**
 
 - 未知差異（要対応）: **2件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 1008件
+- 既知差異（KNOWN_DIFF_*で許容済み）: 953件
 
 ---
 
@@ -51,7 +51,7 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 4コーナー順位 | get_past_performances | NaN不一致 | 1 | 1 | 11 | NaN |
 | グレード | get_race_info | 値不一致 | 21 | 21 | 'G1' | 'GI' |
 | コース区分 | get_race_info | 値不一致 | 6 | 6 | 'C外' | 'C ' |
-| タイム差 | get_past_performances | NaN不一致 | 10 | 28 | NaN | 0.4000 |
+| タイム差 | get_past_performances | NaN不一致 | 1 | 1 | NaN | 0.8000 |
 | ダート馬場状態 | get_race_info | NaN不一致 | 24 | 24 | NaN | '' |
 | トラック | get_race_info | 値不一致 | 27 | 27 | '芝右' | '芝・右' |
 | ワイド1人気順 | get_payoff | 値不一致 | 4 | 4 | 5 | 6 |
@@ -77,8 +77,6 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 獲得本賞金 | get_past_performances | 値不一致 | 7 | 13 | 109000 | 107000 |
 | 獲得本賞金 | get_result | 値不一致 | 3 | 6 | 1250000 | 1300000 |
 | 異常区分コード | get_past_performances | 値不一致 | 1 | 1 | '降着' | '7' |
-| 着差コード1 | get_past_performances | NaN不一致 | 8 | 12 | -0.2000 | NaN |
-| 着差コード1 | get_past_performances | 値不一致 | 8 | 16 | 0.4000 | '134' |
 | 着差コード1 | get_result | NaN不一致 | 1 | 1 | NaN | 'H__' |
 | 着差コード1 | get_result | 値不一致 | 2 | 3 | 'K__' | 'D__' |
 | 確定着順 | get_past_performances | NaN不一致 | 5 | 17 | NaN | 4 |

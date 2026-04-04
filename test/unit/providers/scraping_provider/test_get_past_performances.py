@@ -99,6 +99,11 @@ def test_result_columns_mapped(
     assert row["走破タイム"] == "2:00.5"
     assert row["後3ハロン"] == 34.5
     assert row["異常区分コード"] == "0"
+    # 着差カラムはタイム差が格納され、着差コード1はscraping非対応（NaN）
+    assert row["タイム差"] == 0.5
+    import pandas as pd
+
+    assert pd.isna(row["着差コード1"])
 
 
 def test_zogen_split(

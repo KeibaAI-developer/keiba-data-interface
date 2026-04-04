@@ -4,11 +4,7 @@ from datetime import date
 
 import pandas as pd
 
-from keiba_data_interface.providers.scraping_converters.common import (
-    convert_chakusa_to_code,
-    set_ijo_kubun,
-    set_zogen,
-)
+from keiba_data_interface.providers.scraping_converters.common import set_ijo_kubun, set_zogen
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
@@ -84,10 +80,10 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
 
         # 異常区分
         ijo_kubun = row.get("異常区分", "")
-        chakusa = row.get("着差", "")
         chakujun_raw = row.get("着順")
 
-        is_kokaku = set_ijo_kubun(converted, ijo_kubun, chakusa)
+        # 着差コード1はscraping非対応（NaN）。着差カラムはタイム差として使用する。
+        set_ijo_kubun(converted, ijo_kubun, None)
 
         # 結果カラム
         if pd.notna(chakujun_raw) and str(chakujun_raw).isdigit():
@@ -96,8 +92,9 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
         if pd.notna(row.get("タイム")):
             converted["走破タイム"] = row["タイム"]
 
-        if pd.notna(chakusa) and not is_kokaku:
-            converted["着差コード1"] = convert_chakusa_to_code(chakusa)
+        # 着差カラムの値はタイム差（秒）として格納する
+        if pd.notna(row.get("着差")):
+            converted["タイム差"] = row["着差"]
 
         if pd.notna(row.get("人気")) and str(row["人気"]).isdigit():
             converted["単勝人気順"] = int(row["人気"])
