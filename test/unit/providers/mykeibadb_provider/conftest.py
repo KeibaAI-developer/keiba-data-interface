@@ -296,7 +296,7 @@ def create_umagoto_race_joho_df() -> pd.DataFrame:
         "dochaku_kubun": "0",
         "dochaku_tosu": 0,
         "soha_time": "2316",
-        "chakusa_code1": "K01",
+        "chakusa_code1": "K__",
         "chakusa_code2": "",
         "chakusa_code3": "",
         "corner1_juni": 5,

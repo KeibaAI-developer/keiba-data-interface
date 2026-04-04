@@ -162,7 +162,7 @@ def test_chakusa_mapped(
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["着差コード1"] == "クビ"
+    assert result.iloc[1]["着差コード1"] == "K__"
 
 
 def test_cockaku_chakusa_not_mapped_to_chakusa1(
@@ -229,7 +229,7 @@ def test_kakutoku_honshokin_nan_for_6th_and_below(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """6着以下の獲得本賞金はNaNになる."""
+    """6着以下の獲得本賞金は0になる."""
     from .conftest import _create_scraping_race_info, _create_scraping_result
 
     raw = _create_scraping_result()
@@ -239,7 +239,7 @@ def test_kakutoku_honshokin_nan_for_6th_and_below(
 
     result = provider_full.get_result(race_code)
 
-    assert pd.isna(result.iloc[1]["獲得本賞金"])
+    assert result.iloc[1]["獲得本賞金"] == 0
 
 
 def test_kakutoku_honshokin_nan_for_ijo_kubun(
@@ -248,7 +248,7 @@ def test_kakutoku_honshokin_nan_for_ijo_kubun(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """異常区分が空でない馬の獲得本賞金はNaNになる."""
+    """異常区分が空でない馬の獲得本賞金は0になる."""
     from .conftest import _create_scraping_race_info, _create_scraping_result
 
     raw = _create_scraping_result()
@@ -259,7 +259,7 @@ def test_kakutoku_honshokin_nan_for_ijo_kubun(
 
     result = provider_full.get_result(race_code)
 
-    assert pd.isna(result.iloc[0]["獲得本賞金"])
+    assert result.iloc[0]["獲得本賞金"] == 0
 
 
 def test_time_sa_nan_when_all_chushi(

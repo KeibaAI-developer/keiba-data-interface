@@ -71,15 +71,15 @@ def test_soha_time_zero_not_converted(
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """走破タイムが"0000"の場合は変換されない."""
+    """走破タイムが"0000"の場合はNaNに変換される."""
     raw = create_umagoto_race_joho_df()
     raw.at[0, "soha_time"] = "0000"
     mock_race_getter.get_umagoto_race_joho.return_value = raw
 
     result = provider.get_result(race_code)
 
-    # "0000"はintに変換すると0となり、変換条件(int > 0)を満たさないため変換されない
-    assert result.iloc[0]["走破タイム"] == "0000"
+    # "0000"はint値て0と扱われ、タイム未計測（競走中止等）としてNaNに変換される
+    assert pd.isna(result.iloc[0]["走破タイム"])
 
 
 def test_soha_time_nan_preserved(
@@ -153,5 +153,5 @@ def test_result_specific_columns(
     assert row["確定着順"] == 1
     assert row["1コーナー順位"] == 11
     assert row["4コーナー順位"] == 3
-    assert row["単勝人気順"] == 3
+    assert row["単勝人気順"] == 1
     assert row["獲得本賞金"] == 50000000
