@@ -8,13 +8,13 @@ from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen, sp
 from keiba_data_interface.utils.race_code import keibajo_code_to_name
 
 # 異常区分変換マッピング（scraping出力 → JRA-VANコード）
-# 降着(7)は着差テキストのパターン検出で判定するため別処理
 IJO_KUBUN_TO_CODE: dict[str, str] = {
     "出走": "0",
     "取消": "1",
     "除外": "3",
     "中止": "4",
     "失格": "5",
+    "降着": "7",
 }
 
 # 出走区分 → 異常区分コード変換マッピング（get_entry用: JRA-VANコード）
