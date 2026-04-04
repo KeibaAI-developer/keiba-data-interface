@@ -120,12 +120,12 @@ def convert_result(
                 converted["タイム差"] = round(horse_time - first_time, 1)
 
         # 獲得本賞金の導出
-        # prize_mapがある場合: 正常完走馬(異常区分コード="0")でprice_mapに着順がある→賞金額、それ以外→0
+        # prize_mapがある場合: 正常完走馬(異常区分コード="0")と降着馬(="7")でprice_mapに着順がある→賞金額、それ以外→0
         # prize_mapがない場合: 獲得本賞金は設定しない（NaN）
         if prize_map is not None:
             if (
                 chakujun_int is not None
-                and converted.get("異常区分コード") == "0"
+                and converted.get("異常区分コード") in {"0", "7"}
                 and chakujun_int in prize_map
             ):
                 converted["獲得本賞金"] = prize_map[chakujun_int]
