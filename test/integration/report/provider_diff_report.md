@@ -4,10 +4,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 テスト対象: レース27件, 馬10件
 
-検出差異総数: **879件**
+検出差異総数: **1010件**
 
-- 未知差異（要対応）: **5件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 874件
+- 未知差異（要対応）: **2件**
+- 既知差異（KNOWN_DIFF_*で許容済み）: 1008件
 
 ---
 
@@ -17,18 +17,16 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 - 値不一致: 0件
 - NaN不一致: 0件
-- 行数不一致: 5件
+- 行数不一致(中央): 0件
+- 行数不一致(その他): 2件
 - 変換エラー: 0件
 
 ### 1c. 行数不一致
 
-| テストケース | メソッド | scraping行数 | mykeibadb行数 |
-|-------------|----------|-------------|---------------|
-| ビコーズウイキャン(2021103695) | get_past_performances | 30 | 5 |
-| カランダガン(2021190001) | get_past_performances | 14 | 1 |
-| タイトルホルダー(2018103559) | get_past_performances | 19 | 18 |
-| フォーエバーヤング(2021105727) | get_past_performances | 14 | 1 |
-| クリノガイディー(2016103690) | get_past_performances | 33 | 31 |
+| テストケース | メソッド | 種別 | scraping行数 | mykeibadb行数 |
+|-------------|----------|------|-------------|---------------|
+| ビコーズウイキャン(2021103695) | get_past_performances | その他 | 25 | 7 |
+| クリノガイディー(2016103690) | get_past_performances | その他 | 2 | 0 |
 
 ---
 
@@ -50,9 +48,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 4コーナー | get_race_result_info | NaN不一致 | 27 | 27 | NaN | '4' |
 | 4コーナー通過順 | get_race_result_info | NaN不一致 | 1 | 1 | NaN | '                         |
 | 4コーナー通過順 | get_race_result_info | 値不一致 | 12 | 12 | '(*3,13)1,11,9,5,14(8,2,6 | '                         |
+| 4コーナー順位 | get_past_performances | NaN不一致 | 1 | 1 | 11 | NaN |
 | グレード | get_race_info | 値不一致 | 21 | 21 | 'G1' | 'GI' |
 | コース区分 | get_race_info | 値不一致 | 6 | 6 | 'C外' | 'C ' |
-| タイム差 | get_past_performances | NaN不一致 | 5 | 15 | NaN | 0.4000 |
+| タイム差 | get_past_performances | NaN不一致 | 10 | 28 | NaN | 0.4000 |
 | ダート馬場状態 | get_race_info | NaN不一致 | 24 | 24 | NaN | '' |
 | トラック | get_race_info | 値不一致 | 27 | 27 | '芝右' | '芝・右' |
 | ワイド1人気順 | get_payoff | 値不一致 | 4 | 4 | 5 | 6 |
@@ -61,9 +60,11 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 出走頭数 | get_payoff | NaN不一致 | 27 | 27 | NaN | 16 |
 | 出走頭数 | get_race_info | 値不一致 | 2 | 2 | 18 | 16 |
 | 単勝1人気順 | get_payoff | 値不一致 | 1 | 1 | 2 | 1 |
-| 単勝人気順 | get_past_performances | NaN不一致 | 2 | 6 | NaN | 1 |
-| 性別コード | get_past_performances | NaN不一致 | 5 | 15 | NaN | '1' |
-| 所属コード | get_past_performances | NaN不一致 | 5 | 15 | NaN | '2' |
+| 単勝人気順 | get_past_performances | NaN不一致 | 3 | 11 | NaN | 14 |
+| 増減差 | get_past_performances | NaN不一致 | 2 | 2 | 0 | NaN |
+| 増減符号 | get_past_performances | NaN不一致 | 2 | 2 | ' ' | NaN |
+| 性別コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '1' |
+| 所属コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '2' |
 | 曜日 | get_race_info | 値不一致 | 2 | 2 | '日' | '祝' |
 | 本賞金1着 | get_race_info | 値不一致 | 1 | 1 | 970000 | 680000 |
 | 本賞金2着 | get_race_info | 値不一致 | 1 | 1 | 390000 | 680000 |
@@ -72,14 +73,15 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 本賞金5着 | get_race_info | 値不一致 | 1 | 1 | 7600 | 12540 |
 | 枠連1組番1 | get_payoff | NaN不一致 | 1 | 1 | NaN | 0 |
 | 枠連1組番2 | get_payoff | NaN不一致 | 1 | 1 | NaN | 0 |
-| 獲得本賞金 | get_past_performances | NaN不一致 | 4 | 7 | NaN | 0 |
-| 獲得本賞金 | get_past_performances | 値不一致 | 4 | 8 | 109000 | 107000 |
+| 獲得本賞金 | get_past_performances | NaN不一致 | 6 | 13 | NaN | 0 |
+| 獲得本賞金 | get_past_performances | 値不一致 | 7 | 13 | 109000 | 107000 |
 | 獲得本賞金 | get_result | 値不一致 | 3 | 6 | 1250000 | 1300000 |
-| 着差コード1 | get_past_performances | NaN不一致 | 4 | 8 | -0.2000 | NaN |
-| 着差コード1 | get_past_performances | 値不一致 | 5 | 7 | 0.4000 | '134' |
+| 異常区分コード | get_past_performances | 値不一致 | 1 | 1 | '降着' | '7' |
+| 着差コード1 | get_past_performances | NaN不一致 | 8 | 12 | -0.2000 | NaN |
+| 着差コード1 | get_past_performances | 値不一致 | 8 | 16 | 0.4000 | '134' |
 | 着差コード1 | get_result | NaN不一致 | 1 | 1 | NaN | 'H__' |
 | 着差コード1 | get_result | 値不一致 | 2 | 3 | 'K__' | 'D__' |
-| 確定着順 | get_past_performances | NaN不一致 | 3 | 9 | NaN | 2 |
+| 確定着順 | get_past_performances | NaN不一致 | 5 | 17 | NaN | 4 |
 | 競走名本題 | get_race_info | 値不一致 | 20 | 20 | 'ジャパンC' | 'ジャパンカップ' |
 | 競走条件名称 | get_race_info | 値不一致 | 27 | 27 | 'オープン' | '\u3000\u3000\u3000\u3000 |
 | 競走種別 | get_race_info | 値不一致 | 1 | 1 | '障害３歳以上' | 'サラ障害３歳以上' |
@@ -90,12 +92,12 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 複勝2人気順 | get_payoff | 値不一致 | 3 | 3 | 1 | 2 |
 | 複勝3人気順 | get_payoff | 値不一致 | 1 | 1 | 3 | 2 |
 | 複勝3馬番 | get_payoff | NaN不一致 | 1 | 1 | NaN | 0 |
-| 調教師コード | get_past_performances | NaN不一致 | 5 | 15 | NaN | '01159' |
+| 調教師コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '01159' |
 | 調教師名略称 | get_entry | 値不一致 | 27 | 83 | '和田郎' | '和田正一' |
-| 調教師名略称 | get_past_performances | NaN不一致 | 5 | 15 | NaN | '高柳大輔' |
+| 調教師名略称 | get_past_performances | NaN不一致 | 10 | 28 | NaN | '高柳大輔' |
 | 調教師名略称 | get_result | 値不一致 | 27 | 83 | '和田郎' | '和田正一' |
 | 馬単1人気順 | get_payoff | 値不一致 | 1 | 1 | 10 | 9 |
-| 馬名 | get_past_performances | NaN不一致 | 5 | 15 | NaN | 'ミュージアムマイル' |
-| 馬齢 | get_past_performances | NaN不一致 | 5 | 15 | NaN | 2 |
+| 馬名 | get_past_performances | NaN不一致 | 10 | 28 | NaN | 'ミュージアムマイル' |
+| 馬齢 | get_past_performances | NaN不一致 | 10 | 28 | NaN | 2 |
 | 騎手名略称 | get_entry | 値不一致 | 27 | 82 | '福永' | '福永祐一' |
 | 騎手名略称 | get_result | 値不一致 | 27 | 83 | '福永' | '福永祐一' |

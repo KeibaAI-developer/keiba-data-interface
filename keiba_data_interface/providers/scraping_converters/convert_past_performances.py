@@ -39,12 +39,13 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
         converted["血統登録番号"] = horse_id
 
         # レースIDからレースコードを構築
+        # 海外レース等ではレースIDが空文字列になるため、空文字列はNaN扱いとしてスキップする
         race_id_raw = row.get("レースID")
-        if pd.notna(race_id_raw) and pd.notna(row.get("日付")):
+        race_id_str = str(race_id_raw).strip() if pd.notna(race_id_raw) else ""
+        if race_id_str and pd.notna(row.get("日付")):
             dt = row["日付"]
             if isinstance(dt, date):
                 monthday = f"{dt.month:02d}{dt.day:02d}"
-                race_id_str = str(race_id_raw)
                 # レースコード = 年(4) + 月日(4) + 競馬場(2) + 回(2) + 日目(2) + R(2)
                 converted["レースコード"] = race_id_str[:4] + monthday + race_id_str[4:]
 

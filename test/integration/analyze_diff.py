@@ -61,6 +61,9 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 REPORT_DIR = Path(__file__).parent / "report"
 REPORT_PATH = REPORT_DIR / "provider_diff_report.md"
 
+# 中央競馬の競馬場コード（レースコード[8:10]が該当する場合、中央レースと判定）
+_JRA_KEIBAJO_CODES = {f"{i:02d}" for i in range(1, 11)}
+
 
 def _load_pkl(path: Path) -> pd.DataFrame:
     return pd.read_pickle(path)
@@ -595,12 +598,58 @@ def analyze_horses(test_cases: dict[str, Any]) -> list[DiffRecord]:
             if not isinstance(s_df, pd.DataFrame) or not isinstance(m_df, pd.DataFrame):
                 continue
 
-            # scrapingの行をmykeibadbと揃える（レースコードでフィルタ）
             if "レースコード" in s_df.columns and "レースコード" in m_df.columns:
-                s_codes = set(s_df["レースコード"].dropna().astype(str))
-                m_filtered = m_df[m_df["レースコード"].astype(str).isin(s_codes)].copy()
-                if len(m_filtered) > 0:
-                    m_df = m_filtered
+                # 中央レース判定: 競馬場コードはレースコード(16桁)の9-10文字目(0-indexed: 8:10)。
+                # NaN・空文字列・16桁未満の不正コード（海外レース等）はすべて「その他」に分類する。
+                def _to_keibajo(series: pd.Series) -> pd.Series:
+                    """レースコードから競馬場コード(2桁)を抽出する. 不正値はNaNとして返す."""
+                    codes = series.where(series.notna(), other=pd.NA)
+                    extracted = codes.astype(str).str[8:10]
+                    # 16桁未満のレースコード(海外レース等)はstr[8:10]が2桁にならないのでNaN扱い
+                    invalid_mask = series.isna() | (series.astype(str).str.len() < 16)
+                    return extracted.where(~invalid_mask, other=pd.NA)
+
+                s_keibajo = _to_keibajo(s_df["レースコード"])
+                m_keibajo = _to_keibajo(m_df["レースコード"])
+                # NaN は JRA コードに含まれないため自動的に「その他」に分類される
+                s_jra_mask = s_keibajo.isin(_JRA_KEIBAJO_CODES)
+                m_jra_mask = m_keibajo.isin(_JRA_KEIBAJO_CODES)
+
+                # 中央/その他それぞれの行数差分を記録
+                s_jra_count = int(s_jra_mask.sum())
+                m_jra_count = int(m_jra_mask.sum())
+                s_other_count = int((~s_jra_mask).sum())
+                m_other_count = int((~m_jra_mask).sum())
+
+                if s_jra_count != m_jra_count:
+                    all_diffs.append(
+                        DiffRecord(
+                            label,
+                            method,
+                            "(行数)",
+                            "行数不一致(中央)",
+                            str(s_jra_count),
+                            str(m_jra_count),
+                        )
+                    )
+                if s_other_count != m_other_count:
+                    all_diffs.append(
+                        DiffRecord(
+                            label,
+                            method,
+                            "(行数)",
+                            "行数不一致(その他)",
+                            str(s_other_count),
+                            str(m_other_count),
+                        )
+                    )
+
+                # 値/型比較: 両方に存在する中央レースコードのみを対象
+                s_jra_codes = set(s_df.loc[s_jra_mask, "レースコード"].dropna().astype(str))
+                m_jra_codes = set(m_df.loc[m_jra_mask, "レースコード"].dropna().astype(str))
+                common_jra_codes = s_jra_codes & m_jra_codes
+                s_df = s_df[s_df["レースコード"].astype(str).isin(common_jra_codes)].copy()
+                m_df = m_df[m_df["レースコード"].astype(str).isin(common_jra_codes)].copy()
 
             diffs = _compare_dataframes(
                 s_df,
@@ -665,17 +714,30 @@ def generate_report(
         # カテゴリ別に分類
         unk_value = [d for d in unknown_diffs if d.diff_type == "値不一致"]
         unk_nan = [d for d in unknown_diffs if d.diff_type == "NaN不一致"]
-        unk_row = [d for d in unknown_diffs if d.diff_type == "行数不一致"]
+        unk_row_central = [d for d in unknown_diffs if d.diff_type == "行数不一致(中央)"]
+        unk_row_other = [d for d in unknown_diffs if d.diff_type == "行数不一致(その他)"]
+        unk_row_plain = [d for d in unknown_diffs if d.diff_type == "行数不一致"]
         unk_error = [d for d in unknown_diffs if d.diff_type == "変換エラー"]
         unk_other = [
             d
             for d in unknown_diffs
-            if d.diff_type not in {"値不一致", "NaN不一致", "行数不一致", "変換エラー"}
+            if d.diff_type
+            not in {
+                "値不一致",
+                "NaN不一致",
+                "行数不一致",
+                "行数不一致(中央)",
+                "行数不一致(その他)",
+                "変換エラー",
+            }
         ]
 
         lines.append(f"- 値不一致: {len(unk_value)}件")
         lines.append(f"- NaN不一致: {len(unk_nan)}件")
-        lines.append(f"- 行数不一致: {len(unk_row)}件")
+        lines.append(f"- 行数不一致(中央): {len(unk_row_central)}件")
+        lines.append(f"- 行数不一致(その他): {len(unk_row_other)}件")
+        if unk_row_plain:
+            lines.append(f"- 行数不一致: {len(unk_row_plain)}件")
         lines.append(f"- 変換エラー: {len(unk_error)}件")
         if unk_other:
             lines.append(f"- その他: {len(unk_other)}件")
@@ -702,13 +764,15 @@ def generate_report(
                 lines.append("")
 
         # 行数不一致
-        if unk_row:
+        all_row_diffs = unk_row_central + unk_row_other + unk_row_plain
+        if all_row_diffs:
             lines.append("### 1c. 行数不一致\n")
-            lines.append("| テストケース | メソッド | scraping行数 | mykeibadb行数 |")
-            lines.append("|-------------|----------|-------------|---------------|")
-            for d in unk_row:
+            lines.append("| テストケース | メソッド | 種別 | scraping行数 | mykeibadb行数 |")
+            lines.append("|-------------|----------|------|-------------|---------------|")
+            for d in all_row_diffs:
+                kind = d.diff_type.replace("行数不一致", "").strip("()") or "全体"
                 lines.append(
-                    f"| {d.test_case[:40]} | {d.method} "
+                    f"| {d.test_case[:40]} | {d.method} | {kind} "
                     f"| {d.scraping_value} | {d.mykeibadb_value} |",
                 )
             lines.append("")
@@ -904,6 +968,8 @@ def _build_method_detail_report(method: str, diffs: list[DiffRecord]) -> str:
             "NaN不一致",
             "型不一致",
             "行数不一致",
+            "行数不一致(中央)",
+            "行数不一致(その他)",
             "変換エラー",
             "カラム欠落(scraping側)",
             "カラム欠落(mykeibadb側)",
