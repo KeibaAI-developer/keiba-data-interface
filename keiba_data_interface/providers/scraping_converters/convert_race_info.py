@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from keiba_data_interface.providers.scraping_converters.common import GRADE_TO_CODE
 from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
@@ -58,7 +59,9 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     converted["距離"] = row["距離"]
     converted["競走種別"] = row["競走種別"]
     converted["競走条件名称"] = row["競走条件"]
-    converted["グレード"] = row["グレード"]
+    converted["グレードコード"] = GRADE_TO_CODE.get(
+        str(row["グレード"]) if pd.notna(row["グレード"]) else "", "_"
+    )
     converted["競走記号"] = row["競走記号"]
     converted["重量種別"] = row["重量種別"]
     converted["出走頭数"] = row["頭数"]

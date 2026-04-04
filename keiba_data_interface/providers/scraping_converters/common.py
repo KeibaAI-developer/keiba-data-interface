@@ -8,6 +8,7 @@ from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen, sp
 from keiba_data_interface.utils.race_code import keibajo_code_to_name
 
 # 異常区分変換マッピング（scraping出力 → JRA-VANコード）
+# 降着(7)は着差テキストのパターン検出で判定するため別処理
 IJO_KUBUN_TO_CODE: dict[str, str] = {
     "出走": "0",
     "取消": "1",
@@ -30,6 +31,20 @@ SEIBETSU_TO_CODE: dict[str, str] = {
     "牡": "1",
     "牝": "2",
     "セ": "3",
+}
+
+# グレード文字列 → グレードコード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md GRADE_CODE を参照
+GRADE_TO_CODE: dict[str, str] = {
+    "G1": "A",  # GI（平地競走）
+    "G2": "B",  # GII（平地競走）
+    "G3": "C",  # GIII（平地競走）
+    "JG1": "F",  # J・GI（障害競走）
+    "JG2": "G",  # J・GII（障害競走）
+    "JG3": "H",  # J・GIII（障害競走）
+    "L": "L",  # リステッド
+    "OP": "E",  # 特別競走（重賞以外の特別競走）
+    "": "_",  # 一般競走
 }
 
 # 所属文字列 → 東西所属コード変換マッピング（scraping出力 → JRA-VANコード）

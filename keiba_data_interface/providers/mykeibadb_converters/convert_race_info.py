@@ -32,8 +32,8 @@ RACE_INFO_RENAME: dict[str, str] = {
     "kyosomei_ryakusho_3": "競走名略称3文字",
     "kyosomei_kubun": "競走名区分",
     "jusho_kaiji": "重賞回次",
-    "grade": "グレード",
-    "henkomae_grade": "変更前グレード",
+    "grade_code": "グレードコード",
+    "henkomae_grade_code": "変更前グレードコード",
     "kyoso_shubetsu": "競走種別",
     "kyoso_kigo": "競走記号",
     "juryo_shubetsu": "重量種別",
@@ -116,6 +116,11 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].apply(
                 lambda v: convert_hhmm_to_display(str(v)) if pd.notna(v) and str(v).strip() else v
             )
+
+    # グレードコード: スペース（未設定の初期値）は "_"（一般競走）に統一する
+    for col in ["grade_code", "henkomae_grade_code"]:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda v: "_" if pd.notna(v) and str(v).strip() == "" else v)
 
     df = df.rename(columns=RACE_INFO_RENAME)
 
