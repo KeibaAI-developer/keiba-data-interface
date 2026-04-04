@@ -40,6 +40,33 @@ TOZAI_SHOZOKU_TO_CODE: dict[str, str] = {
     "海外": "4",
 }
 
+# scraping着差文字列 → 着差コード変換マッピング
+# 着差コード: 1バイト目=整数部(数字/英字), 2バイト目=分子, 3バイト目=分母, 未使用の桁はアンダーバー
+CHAKUSA_TO_CODE: dict[str, str] = {
+    "1/2": "_12",
+    "3/4": "_34",
+    "1": "1__",
+    "1.1/2": "112",
+    "1.1/4": "114",
+    "1.3/4": "134",
+    "2": "2__",
+    "2.1/2": "212",
+    "3": "3__",
+    "3.1/2": "312",
+    "4": "4__",
+    "5": "5__",
+    "6": "6__",
+    "7": "7__",
+    "8": "8__",
+    "9": "9__",
+    "10": "Z__",
+    "アタマ": "A__",
+    "同着": "D__",
+    "ハナ": "H__",
+    "クビ": "K__",
+    "大": "T__",
+}
+
 
 def build_prize_map(raw_race_info: pd.DataFrame) -> dict[int, int]:
     """レース情報から着順→獲得本賞金(百円単位)のマッピングを構築する.
@@ -141,3 +168,17 @@ def parse_time_to_seconds(time_str: str) -> float:
     seconds = int(m.group(2))
     tenths = int(m.group(3))
     return minutes * 60 + seconds + tenths / 10
+
+
+def convert_chakusa_to_code(chakusa: str) -> str:
+    """scraping出力の着差文字列を着差コードに変換する.
+
+    CHAKUSA_TO_CODEマッピングに該当しない場合は元の値をそのまま返す。
+
+    Args:
+        chakusa (str): scraping出力の着差文字列（例: '1/2', '1.1/4', 'クビ', '大'）
+
+    Returns:
+        str: 着差コード（例: '_12', '114', 'K__', 'T__'）
+    """
+    return CHAKUSA_TO_CODE.get(chakusa, chakusa)

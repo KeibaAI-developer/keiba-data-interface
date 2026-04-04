@@ -176,4 +176,4 @@ def test_second_horse_data(
     assert row["性別コード"] == "2"
     assert row["所属コード"] == "1"
     assert row["負担重量"] == 56.0
-    assert row["着差1"] == "クビ"
+    assert row["着差コード1"] == "クビ"

@@ -50,9 +50,9 @@ ENTRY_RENAME: dict[str, str] = {
     "dochaku_kubun": "同着区分",
     "dochaku_tosu": "同着頭数",
     "soha_time": "走破タイム",
-    "chakusa1": "着差1",
-    "chakusa2": "着差2",
-    "chakusa3": "着差3",
+    "chakusa_code1": "着差コード1",
+    "chakusa_code2": "着差コード2",
+    "chakusa_code3": "着差コード3",
     "corner1_juni": "1コーナー順位",
     "corner2_juni": "2コーナー順位",
     "corner3_juni": "3コーナー順位",
@@ -186,5 +186,17 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
     # 増減符号: 増減差が NaN の残りの行も NaN に統一
     if "増減符号" in df.columns and "増減差" in df.columns:
         df.loc[df["増減差"].isna(), "増減符号"] = pd.NA
+
+    # 着差コード: スペースをアンダーバーに変換（DBでは空白が格納されている場合がある）
+    # 全スペース（"___"=未設定）・空文字列はNaNに変換
+    for col in ["着差コード1", "着差コード2", "着差コード3"]:
+        if col in df.columns:
+            df[col] = df[col].apply(
+                lambda v: (
+                    v.replace(" ", "_")
+                    if isinstance(v, str) and v.strip()
+                    else (pd.NA if isinstance(v, str) else v)
+                )
+            )
 
     return df

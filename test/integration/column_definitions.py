@@ -40,7 +40,7 @@ KNOWN_DIFF_HORSE_RACE: set[str] = {
     "所属コード",  # past_perf: scrapingが取得していないカラム（NaN差異）
     "調教師名略称",  # 略称の長さが異なる
     "騎手名略称",  # 略称の長さが異なる
-    "着差1",  # scraping="1/2" vs mykeibadb="1/2馬身"
+    "着差コード1",  # scraping="1/2" vs mykeibadb="1/2馬身"
     "獲得本賞金",  # scrapingは賞金なし=NA vs mykeibadb=0
     "タイム差",  # 単位差異（scraping=秒, mykeibadb=0.1秒単位）
     "増減差",  # mykeibadbは「計測不能」を999で表現、scrapingはNA
@@ -167,7 +167,7 @@ HORSE_RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "異常区分コード",
     "確定着順",
     "走破タイム",
-    "着差1",
+    "着差コード1",
     "1コーナー順位",
     "2コーナー順位",
     "3コーナー順位",
@@ -183,7 +183,7 @@ HORSE_RACE_INFO_SCRAPING_COLUMNS: list[str] = [
 ENTRY_ONLY_EXCLUDE: set[str] = {
     "確定着順",
     "走破タイム",
-    "着差1",
+    "着差コード1",
     "1コーナー順位",
     "2コーナー順位",
     "3コーナー順位",

@@ -4,7 +4,11 @@ from datetime import date
 
 import pandas as pd
 
-from keiba_data_interface.providers.scraping_converters.common import set_ijo_kubun, set_zogen
+from keiba_data_interface.providers.scraping_converters.common import (
+    convert_chakusa_to_code,
+    set_ijo_kubun,
+    set_zogen,
+)
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
@@ -92,7 +96,7 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
             converted["走破タイム"] = row["タイム"]
 
         if pd.notna(chakusa) and not is_kokaku:
-            converted["着差1"] = chakusa
+            converted["着差コード1"] = convert_chakusa_to_code(chakusa)
 
         if pd.notna(row.get("人気")) and str(row["人気"]).isdigit():
             converted["単勝人気順"] = int(row["人気"])

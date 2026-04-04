@@ -155,14 +155,14 @@ def test_chakusa_mapped(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """着差が着差1に正しくマッピングされる."""
+    """着差が着差コード1に正しくマッピングされる."""
     from .conftest import _create_scraping_result
 
     mock_result_scraper.get_result.return_value = _create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["着差1"] == "クビ"
+    assert result.iloc[1]["着差コード1"] == "クビ"
 
 
 def test_cockaku_chakusa_not_mapped_to_chakusa1(
@@ -170,7 +170,7 @@ def test_cockaku_chakusa_not_mapped_to_chakusa1(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """降着の場合、着差テキストは着差1にマッピングされない."""
+    """降着の場合、着差テキストは着差コード1にマッピングされない."""
     from .conftest import _create_scraping_result
 
     raw = _create_scraping_result()
@@ -179,7 +179,7 @@ def test_cockaku_chakusa_not_mapped_to_chakusa1(
 
     result = provider_full.get_result(race_code)
 
-    assert pd.isna(result.iloc[0]["着差1"])
+    assert pd.isna(result.iloc[0]["着差コード1"])
 
 
 def test_header_columns_from_race_code(

@@ -7,6 +7,7 @@ import pandas as pd
 from keiba_data_interface.providers.scraping_converters.common import (
     SEIBETSU_TO_CODE,
     TOZAI_SHOZOKU_TO_CODE,
+    convert_chakusa_to_code,
     parse_time_to_seconds,
     set_header_columns,
     set_ijo_kubun,
@@ -88,7 +89,7 @@ def convert_result(
             converted["走破タイム"] = row["タイム"]
 
         if pd.notna(chakusa) and not is_kokaku:
-            converted["着差1"] = chakusa
+            converted["着差コード1"] = convert_chakusa_to_code(chakusa)
 
         if pd.notna(row.get("人気")) and str(row["人気"]).isdigit():
             converted["単勝人気順"] = int(row["人気"])
