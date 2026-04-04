@@ -116,9 +116,12 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
         if pd.notna(row.get("賞金")):
             converted["獲得本賞金"] = convert_manyen_to_hyakuyen(int(row["賞金"]))
 
-        # 勝ち馬(2着馬) → 相手1馬名
+        # 勝ち馬(2着馬) → 相手1馬名（先頭・末尾のカッコを除去）
         if pd.notna(row.get("勝ち馬(2着馬)")):
-            converted["相手1馬名"] = row["勝ち馬(2着馬)"]
+            horse_name = str(row["勝ち馬(2着馬)"])
+            if horse_name.startswith("(") and horse_name.endswith(")"):
+                horse_name = horse_name[1:-1]
+            converted["相手1馬名"] = horse_name
 
         rows.append(converted)
 
