@@ -73,6 +73,14 @@ def convert_result_common(df: pd.DataFrame) -> pd.DataFrame:
                 .astype("Int64")
             )
 
+    # 単勝人気順の0→NaN変換（出走取消等でオッズが存在しない場合）
+    if "単勝人気順" in df.columns:
+        df["単勝人気順"] = (
+            df["単勝人気順"]
+            .apply(lambda v: pd.NA if not pd.isna(v) and int(v) == 0 else v)
+            .astype("Int64")
+        )
+
     return df
 
 
