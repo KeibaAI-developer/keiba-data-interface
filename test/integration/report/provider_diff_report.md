@@ -4,10 +4,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 テスト対象: レース27件, 馬10件
 
-検出差異総数: **894件**
+検出差異総数: **882件**
 
 - 未知差異（要対応）: **5件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 889件
+- 既知差異（KNOWN_DIFF_*で許容済み）: 877件
 
 ---
 
@@ -40,21 +40,17 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 |--------|----------|----------|-------------|----------|------------|-------------|
 | 1コーナー | get_race_result_info | NaN不一致 | 27 | 27 | NaN | '1' |
 | 1コーナー通過順 | get_race_result_info | NaN不一致 | 13 | 13 | NaN | '(*3,13)1,11(9,5)(2,14)-1 |
-| 1コーナー順位 | get_result | NaN不一致 | 2 | 4 | NaN | 7 |
 | 2コーナー | get_race_result_info | NaN不一致 | 27 | 27 | NaN | '2' |
 | 2コーナー通過順 | get_race_result_info | NaN不一致 | 11 | 11 | NaN | '(*3,13)1,11,9,5,14(8,2,6 |
 | 2コーナー通過順 | get_race_result_info | 値不一致 | 2 | 2 | '5,1(2,4)3' | '(*5,1)-4,2,3             |
-| 2コーナー順位 | get_result | NaN不一致 | 1 | 1 | NaN | 12 |
 | 3コーナー | get_race_result_info | NaN不一致 | 27 | 27 | NaN | '3' |
 | 3コーナー通過順 | get_race_result_info | NaN不一致 | 1 | 1 | NaN | '                         |
 | 3コーナー通過順 | get_race_result_info | 値不一致 | 12 | 12 | '(*3,13)1,11(9,5)(2,14)-1 | '                         |
-| 3コーナー順位 | get_result | NaN不一致 | 1 | 1 | 7 | NaN |
-| 3コーナー順位 | get_result | 値不一致 | 1 | 2 | 1 | 3 |
 | 3連複1人気順 | get_payoff | 値不一致 | 1 | 1 | 33 | 32 |
 | 4コーナー | get_race_result_info | NaN不一致 | 27 | 27 | NaN | '4' |
 | 4コーナー通過順 | get_race_result_info | NaN不一致 | 1 | 1 | NaN | '                         |
 | 4コーナー通過順 | get_race_result_info | 値不一致 | 12 | 12 | '(*3,13)1,11,9,5,14(8,2,6 | '                         |
-| 4コーナー順位 | get_result | NaN不一致 | 3 | 7 | 12 | NaN |
+| 4コーナー順位 | get_result | NaN不一致 | 1 | 3 | 17 | NaN |
 | グレード | get_race_info | 値不一致 | 21 | 21 | 'G1' | 'GI' |
 | コース区分 | get_race_info | 値不一致 | 6 | 6 | 'C外' | 'C ' |
 | タイム差 | get_past_performances | NaN不一致 | 5 | 15 | NaN | 0.4000 |
