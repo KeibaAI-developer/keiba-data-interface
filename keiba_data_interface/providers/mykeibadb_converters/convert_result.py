@@ -15,7 +15,8 @@ from keiba_data_interface.utils.converters import convert_time_msss_to_display
 def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
     """UMAGOTO_RACE_JOHOの結果データを統一スキーマに変換する.
 
-    共通変換のあと、走破タイムを"MSSS"→"M:SS.S"形式に変換する。
+    共通変換のあと、走破タイム・タイム差・コーナー順位を変換し、
+    単勝人気順を単勝オッズから再計算する。
 
     Args:
         raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
@@ -23,8 +24,27 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame
     """
-    df = convert_base(raw)
+    df = convert_result_common(convert_base(raw))
 
+    # 単勝人気順: 単勝オッズから再計算（同一オッズは同順位、NaNオッズの馬はNaN）
+    # レース全馬が揃っている場合のみ有効。馬単位のget_past_performancesには適用しない。
+    if "単勝オッズ" in df.columns and "単勝人気順" in df.columns:
+        valid_mask = df["単勝オッズ"].notna()
+        if valid_mask.any():
+            df.loc[valid_mask, "単勝人気順"] = (
+                df.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
+            )
+        df.loc[~valid_mask, "単勝人気順"] = pd.NA
+
+    return df
+
+
+def convert_result_common(df: pd.DataFrame) -> pd.DataFrame:
+    """走破タイム・タイム差・コーナー順位の共通変換を適用する.
+
+    convert_resultとconvert_past_performancesの共通後処理。
+    単勝人気順の再計算は含めない（レース全馬揃いの時のみ有効のため）。
+    """
     if "走破タイム" in df.columns:
         df["走破タイム"] = df["走破タイム"].apply(_convert_soha_time)
 
