@@ -122,9 +122,11 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
             if pd.notna(row.get(col)):
                 converted[f"{i}コーナー順位"] = row[col]
 
-        # 賞金: 万円 → 百円単位
+        # 賞金: 万円 → 百円単位。NaN（賞金なし）は0に変換する
         if pd.notna(row.get("賞金")):
             converted["獲得本賞金"] = convert_manyen_to_hyakuyen(int(row["賞金"]))
+        else:
+            converted["獲得本賞金"] = 0
 
         # 勝ち馬(2着馬) → 相手1馬名（先頭・末尾のカッコを除去）
         if pd.notna(row.get("勝ち馬(2着馬)")):
