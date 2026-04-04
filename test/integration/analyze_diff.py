@@ -413,12 +413,18 @@ def _compare_dataframes(
 
             if s_na and m_na:
                 continue
-            if s_na != m_na:
+
+            # 行ラベルを決定: get_past_performancesはレースコード、それ以外は馬番/馬名
+            if method == "get_past_performances" and "レースコード" in s.columns:
+                row_label = f"レースコード={s['レースコード'].iloc[idx]}"
+            elif "馬番" in s.columns:
+                row_label = f"馬番={s['馬番'].iloc[idx]}"
+            elif "馬名" in s.columns:
+                row_label = f"馬名={s['馬名'].iloc[idx]}"
+            else:
                 row_label = ""
-                if "馬番" in s.columns:
-                    row_label = f"馬番={s['馬番'].iloc[idx]}"
-                elif "馬名" in s.columns:
-                    row_label = f"馬名={s['馬名'].iloc[idx]}"
+
+            if s_na != m_na:
                 col_diffs.append(
                     DiffRecord(
                         test_case,
@@ -434,9 +440,6 @@ def _compare_dataframes(
 
             if isinstance(s_val, float) and isinstance(m_val, float):
                 if abs(s_val - m_val) >= 0.01:
-                    row_label = ""
-                    if "馬番" in s.columns:
-                        row_label = f"馬番={s['馬番'].iloc[idx]}"
                     col_diffs.append(
                         DiffRecord(
                             test_case,
@@ -452,11 +455,6 @@ def _compare_dataframes(
                 s_cmp = s_val.strip() if isinstance(s_val, str) else s_val
                 m_cmp = m_val.strip() if isinstance(m_val, str) else m_val
                 if s_cmp != m_cmp:
-                    row_label = ""
-                    if "馬番" in s.columns:
-                        row_label = f"馬番={s['馬番'].iloc[idx]}"
-                    elif "馬名" in s.columns:
-                        row_label = f"馬名={s['馬名'].iloc[idx]}"
                     col_diffs.append(
                         DiffRecord(
                             test_case,
