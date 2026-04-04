@@ -49,7 +49,10 @@ def _convert_soha_time(value: Any) -> Any:
     if pd.isna(value):
         return value
     str_val = str(value).strip()
-    if str_val and str_val.isdigit() and int(str_val) > 0:
+    if str_val and str_val.isdigit():
+        int_val = int(str_val)
+        if int_val == 0:
+            return pd.NA  # 0000 = タイム未計測（競走中止等）
         return convert_time_msss_to_display(str_val)
     return value
 
