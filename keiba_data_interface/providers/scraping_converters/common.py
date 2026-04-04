@@ -114,7 +114,8 @@ def set_zogen(converted: dict[str, object], zogen: int | float | None) -> None:
     """
     if pd.notna(zogen):
         fugo, sa = split_zogen(int(zogen))
-        converted["増減符号"] = fugo
+        if fugo is not None:
+            converted["増減符号"] = fugo
         converted["増減差"] = sa
 
 

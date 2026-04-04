@@ -44,7 +44,6 @@ KNOWN_DIFF_HORSE_RACE: set[str] = {
     "獲得本賞金",  # scrapingは賞金なし=NA vs mykeibadb=0
     "タイム差",  # 単位差異（scraping=秒, mykeibadb=0.1秒単位）および符号差異
     "増減差",  # mykeibadbは「計測不能」を999で表現、scrapingはNA
-    "増減符号",  # scraping=NaN vs mykeibadb=空文字（馬体重未発表時の表現差異）
     "異常区分コード",  # mykeibadb=4以上（競走中止等）をscraping側と同様に0に正規化済み
     "1コーナー順位",  # 異常馬(競走中止等)時にscraping=NaN vs mykeibadb=0
     "2コーナー順位",  # 同上

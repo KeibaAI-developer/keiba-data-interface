@@ -191,9 +191,9 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
         if "増減符号" in df.columns:
             df.loc[nan_zero_mask, "増減符号"] = pd.NA
 
-    # 増減符号: 増減差が NaN の残りの行も NaN に統一
+    # 増減符号: 増減差が NaN または 0（増減なし）の行は NaN に統一
     if "増減符号" in df.columns and "増減差" in df.columns:
-        df.loc[df["増減差"].isna(), "増減符号"] = pd.NA
+        df.loc[df["増減差"].isna() | (df["増減差"] == 0), "増減符号"] = pd.NA
 
     # 着差コード: スペースをアンダーバーに変換（DBでは空白が格納されている場合がある）
     # 全スペース（"___"=未設定）・空文字列はNaNに変換

@@ -4,10 +4,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 テスト対象: レース27件, 馬10件
 
-検出差異総数: **927件**
+検出差異総数: **925件**
 
 - 未知差異（要対応）: **2件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 925件
+- 既知差異（KNOWN_DIFF_*で許容済み）: 923件
 
 ---
 
@@ -61,7 +61,6 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 出走頭数 | get_race_info | 値不一致 | 2 | 2 | 18 | 16 |
 | 単勝1人気順 | get_payoff | 値不一致 | 1 | 1 | 2 | 1 |
 | 増減差 | get_past_performances | NaN不一致 | 2 | 2 | 0 | NaN |
-| 増減符号 | get_past_performances | NaN不一致 | 2 | 2 | ' ' | NaN |
 | 性別コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '1' |
 | 所属コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '2' |
 | 曜日 | get_race_info | 値不一致 | 2 | 2 | '日' | '祝' |

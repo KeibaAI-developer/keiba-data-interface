@@ -122,7 +122,7 @@ def test_zogen_zero(
     mock_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """増減がゼロの場合、符号と差が正しく分離される."""
+    """増減がゼロの場合、増減差=0・増減符号=NaNになる."""
     from .conftest import create_scraping_entry
 
     entry = create_scraping_entry()
@@ -132,7 +132,7 @@ def test_zogen_zero(
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
-    assert row["増減符号"] == " "
+    assert pd.isna(row["増減符号"])
     assert row["増減差"] == 0
 
 
