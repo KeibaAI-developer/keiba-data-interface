@@ -65,4 +65,6 @@ def _convert_time_sa(value: Any) -> Any:
         int_val = int(value)
     except (ValueError, TypeError):
         return value
+    if int_val == 9999:
+        return pd.NA  # 9999 = タイム差計測不能（競走中止等）
     return round(int_val / 10, 1)
