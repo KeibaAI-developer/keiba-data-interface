@@ -156,6 +156,12 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
     df = ensure_columns(df, HORSE_RACE_INFO_COLUMNS)
     df = apply_types(df, HORSE_RACE_INFO_TYPES)
 
+    # 馬体重: 0 = 体重未計測（出走取消等）→ NaN
+    if "馬体重" in df.columns:
+        df["馬体重"] = (
+            df["馬体重"].apply(lambda v: pd.NA if not pd.isna(v) and v == 0 else v).astype("Int64")
+        )
+
     # 増減差: JRA-VAN の 999（計測不能）→ NaN、DB上 NULL（増減なし）→ 0
     if "増減差" in df.columns:
         df["増減差"] = (
