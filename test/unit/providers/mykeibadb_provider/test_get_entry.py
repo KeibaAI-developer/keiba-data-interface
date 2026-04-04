@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock
 
+import pandas as pd
+
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
 
@@ -177,3 +179,18 @@ def test_second_horse_data(
     assert row["所属コード"] == "1"
     assert row["負担重量"] == 56.0
     assert row["着差コード1"] == "K__"
+
+
+def test_kakutei_chakujun_zero_to_nan(
+    provider: MykeibaDBProvider,
+    mock_race_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """確定着順て0のDB値（出走取消等）はNaNに変換される."""
+    raw = create_umagoto_race_joho_df()
+    raw.at[0, "kakutei_chakujun"] = 0
+    mock_race_getter.get_umagoto_race_joho.return_value = raw
+
+    result = provider.get_entry(race_code)
+
+    assert pd.isna(result.iloc[0]["確定着順"])

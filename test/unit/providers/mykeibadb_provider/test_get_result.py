@@ -155,3 +155,18 @@ def test_result_specific_columns(
     assert row["4コーナー順位"] == 3
     assert row["単勝人気順"] == 1
     assert row["獲得本賞金"] == 50000000
+
+
+def test_kakutei_chakujun_zero_to_nan(
+    provider: MykeibaDBProvider,
+    mock_race_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """確定着順て0のDB値（出走取消等）はNaNに変換される."""
+    raw = create_umagoto_race_joho_df()
+    raw.at[0, "kakutei_chakujun"] = 0
+    mock_race_getter.get_umagoto_race_joho.return_value = raw
+
+    result = provider.get_result(race_code)
+
+    assert pd.isna(result.iloc[0]["確定着順"])
