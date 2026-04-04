@@ -4,10 +4,10 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 
 テスト対象: レース27件, 馬10件
 
-検出差異総数: **955件**
+検出差異総数: **927件**
 
 - 未知差異（要対応）: **2件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 953件
+- 既知差異（KNOWN_DIFF_*で許容済み）: 925件
 
 ---
 
@@ -60,7 +60,6 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 出走頭数 | get_payoff | NaN不一致 | 27 | 27 | NaN | 16 |
 | 出走頭数 | get_race_info | 値不一致 | 2 | 2 | 18 | 16 |
 | 単勝1人気順 | get_payoff | 値不一致 | 1 | 1 | 2 | 1 |
-| 単勝人気順 | get_past_performances | NaN不一致 | 3 | 11 | NaN | 14 |
 | 増減差 | get_past_performances | NaN不一致 | 2 | 2 | 0 | NaN |
 | 増減符号 | get_past_performances | NaN不一致 | 2 | 2 | ' ' | NaN |
 | 性別コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '1' |
@@ -79,7 +78,6 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 異常区分コード | get_past_performances | 値不一致 | 1 | 1 | '降着' | '7' |
 | 着差コード1 | get_result | NaN不一致 | 1 | 1 | NaN | 'H__' |
 | 着差コード1 | get_result | 値不一致 | 2 | 3 | 'K__' | 'D__' |
-| 確定着順 | get_past_performances | NaN不一致 | 5 | 17 | NaN | 4 |
 | 競走名本題 | get_race_info | 値不一致 | 20 | 20 | 'ジャパンC' | 'ジャパンカップ' |
 | 競走条件名称 | get_race_info | 値不一致 | 27 | 27 | 'オープン' | '\u3000\u3000\u3000\u3000 |
 | 競走種別 | get_race_info | 値不一致 | 1 | 1 | '障害３歳以上' | 'サラ障害３歳以上' |

@@ -86,8 +86,12 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
         set_ijo_kubun(converted, ijo_kubun, None)
 
         # 結果カラム
-        if pd.notna(chakujun_raw) and str(chakujun_raw).isdigit():
-            converted["確定着順"] = int(chakujun_raw)
+        # 着順はfloat64で格納されるため int(float) で変換する
+        if pd.notna(chakujun_raw):
+            try:
+                converted["確定着順"] = int(chakujun_raw)
+            except (ValueError, TypeError):
+                pass
 
         if pd.notna(row.get("タイム")):
             converted["走破タイム"] = row["タイム"]
@@ -96,8 +100,12 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
         if pd.notna(row.get("着差")):
             converted["タイム差"] = row["着差"]
 
-        if pd.notna(row.get("人気")) and str(row["人気"]).isdigit():
-            converted["単勝人気順"] = int(row["人気"])
+        # 人気はfloat64で格納されるため int(float) で変換する
+        if pd.notna(row.get("人気")):
+            try:
+                converted["単勝人気順"] = int(row["人気"])
+            except (ValueError, TypeError):
+                pass
 
         if pd.notna(row.get("単勝オッズ")):
             converted["単勝オッズ"] = row["単勝オッズ"]
