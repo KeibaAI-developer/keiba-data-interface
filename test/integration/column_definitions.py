@@ -37,7 +37,7 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "出走頭数",  # 取消/除外馬をカウントに含むかの差異
 }
 KNOWN_DIFF_HORSE_RACE: set[str] = {
-    "所属コード",  # past_perf: scrapingが取得していないカラム（NaN差異）
+    "所属コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
     "調教師名略称",  # 略称の長さが異なる
     "騎手名略称",  # 略称の長さが異なる
     "着差コード1",  # past_perf: scraping非対応カラム（NaN差異）
@@ -56,10 +56,10 @@ KNOWN_DIFF_HORSE_RACE: set[str] = {
     "走破タイム",  # 異常馬(競走中止等)時にscraping=NaN vs mykeibadb="0000"
     "馬体重",  # 出走取消時にscraping=NaN vs mykeibadb=0
     "相手1馬名",  # scraping="(馬名)" vs mykeibadb="馬名"（括弧有無差異）
-    "調教師コード",  # past_perf: scrapingが取得していないカラム（NaN差異）
-    "馬名",  # past_perf: scrapingが取得していないカラム（NaN差異）
-    "馬齢",  # past_perf: scrapingが取得していないカラム（NaN差異）
-    "性別コード",  # past_perf: scrapingが取得していないカラム（NaN差異）
+    "調教師コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
+    "馬名",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
+    "馬齢",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
+    "性別コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
 }
 KNOWN_DIFF_RACE_RESULT_INFO: set[str] = {
     "1コーナー",  # scraping converterがコーナー値（数字）を取得していない
@@ -204,8 +204,15 @@ PAST_PERF_ADDITIONAL_SCRAPING_COLUMNS: list[str] = [
 
 # get_past_performances時にscraping非対応のため除外するカラム
 # (着差コード1はscrapingの着差カラムはタイム差として使用するため、着差コード1は常にNaNになる)
+# (性別コード・所属コード・馬齢・調教師コード・調教師名略称・馬名はPastPerformancesScraperが取得しない)
 PAST_PERF_EXCLUDE: set[str] = {
     "着差コード1",
+    "性別コード",
+    "所属コード",
+    "馬齢",
+    "調教師コード",
+    "調教師名略称",
+    "馬名",
 }
 
 

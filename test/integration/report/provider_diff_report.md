@@ -2,12 +2,12 @@
 
 scraping○カラムのみを比較対象とし、既知差異と未知差異を分離。
 
-テスト対象: レース27件, 馬10件
+テスト対象: レース27件, 馬9件
 
-検出差異総数: **925件**
+検出差異総数: **757件**
 
 - 未知差異（要対応）: **2件**
-- 既知差異（KNOWN_DIFF_*で許容済み）: 923件
+- 既知差異（KNOWN_DIFF_*で許容済み）: 755件
 
 ---
 
@@ -61,8 +61,6 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 出走頭数 | get_race_info | 値不一致 | 2 | 2 | 18 | 16 |
 | 単勝1人気順 | get_payoff | 値不一致 | 1 | 1 | 2 | 1 |
 | 増減差 | get_past_performances | NaN不一致 | 2 | 2 | 0 | NaN |
-| 性別コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '1' |
-| 所属コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '2' |
 | 曜日 | get_race_info | 値不一致 | 2 | 2 | '日' | '祝' |
 | 本賞金1着 | get_race_info | 値不一致 | 1 | 1 | 970000 | 680000 |
 | 本賞金2着 | get_race_info | 値不一致 | 1 | 1 | 390000 | 680000 |
@@ -87,12 +85,8 @@ scraping○カラムのみを比較対象とし、既知差異と未知差異を
 | 複勝2人気順 | get_payoff | 値不一致 | 3 | 3 | 1 | 2 |
 | 複勝3人気順 | get_payoff | 値不一致 | 1 | 1 | 3 | 2 |
 | 複勝3馬番 | get_payoff | NaN不一致 | 1 | 1 | NaN | 0 |
-| 調教師コード | get_past_performances | NaN不一致 | 10 | 28 | NaN | '01159' |
 | 調教師名略称 | get_entry | 値不一致 | 27 | 83 | '和田郎' | '和田正一' |
-| 調教師名略称 | get_past_performances | NaN不一致 | 10 | 28 | NaN | '高柳大輔' |
 | 調教師名略称 | get_result | 値不一致 | 27 | 83 | '和田郎' | '和田正一' |
 | 馬単1人気順 | get_payoff | 値不一致 | 1 | 1 | 10 | 9 |
-| 馬名 | get_past_performances | NaN不一致 | 10 | 28 | NaN | 'ミュージアムマイル' |
-| 馬齢 | get_past_performances | NaN不一致 | 10 | 28 | NaN | 2 |
 | 騎手名略称 | get_entry | 値不一致 | 27 | 82 | '福永' | '福永祐一' |
 | 騎手名略称 | get_result | 値不一致 | 27 | 83 | '福永' | '福永祐一' |

@@ -256,15 +256,15 @@ UMAGOTO_RACE_JOHOテーブル全体に対応する。行数は出走頭数（出
 | 8 | 枠番 | int | ○ | WAKUBAN | |
 | 9 | 馬番 | int | ○ | UMABAN | |
 | 10 | 血統登録番号 | str | ○ | KETTO_TOROKU_BANGO | 馬ID |
-| 11 | 馬名 | str | ○ | BAMEI | |
+| 11 | 馬名 | str | △ | BAMEI | △=get_entry/get_resultのみ対応（get_past_performancesは取得不可）|
 | 12 | 馬記号 | str | × | UMAKIGO_CODE→馬記号名 | コード変換後 |
-| 13 | 性別コード | str | ○ | SEIBETSU_CODE | "1"=牡,"2"=牝,"3"=セン。コードで保持 |
+| 13 | 性別コード | str | △ | SEIBETSU_CODE | "1"=牡,"2"=牝,"3"=セン。コードで保持。△=get_entry/get_resultのみ対応（get_past_performancesは取得不可）|
 | 14 | 品種 | str | × | HINSHU_CODE→品種名 | "サラブレッド"等。コード変換後 |
 | 15 | 毛色 | str | × | MOSHOKU_CODE→毛色名 | "鹿毛","栗毛"等。コード変換後 |
-| 16 | 馬齢 | int | ○ | BAREI | |
-| 17 | 所属コード | str | ○ | TOZAI_SHOZOKU_CODE | "1"=関東,"2"=関西,"3"=地方招待,"4"=外国招待。コードで保持 |
-| 18 | 調教師コード | str | ○ | CHOKYOSHI_CODE | JRA調教師コード |
-| 19 | 調教師名略称 | str | ○ | CHOKYOSHIMEI_RYAKUSHO | |
+| 16 | 馬齢 | int | △ | BAREI | △=get_entry/get_resultのみ対応（get_past_performancesは取得不可）|
+| 17 | 所属コード | str | △ | TOZAI_SHOZOKU_CODE | "1"=関東,"2"=関西,"3"=地方招待,"4"=外国招待。コードで保持。△=get_entry/get_resultのみ対応（get_past_performancesは取得不可）|
+| 18 | 調教師コード | str | △ | CHOKYOSHI_CODE | JRA調教師コード。△=get_entry/get_resultのみ対応（get_past_performancesは取得不可）|
+| 19 | 調教師名略称 | str | △ | CHOKYOSHIMEI_RYAKUSHO | △=get_entry/get_resultのみ対応（get_past_performancesは取得不可）|
 | 20 | 馬主コード | str | × | BANUSHI_CODE | |
 | 21 | 馬主名 | str | × | BANUSHIMEI_HOJINKAKU_NASHI | |
 | 22 | 服色標示 | str | × | FUKUSHOKU_HYOJI | |
