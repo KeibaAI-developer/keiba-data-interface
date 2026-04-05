@@ -122,6 +122,11 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].apply(lambda v: "_" if pd.notna(v) and str(v).strip() == "" else v)
 
+    # 馬場状態: 空文字（対象トラックなし）は NaN に統一する
+    for col in ["shiba_babajotai", "dirt_babajotai"]:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda v: pd.NA if pd.notna(v) and str(v).strip() == "" else v)
+
     df = df.rename(columns=RACE_INFO_RENAME)
 
     df = ensure_columns(df, RACE_INFO_COLUMNS)
