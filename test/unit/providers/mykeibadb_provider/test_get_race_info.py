@@ -120,7 +120,7 @@ def test_code_converted_columns_renamed(
     assert row["重量種別"] == "定量"
     assert row["トラック"] == "芝・右"
     assert row["天候"] == "晴"
-    assert row["芝馬場状態"] == "良"
+    assert row["芝馬場状態コード"] == "1"
 
 
 def test_direct_rename_columns(

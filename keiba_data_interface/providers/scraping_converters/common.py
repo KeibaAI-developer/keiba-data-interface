@@ -47,6 +47,15 @@ GRADE_TO_CODE: dict[str, str] = {
     "": "_",  # 一般競走
 }
 
+# 馬場状態文字列 → 馬場状態コード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md BABAJOTAI_CODE を参照
+BABAJOTAI_TO_CODE: dict[str, str] = {
+    "良": "1",
+    "稍": "2",  # 稍重
+    "重": "3",
+    "不": "4",  # 不良
+}
+
 # 所属文字列 → 東西所属コード変換マッピング（scraping出力 → JRA-VANコード）
 TOZAI_SHOZOKU_TO_CODE: dict[str, str] = {
     "美浦": "1",

@@ -74,8 +74,8 @@ RACE_INFO_TYPES: dict[str, str] = {
     "出走頭数": "Int64",
     "入線頭数": "Int64",
     "天候": "object",
-    "芝馬場状態": "object",
-    "ダート馬場状態": "object",
+    "芝馬場状態コード": "object",
+    "ダート馬場状態コード": "object",
 }
 
 

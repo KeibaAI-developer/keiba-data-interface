@@ -171,8 +171,8 @@ def test_turf_race_baba_assignment(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["芝馬場状態"] == "良"
-    assert pd.isna(row["ダート馬場状態"])
+    assert row["芝馬場状態コード"] == "1"
+    assert pd.isna(row["ダート馬場状態コード"])
 
 
 def test_dirt_race_baba_assignment(
@@ -187,8 +187,8 @@ def test_dirt_race_baba_assignment(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert pd.isna(row["芝馬場状態"])
-    assert row["ダート馬場状態"] == "重"
+    assert pd.isna(row["芝馬場状態コード"])
+    assert row["ダート馬場状態コード"] == "3"
 
 
 def test_missing_columns_filled_with_nan(
@@ -226,8 +226,8 @@ def test_steeplechase_baba_assignment(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["芝馬場状態"] == "稍"
-    assert pd.isna(row["ダート馬場状態"])
+    assert row["芝馬場状態コード"] == "2"
+    assert pd.isna(row["ダート馬場状態コード"])
 
 
 def test_date_differs_from_race_code_year_and_monthday_come_from_race_code(

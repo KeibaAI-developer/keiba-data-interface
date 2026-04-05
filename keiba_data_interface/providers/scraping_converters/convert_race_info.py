@@ -2,7 +2,10 @@
 
 import pandas as pd
 
-from keiba_data_interface.providers.scraping_converters.common import GRADE_TO_CODE
+from keiba_data_interface.providers.scraping_converters.common import (
+    BABAJOTAI_TO_CODE,
+    GRADE_TO_CODE,
+)
 from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
@@ -84,13 +87,14 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         if pd.notna(val):
             converted[schema_col] = convert_manyen_to_hyakuyen(int(val))
 
-    # 馬場 → 芝馬場状態 / ダート馬場状態の振り分け
+    # 馬場 → 芝馬場状態コード / ダート馬場状態コードの振り分け
     baba = row["馬場"] if pd.notna(row.get("馬場")) else None
     if baba is not None:
+        baba_code = BABAJOTAI_TO_CODE.get(str(baba))
         if shiba_da == "芝" or shiba_da == "障":
-            converted["芝馬場状態"] = baba
+            converted["芝馬場状態コード"] = baba_code
         elif shiba_da == "ダ":
-            converted["ダート馬場状態"] = baba
+            converted["ダート馬場状態コード"] = baba_code
 
     result = pd.DataFrame([converted])
     result = ensure_columns(result, RACE_INFO_COLUMNS)

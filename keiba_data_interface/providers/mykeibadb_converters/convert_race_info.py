@@ -75,8 +75,8 @@ RACE_INFO_RENAME: dict[str, str] = {
     "shusso_tosu": "出走頭数",
     "nyusen_tosu": "入線頭数",
     "tenko": "天候",
-    "shiba_babajotai": "芝馬場状態",
-    "dirt_babajotai": "ダート馬場状態",
+    "shiba_babajotai_code": "芝馬場状態コード",
+    "dirt_babajotai_code": "ダート馬場状態コード",
 }
 
 
@@ -122,10 +122,14 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].apply(lambda v: "_" if pd.notna(v) and str(v).strip() == "" else v)
 
-    # 馬場状態: 空文字（対象トラックなし）は NaN に統一する
-    for col in ["shiba_babajotai", "dirt_babajotai"]:
+    # 馬場状態コード: "0"（未設定）または空白（対象トラックなし）は NaN に統一する
+    for col in ["shiba_babajotai_code", "dirt_babajotai_code"]:
         if col in df.columns:
-            df[col] = df[col].apply(lambda v: pd.NA if pd.notna(v) and str(v).strip() == "" else v)
+            df[col] = df[col].apply(
+                lambda v: (
+                    pd.NA if pd.isna(v) or str(v).strip() == "" or str(v).strip() == "0" else v
+                )
+            )
 
     df = df.rename(columns=RACE_INFO_RENAME)
 
