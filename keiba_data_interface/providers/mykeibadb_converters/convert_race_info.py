@@ -35,7 +35,7 @@ RACE_INFO_RENAME: dict[str, str] = {
     "grade_code": "グレードコード",
     "henkomae_grade_code": "変更前グレードコード",
     "kyoso_shubetsu": "競走種別",
-    "kyoso_kigo": "競走記号",
+    "kyoso_kigo_code": "競走記号コード",
     "juryo_shubetsu": "重量種別",
     "kyoso_joken_code_2sai": "競走条件2歳",
     "kyoso_joken_code_3sai": "競走条件3歳",

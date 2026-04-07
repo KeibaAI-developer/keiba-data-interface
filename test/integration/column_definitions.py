@@ -13,14 +13,13 @@ from keiba_data_interface.schema.columns import ODDS_COLUMNS
 # 各差異の理由:
 #   競走名本題: scraping=通称（例:日本ダービー）vs mykeibadb=正式名称（例:東京優駿）
 #   競走種別: scraping=○○ vs mykeibadb=（JRA-VANコード変換後名称の差異）
-#   競走記号: 同上
 #   重量種別: 同上
 #   コース区分: scrapingは文字列、mykeibadbはコード変換後名称で差異あり
 KNOWN_DIFF_RACE_INFO: set[str] = {
     "競走名本題",
     "グレードコード",  # netkeibaでグレード表示なしの特別競走（scraping=_、mykeibadb=E）の差異
     "競走種別",
-    "競走記号",
+    "競走記号コード",  # KYOSO_KIGO_TO_CODE未対応パターン導入と数少ないケース用に許容
     "重量種別",
     "コース区分",
     "競走条件名称",  # mykeibadb converterが未対応でNAを返す
@@ -99,7 +98,7 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "競走名本題",
     "グレードコード",
     "競走種別",
-    "競走記号",
+    "競走記号コード",
     "重量種別",
     "競走条件名称",
     "距離",

@@ -106,7 +106,7 @@ def test_direct_mapping_columns(
     assert row["競走種別"] == "サラ系4歳以上"
     assert row["競走条件名称"] == "オープン"
     assert row["グレードコード"] == "A"
-    assert row["競走記号"] == "(国際)(指)"
+    assert row["競走記号コード"] == "N01"
     assert row["重量種別"] == "定量"
     assert row["出走頭数"] == 18
 

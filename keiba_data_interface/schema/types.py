@@ -34,7 +34,7 @@ RACE_INFO_TYPES: dict[str, str] = {
     "グレードコード": "object",
     "変更前グレードコード": "object",
     "競走種別": "object",
-    "競走記号": "object",
+    "競走記号コード": "object",
     "重量種別": "object",
     "競走条件2歳": "object",
     "競走条件3歳": "object",

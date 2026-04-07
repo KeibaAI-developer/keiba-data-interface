@@ -5,6 +5,7 @@ import pandas as pd
 from keiba_data_interface.providers.scraping_converters.common import (
     BABAJOTAI_TO_CODE,
     GRADE_TO_CODE,
+    KYOSO_KIGO_TO_CODE,
 )
 from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
@@ -65,7 +66,9 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     converted["グレードコード"] = GRADE_TO_CODE.get(
         str(row["グレード"]) if pd.notna(row["グレード"]) else "", "_"
     )
-    converted["競走記号"] = row["競走記号"]
+    converted["競走記号コード"] = KYOSO_KIGO_TO_CODE.get(
+        str(row["競走記号"]) if pd.notna(row.get("競走記号")) else "", "000"
+    )
     converted["重量種別"] = row["重量種別"]
     converted["出走頭数"] = row["頭数"]
 
