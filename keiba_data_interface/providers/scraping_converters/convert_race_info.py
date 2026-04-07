@@ -77,10 +77,9 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     sayuu = str(row["左右"]) if pd.notna(row["左右"]) else ""
     converted["トラック"] = shiba_da + sayuu
 
-    # コース + 内外 → コース区分
+    # コース
     course = str(row["コース"]) if pd.notna(row["コース"]) else ""
-    uchisoto = str(row["内外"]) if pd.notna(row["内外"]) else ""
-    converted["コース区分"] = course + uchisoto
+    converted["コース区分"] = course
 
     # 賞金: 万円 → 百円単位変換
     for i in range(1, 6):

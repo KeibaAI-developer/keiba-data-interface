@@ -130,14 +130,14 @@ def test_course_division_concatenation(
     mock_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """コースと内外が結合されてコース区分カラムになる."""
+    """コースがコース区分カラムになる."""
     from .conftest import create_scraping_race_info
 
     mock_scraper.get_race_info.return_value = create_scraping_race_info(course="B", uchisoto="内")
 
     result = provider.get_race_info(race_code)
 
-    assert result.iloc[0]["コース区分"] == "B内"
+    assert result.iloc[0]["コース区分"] == "B"
 
 
 def test_prize_money_conversion(

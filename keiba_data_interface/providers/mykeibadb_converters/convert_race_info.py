@@ -131,6 +131,11 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
                 )
             )
 
+    # コース区分: 末尾スペース除去（例: "A " → "A"）
+    for col in ["course_kubun", "henkomae_course_kubun"]:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda v: str(v).strip() if pd.notna(v) else v)
+
     df = df.rename(columns=RACE_INFO_RENAME)
 
     df = ensure_columns(df, RACE_INFO_COLUMNS)
