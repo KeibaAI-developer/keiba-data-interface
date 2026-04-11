@@ -31,7 +31,6 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "芝馬場状態コード",  # scraping=NA vs mykeibadb=空文字（該当トラックなし時の表現差異）
     "ダート馬場状態コード",  # 同上
     "曜日",  # scraping="日" vs mykeibadb="祝"（祝日の表現差異）
-    "出走頭数",  # 取消/除外馬をカウントに含むかの差異
 }
 KNOWN_DIFF_HORSE_RACE: set[str] = {
     "所属コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
@@ -112,7 +111,7 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "本賞金4着",
     "本賞金5着",
     "発走時刻",
-    "出走頭数",
+    "登録頭数",
     "天候",
     "芝馬場状態コード",
     "ダート馬場状態コード",

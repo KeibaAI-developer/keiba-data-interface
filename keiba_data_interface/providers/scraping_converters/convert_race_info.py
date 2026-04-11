@@ -70,7 +70,7 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         str(row["競走記号"]) if pd.notna(row.get("競走記号")) else "", "000"
     )
     converted["重量種別"] = row["重量種別"]
-    converted["出走頭数"] = row["頭数"]
+    converted["登録頭数"] = row["頭数"]
 
     # レース種別・芝ダ・左右・内外
     converted["レース種別"] = row["レース種別"]

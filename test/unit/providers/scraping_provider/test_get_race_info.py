@@ -108,7 +108,7 @@ def test_direct_mapping_columns(
     assert row["グレードコード"] == "A"
     assert row["競走記号コード"] == "N01"
     assert row["重量種別"] == "定量"
-    assert row["出走頭数"] == 18
+    assert row["登録頭数"] == 18
 
 
 def test_race_shubetsu_mapping(
@@ -298,7 +298,7 @@ def test_missing_columns_filled_with_nan(
     assert pd.isna(row["競走名カッコ内"])
     assert pd.isna(row["変更前距離"])
     assert pd.isna(row["本賞金6着"])
-    assert pd.isna(row["登録頭数"])
+    assert pd.isna(row["出走頭数"])
     assert pd.isna(row["入線頭数"])
 
 
