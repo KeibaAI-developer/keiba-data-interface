@@ -103,7 +103,7 @@ def test_direct_mapping_columns(
     assert row["発走時刻"] == "15:40"
     assert row["天候"] == "晴"
     assert row["距離"] == 3200
-    assert row["競走種別"] == "サラ系4歳以上"
+    assert row["競走種別コード"] == "14"
     assert row["競走条件名称"] == "オープン"
     assert row["グレードコード"] == "A"
     assert row["競走記号コード"] == "N01"

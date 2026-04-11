@@ -116,7 +116,7 @@ def test_code_converted_columns_renamed(
     assert row["競馬場"] == "中山"
     assert row["曜日"] == "日"
     assert row["グレードコード"] == "A"
-    assert row["競走種別"] == "サラ系３歳以上"
+    assert row["競走種別コード"] == "13"
     assert row["競走記号コード"] == "N01"
     assert row["重量種別"] == "定量"
     assert row["トラックコード"] == "17"

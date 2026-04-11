@@ -101,6 +101,17 @@ KYOSO_KIGO_TO_CODE: dict[str, str] = {
     "(国際) 牡・牝(指)": "N41",
 }
 
+# 競走種別文字列 → 競走種別コード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md KYOSO_SHUBETSU_CODE を参照
+KYOSO_SHUBETSU_TO_CODE: dict[str, str] = {
+    "サラ系２歳": "11",
+    "サラ系３歳": "12",
+    "サラ系３歳以上": "13",
+    "サラ系４歳以上": "14",
+    "障害３歳以上": "18",
+    "障害４歳以上": "19",
+}
+
 # 所属文字列 → 東西所属コード変換マッピング（scraping出力 → JRA-VANコード）
 TOZAI_SHOZOKU_TO_CODE: dict[str, str] = {
     "美浦": "1",

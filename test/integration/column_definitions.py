@@ -18,7 +18,6 @@ from keiba_data_interface.schema.columns import ODDS_COLUMNS
 KNOWN_DIFF_RACE_INFO: set[str] = {
     "競走名本題",
     "グレードコード",  # netkeibaでグレード表示なしの特別競走（scraping=_、mykeibadb=E）の差異
-    "競走種別",
     "競走記号コード",  # KYOSO_KIGO_TO_CODE未対応パターン導入と数少ないケース用に許容
     "重量種別",
     "コース区分",
@@ -95,7 +94,7 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "曜日",
     "競走名本題",
     "グレードコード",
-    "競走種別",
+    "競走種別コード",
     "競走記号コード",
     "重量種別",
     "競走条件名称",
