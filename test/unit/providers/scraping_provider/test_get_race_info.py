@@ -111,18 +111,107 @@ def test_direct_mapping_columns(
     assert row["出走頭数"] == 18
 
 
-def test_track_concatenation(
+def test_race_shubetsu_mapping(
     provider: ScrapingProvider,
     mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
-    """芝ダと左右が結合されてトラックカラムになる."""
+    """レース種別がそのままマッピングされる."""
     mock_scraper.get_race_info.return_value = turf_race_info
 
     result = provider.get_race_info(race_code)
 
-    assert result.iloc[0]["トラック"] == "芝左"
+    assert result.iloc[0]["レース種別"] == "平地"
+
+
+def test_shiba_da_mapping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """芝ダがそのままマッピングされる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["芝ダ"] == "芝"
+
+
+def test_sayuu_mapping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """左右がそのままマッピングされる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["左右"] == "左"
+
+
+def test_uchisoto_mapping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """内外がそのままマッピングされる."""
+    from .conftest import create_scraping_race_info
+
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(uchisoto="外")
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["内外"] == "外"
+
+
+def test_uchisoto_empty_becomes_nan(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """内外が空文字の場合NaNになる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert pd.isna(result.iloc[0]["内外"])
+
+
+def test_steeplechase_shiba_da_and_race_shubetsu(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """障害レースの芝ダが芝、レース種別が障害となる."""
+    from .conftest import create_scraping_race_info
+
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(
+        shiba_da="芝", race_shubetsu="障害"
+    )
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["芝ダ"] == "芝"
+    assert result.iloc[0]["レース種別"] == "障害"
+
+
+def test_track_code_is_nan_for_scraping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """scrapingではトラックコードはNaNになる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert pd.isna(result.iloc[0]["トラックコード"])
 
 
 def test_course_division_concatenation(
@@ -221,7 +310,9 @@ def test_steeplechase_baba_assignment(
     """障害レースで馬場状態が芝馬場状態に格納される."""
     from .conftest import create_scraping_race_info
 
-    mock_scraper.get_race_info.return_value = create_scraping_race_info(shiba_da="障", baba="稍")
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(
+        shiba_da="芝", race_shubetsu="障害", baba="稍"
+    )
 
     result = provider.get_race_info(race_code)
 

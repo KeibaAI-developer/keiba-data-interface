@@ -72,10 +72,17 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     converted["重量種別"] = row["重量種別"]
     converted["出走頭数"] = row["頭数"]
 
-    # 芝ダ + 左右 → トラック
+    # レース種別・芝ダ・左右・内外
+    converted["レース種別"] = row["レース種別"]
     shiba_da = str(row["芝ダ"]) if pd.notna(row["芝ダ"]) else ""
+    if shiba_da in ("芝", "ダ"):
+        converted["芝ダ"] = shiba_da
     sayuu = str(row["左右"]) if pd.notna(row["左右"]) else ""
-    converted["トラック"] = shiba_da + sayuu
+    if sayuu:
+        converted["左右"] = sayuu
+    uchisoto = str(row["内外"]) if pd.notna(row.get("内外")) else ""
+    if uchisoto:
+        converted["内外"] = uchisoto
 
     # コース
     course = str(row["コース"]) if pd.notna(row["コース"]) else ""
@@ -93,7 +100,7 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     baba = row["馬場"] if pd.notna(row.get("馬場")) else None
     if baba is not None:
         baba_code = BABAJOTAI_TO_CODE.get(str(baba))
-        if shiba_da == "芝" or shiba_da == "障":
+        if shiba_da == "芝":
             converted["芝馬場状態コード"] = baba_code
         elif shiba_da == "ダ":
             converted["ダート馬場状態コード"] = baba_code

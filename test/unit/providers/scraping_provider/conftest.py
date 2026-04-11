@@ -16,6 +16,7 @@ def create_scraping_race_info(
     sayuu: str = "左",
     course: str = "A",
     uchisoto: str = "",
+    race_shubetsu: str = "平地",
 ) -> pd.DataFrame:
     """scraping出力の典型的なレース情報DataFrameを生成する.
 
@@ -25,6 +26,7 @@ def create_scraping_race_info(
         sayuu (str): 左右
         course (str): コース
         uchisoto (str): 内外
+        race_shubetsu (str): レース種別
 
     Returns:
         pd.DataFrame: scraping出力形式のレース情報
@@ -39,6 +41,7 @@ def create_scraping_race_info(
                 "発走時刻": "15:40",
                 "天候": "晴",
                 "馬場": baba,
+                "レース種別": race_shubetsu,
                 "芝ダ": shiba_da,
                 "距離": 3200,
                 "左右": sayuu,

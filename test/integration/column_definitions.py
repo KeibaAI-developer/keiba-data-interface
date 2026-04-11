@@ -23,7 +23,6 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "重量種別",
     "コース区分",
     "競走条件名称",  # mykeibadb converterが未対応でNAを返す
-    "トラック",  # scraping="芝左" vs mykeibadb="芝・左"（変換フォーマット差異）
     "本賞金1着",  # netkeibaとJRA-VANで賞金データが異なる場合がある
     "本賞金2着",
     "本賞金3着",
@@ -102,7 +101,10 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "重量種別",
     "競走条件名称",
     "距離",
-    "トラック",
+    "レース種別",
+    "芝ダ",
+    "左右",
+    "内外",
     "コース区分",
     "本賞金1着",
     "本賞金2着",

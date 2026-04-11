@@ -10,6 +10,55 @@ from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_hhmm_to_display
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
+# トラックコード → レース種別の変換マッピング
+_TRACK_CODE_TO_RACE_SHUBETSU: dict[str, str] = {
+    **{str(c): "平地" for c in range(10, 30)},
+    **{str(c): "障害" for c in range(51, 60)},
+}
+
+# トラックコード → 芝ダの変換マッピング
+_TRACK_CODE_TO_SHIBA_DA: dict[str, str] = {
+    **{str(c): "芝" for c in range(10, 23)},
+    **{str(c): "ダ" for c in range(23, 30)},
+    **{str(c): "芝" for c in range(51, 60)},
+}
+
+# トラックコード → 左右の変換マッピング
+_TRACK_CODE_TO_SAYUU: dict[str, str] = {
+    "10": "直",
+    **{str(c): "左" for c in range(11, 17)},
+    **{str(c): "右" for c in range(17, 23)},
+    "23": "左",
+    "24": "右",
+    "25": "左",
+    "26": "右",
+    "27": "左",
+    "28": "右",
+    "29": "直",
+    "53": "左",
+}
+
+# トラックコード → 内外の変換マッピング
+_TRACK_CODE_TO_UCHISOTO: dict[str, str] = {
+    "12": "外",
+    "13": "内-外",
+    "14": "外-内",
+    "15": "内",
+    "16": "外",
+    "18": "外",
+    "19": "内-外",
+    "20": "外-内",
+    "21": "内",
+    "22": "外",
+    "25": "内",
+    "26": "外",
+    "55": "外",
+    "56": "外-内",
+    "57": "内-外",
+    "58": "内",
+    "59": "外",
+}
+
 # RACE_SHOSAI → レース基本情報のカラムリネームマッピング
 RACE_INFO_RENAME: dict[str, str] = {
     "race_code": "レースコード",
@@ -45,8 +94,8 @@ RACE_INFO_RENAME: dict[str, str] = {
     "kyoso_joken_meisho": "競走条件名称",
     "kyori": "距離",
     "henkomae_kyori": "変更前距離",
-    "track": "トラック",
-    "henkomae_track": "変更前トラック",
+    "track_code": "トラックコード",
+    "henkomae_track_code": "変更前トラックコード",
     "course_kubun": "コース区分",
     "henkomae_course_kubun": "変更前コース区分",
     "honshokin1": "本賞金1着",
@@ -135,6 +184,14 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
     for col in ["course_kubun", "henkomae_course_kubun"]:
         if col in df.columns:
             df[col] = df[col].apply(lambda v: str(v).strip() if pd.notna(v) else v)
+
+    # トラックコードからレース種別・芝ダ・左右・内外を導出
+    if "track_code" in df.columns:
+        tc = df["track_code"].apply(lambda v: str(v).strip() if pd.notna(v) else "")
+        df["レース種別"] = tc.map(_TRACK_CODE_TO_RACE_SHUBETSU)
+        df["芝ダ"] = tc.map(_TRACK_CODE_TO_SHIBA_DA)
+        df["左右"] = tc.map(_TRACK_CODE_TO_SAYUU)
+        df["内外"] = tc.map(_TRACK_CODE_TO_UCHISOTO)
 
     df = df.rename(columns=RACE_INFO_RENAME)
 

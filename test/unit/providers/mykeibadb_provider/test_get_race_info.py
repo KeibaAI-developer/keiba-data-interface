@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock
 
+import pandas as pd
 import pytest
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
@@ -118,7 +119,11 @@ def test_code_converted_columns_renamed(
     assert row["競走種別"] == "サラ系３歳以上"
     assert row["競走記号コード"] == "N01"
     assert row["重量種別"] == "定量"
-    assert row["トラック"] == "芝・右"
+    assert row["トラックコード"] == "17"
+    assert row["レース種別"] == "平地"
+    assert row["芝ダ"] == "芝"
+    assert row["左右"] == "右"
+    assert pd.isna(row["内外"])
     assert row["天候"] == "晴"
     assert row["芝馬場状態コード"] == "1"
 
