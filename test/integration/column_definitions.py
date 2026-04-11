@@ -22,7 +22,7 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "競走記号コード",  # KYOSO_KIGO_TO_CODE未対応パターン導入と数少ないケース用に許容
     "重量種別",
     "コース区分",
-    "競走条件名称",  # mykeibadb converterが未対応でNAを返す
+    "競走条件名称",  # G1等の特別競走ではmykeibadb=NaN（全角スペース）vs scraping=オープン等
     "本賞金1着",  # netkeibaとJRA-VANで賞金データが異なる場合がある
     "本賞金2着",
     "本賞金3着",

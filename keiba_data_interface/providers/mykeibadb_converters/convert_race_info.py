@@ -185,6 +185,12 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].apply(lambda v: str(v).strip() if pd.notna(v) else v)
 
+    # 競走条件名称: 全角スペースのみの場合はNaNに統一する
+    if "kyoso_joken_meisho" in df.columns:
+        df["kyoso_joken_meisho"] = df["kyoso_joken_meisho"].apply(
+            lambda v: pd.NA if pd.notna(v) and str(v).strip() == "" else v
+        )
+
     # トラックコードからレース種別・芝ダ・左右・内外を導出
     if "track_code" in df.columns:
         tc = df["track_code"].apply(lambda v: str(v).strip() if pd.notna(v) else "")
