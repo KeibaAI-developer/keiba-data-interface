@@ -20,7 +20,6 @@ _HARLON_TIME_COLUMNS: dict[str, str] = {
 
 # コーナー情報のマッピング（src_prefix, dst_suffix）
 _CORNER_COLUMNS: list[tuple[str, str]] = [
-    ("corner", "コーナー"),
     ("shukaisu", "コーナー周回数"),
     ("kaku_tsuka_juni", "コーナー通過順"),
 ]
@@ -81,12 +80,26 @@ def convert_race_result_info(raw: pd.DataFrame) -> pd.DataFrame:
             converted[dst] = convert_tenth_to_unit(int(row[src]))
 
     # コーナー情報
+    # corner{i}は「スロットiに収録されているのは実際に第何コーナーか」を示す数値文字列
+    # ("0"はデータなし)。kaku_tsuka_juni{i}を実際のコーナー番号に対応する
+    # nコーナー通過順カラムに格納する。
     for i in range(1, 5):
+        corner_src = f"corner{i}"
+        if corner_src not in row.index:
+            continue
+        corner_val = str(row[corner_src]).strip() if pd.notna(row[corner_src]) else "0"
+        if corner_val in ("0", ""):
+            continue
         for src_prefix, dst_suffix in _CORNER_COLUMNS:
             src = f"{src_prefix}{i}"
-            dst = f"{i}{dst_suffix}"
+            dst = f"{corner_val}{dst_suffix}"
             if src in row.index and pd.notna(row[src]):
-                converted[dst] = row[src]
+                val = row[src]
+                if dst_suffix == "コーナー周回数" and int(val) == 0:
+                    continue
+                if dst_suffix == "コーナー通過順" and str(val).strip() == "":
+                    continue
+                converted[dst] = val
 
     # その他のカラム
     for src, dst in _DIRECT_RENAME.items():

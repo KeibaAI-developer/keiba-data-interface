@@ -378,18 +378,20 @@ def create_race_shosai_with_result_info_df(
     data["kohan_4f"] = 474
 
     # コーナー情報
-    data["corner1"] = "3コーナー奥"
+    # corner{i}: スロットiに収録されているのが実際に第何コーナーかを示す数値文字列
+    # "0"はデータなし。このレースは3,4コーナーのみ（直線コースを持つ短距離など）
+    data["corner1"] = "3"
     data["shukaisu1"] = 1
     data["kaku_tsuka_juni1"] = "5-3(1,8)-2-4-6"
-    data["corner2"] = "4コーナー"
+    data["corner2"] = "4"
     data["shukaisu2"] = 1
-    data["kaku_tsuka_juni2"] = "3-5(1,8)-2-4-6"
-    data["corner3"] = "向正面"
-    data["shukaisu3"] = 1
-    data["kaku_tsuka_juni3"] = "3(1,5)-8-2-4-6"
-    data["corner4"] = "4コーナー"
-    data["shukaisu4"] = 1
-    data["kaku_tsuka_juni4"] = "1-3-5-8-2-4-6"
+    data["kaku_tsuka_juni2"] = "1-3-5-8-2-4-6"
+    data["corner3"] = "0"
+    data["shukaisu3"] = 0
+    data["kaku_tsuka_juni3"] = "      "
+    data["corner4"] = "0"
+    data["shukaisu4"] = 0
+    data["kaku_tsuka_juni4"] = "      "
 
     # レコード更新区分
     data["record_koshin_kubun"] = "1"

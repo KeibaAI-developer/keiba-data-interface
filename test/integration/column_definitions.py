@@ -57,10 +57,6 @@ KNOWN_DIFF_HORSE_RACE: set[str] = {
     "性別コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
 }
 KNOWN_DIFF_RACE_RESULT_INFO: set[str] = {
-    "1コーナー",  # scraping converterがコーナー値（数字）を取得していない
-    "2コーナー",
-    "3コーナー",
-    "4コーナー",
     "1コーナー通過順",  # scraping=NaN（1000m直線等でコーナーなし時）、フォーマット差異
     "2コーナー通過順",  # 同上
     "3コーナー通過順",  # 同上。障害レースではJRA-VANが空白を返す
@@ -123,13 +119,9 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
 RACE_RESULT_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     *[f"ラップ{d}m" for d in range(100, 5001, 100)],
-    "1コーナー",
     "1コーナー通過順",
-    "2コーナー",
     "2コーナー通過順",
-    "3コーナー",
     "3コーナー通過順",
-    "4コーナー",
     "4コーナー通過順",
 ]
 
