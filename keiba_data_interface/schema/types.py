@@ -180,7 +180,7 @@ HORSE_RACE_INFO_TYPES: dict[str, str] = {
     "マイニング予想誤差プラス": "object",
     "マイニング予想誤差マイナス": "object",
     "マイニング予想順位": "Int64",
-    "脚質判定": "object",
+    "脚質判定コード": "object",
 }
 
 

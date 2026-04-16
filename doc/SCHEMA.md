@@ -307,7 +307,7 @@ UMAGOTO_RACE_JOHOテーブル全体に対応する。行数は出走頭数（出
 | 64 | マイニング予想誤差プラス | str | × | MINING_YOSO_GOSA_PLUS | |
 | 65 | マイニング予想誤差マイナス | str | × | MINING_YOSO_GOSA_MINUS | |
 | 66 | マイニング予想順位 | int | × | MINING_YOSO_JUNI | |
-| 67 | 脚質判定 | str | × | KYAKUSHITSU_HANTEI | "逃","先","差","追" |
+| 67 | 脚質判定コード | str | × | KYAKUSHITSU_HANTEI | "1"(逃),"2"(先),"3"(差),"4"(追) |
 
 #### 異常区分コードの対応表
 

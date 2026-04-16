@@ -48,7 +48,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_entry(race_code)
 
     mock_race_getter.get_umagoto_race_joho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 
@@ -124,7 +124,7 @@ def test_code_converted_columns_renamed(
     assert row["性別コード"] == "1"
     assert row["所属コード"] == "2"
     assert row["異常区分コード"] == "0"
-    assert row["脚質判定"] == "差"
+    assert row["脚質判定コード"] == "4"
 
 
 def test_direct_rename_columns(

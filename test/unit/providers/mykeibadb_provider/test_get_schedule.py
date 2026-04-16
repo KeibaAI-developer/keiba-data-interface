@@ -48,7 +48,7 @@ def test_race_getter_called_with_correct_args(
     mock_race_getter.get_kaisai_schedule.assert_called_once_with(
         start_date=date(2025, 5, 2),
         end_date=date(2025, 5, 2),
-        convert_codes=True,
+        convert_codes=False,
     )
 
 

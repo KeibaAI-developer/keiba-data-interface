@@ -45,7 +45,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: レース基本情報（1行、RACE_INFO_COLUMNSのカラム）
         """
-        raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=False)
         return convert_race_info(raw)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
@@ -60,7 +60,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
-        raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=False)
         return convert_entry(raw)
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
@@ -75,8 +75,8 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: 単複オッズ（馬番数行、ODDS_COLUMNSのカラム）
         """
-        raw_tansho = self._odds_getter.get_odds1_tansho(race_code=race_code, convert_codes=True)
-        raw_fukusho = self._odds_getter.get_odds1_fukusho(race_code=race_code, convert_codes=True)
+        raw_tansho = self._odds_getter.get_odds1_tansho(race_code=race_code, convert_codes=False)
+        raw_fukusho = self._odds_getter.get_odds1_fukusho(race_code=race_code, convert_codes=False)
         return convert_win_show_odds(raw_tansho, raw_fukusho)
 
     def get_result(self, race_code: str) -> pd.DataFrame:
@@ -91,7 +91,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: レース結果（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
-        raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=False)
         return convert_result(raw)
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
@@ -106,7 +106,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: レース結果情報（1行、RACE_RESULT_INFO_COLUMNSのカラム）
         """
-        raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=False)
         return convert_race_result_info(raw)
 
     def get_payoff(self, race_code: str) -> pd.DataFrame:
@@ -120,7 +120,7 @@ class MykeibaDBProvider:
         Returns:
             pd.DataFrame: 払戻情報（1行、PAYOFF_COLUMNSのカラム）
         """
-        raw = self._race_getter.get_haraimodoshi(race_code=race_code, convert_codes=True)
+        raw = self._race_getter.get_haraimodoshi(race_code=race_code, convert_codes=False)
         return convert_payoff(raw)
 
     def get_past_performances(self, horse_id: str) -> pd.DataFrame:
@@ -136,7 +136,7 @@ class MykeibaDBProvider:
             pd.DataFrame: 過去成績（出走回数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
         raw = self._race_getter.get_umagoto_race_joho(
-            ketto_toroku_bango=horse_id, convert_codes=True
+            ketto_toroku_bango=horse_id, convert_codes=False
         )
         return convert_past_performances(raw)
 
@@ -156,6 +156,6 @@ class MykeibaDBProvider:
         raw = self._race_getter.get_kaisai_schedule(
             start_date=date.fromisoformat(start_date),
             end_date=date.fromisoformat(end_date),
-            convert_codes=True,
+            convert_codes=False,
         )
         return convert_schedule(raw)

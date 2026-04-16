@@ -73,7 +73,7 @@ ENTRY_RENAME: dict[str, str] = {
     "mining_yoso_gosa_plus": "マイニング予想誤差プラス",
     "mining_yoso_gosa_minus": "マイニング予想誤差マイナス",
     "mining_yoso_juni": "マイニング予想順位",
-    "kyakushitsu": "脚質判定",
+    "kyakushitsu_hantei": "脚質判定コード",
 }
 
 # 値変換が必要なカラムのリネームマッピング

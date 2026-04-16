@@ -51,10 +51,10 @@ def test_odds_getter_called_with_correct_args(
     provider.get_win_show_odds(race_code)
 
     mock_odds_getter.get_odds1_tansho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
     mock_odds_getter.get_odds1_fukusho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 

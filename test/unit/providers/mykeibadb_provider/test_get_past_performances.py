@@ -45,7 +45,7 @@ def test_race_getter_called_with_horse_id(
     provider.get_past_performances("1234567890")
 
     mock_race_getter.get_umagoto_race_joho.assert_called_once_with(
-        ketto_toroku_bango="1234567890", convert_codes=True
+        ketto_toroku_bango="1234567890", convert_codes=False
     )
 
 

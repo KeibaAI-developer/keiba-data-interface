@@ -49,7 +49,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_race_info(race_code)
 
     mock_race_getter.get_race_shosai.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 

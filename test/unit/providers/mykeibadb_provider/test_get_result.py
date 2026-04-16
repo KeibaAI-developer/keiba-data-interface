@@ -86,18 +86,6 @@ def _create_niigata_straight_joho_df() -> pd.DataFrame:
         "mining_yoso_gosa_minus": "0",
         "mining_yoso_juni": 0,
         "kyakushitsu_hantei": "1",
-        "keibajo": "新潟",
-        "umakigo": "",
-        "seibetsu": "牡",
-        "hinshu": "サラブレッド",
-        "moshoku": "鹿毛",
-        "tozai_shozoku": "美浦",
-        "kishu_minarai": "",
-        "ijo_kubun": "",
-        "chakusa1": "",
-        "chakusa2": "",
-        "chakusa3": "",
-        "kyakushitsu": "差",
     }
     rows = [
         # 馬A: soha_time=530, kohan_3f=320 → 前半=210 → ランク1
@@ -150,7 +138,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_result(race_code)
 
     mock_race_getter.get_umagoto_race_joho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 

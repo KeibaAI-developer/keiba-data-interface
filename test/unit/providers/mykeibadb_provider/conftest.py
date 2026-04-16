@@ -78,7 +78,7 @@ def create_race_shosai_df(
         henkomae_hasso_jikoku (str): 変更前発走時刻
 
     Returns:
-        pd.DataFrame: convert_codes=True時のRACE_SHOSAI出力形式
+        pd.DataFrame: convert_codes=False時のRACE_SHOSAI出力形式
     """
     return pd.DataFrame(
         [
@@ -151,17 +151,6 @@ def create_race_shosai_df(
                 "tenko_code": "1",
                 "shiba_babajotai_code": "1",
                 "dirt_babajotai_code": "0",
-                # convert_codes=True で追加されるカラム
-                "keibajo": "中山",
-                "yobi": "日",
-                "grade": "GI",
-                "kyoso_shubetsu": "サラ系３歳以上",
-                "kyoso_kigo": "(国際)(指定)",
-                "juryo_shubetsu": "定量",
-                "track": "芝・右",
-                "tenko": "晴",
-                "shiba_babajotai": "良",
-                "dirt_babajotai": "",
             }
         ]
     )
@@ -171,7 +160,7 @@ def create_umagoto_race_joho_df() -> pd.DataFrame:
     """mykeibadb UMAGOTO_RACE_JOHO出力の典型データを生成する.
 
     Returns:
-        pd.DataFrame: convert_codes=True時のUMAGOTO_RACE_JOHO出力形式（2頭分）
+        pd.DataFrame: convert_codes=False時のUMAGOTO_RACE_JOHO出力形式（2頭分）
     """
     base = {
         "record_shubetsu_id": "SE",
@@ -247,19 +236,6 @@ def create_umagoto_race_joho_df() -> pd.DataFrame:
         "mining_yoso_gosa_minus": "0088",
         "mining_yoso_juni": 4,
         "kyakushitsu_hantei": "4",
-        # convert_codes=True で追加されるカラム
-        "keibajo": "中山",
-        "umakigo": "",
-        "seibetsu": "牡",
-        "hinshu": "サラブレッド",
-        "moshoku": "鹿毛",
-        "tozai_shozoku": "栗東",
-        "kishu_minarai": "",
-        "ijo_kubun": "",
-        "chakusa1": "",
-        "chakusa2": "",
-        "chakusa3": "",
-        "kyakushitsu": "差",
     }
     horse2 = {
         **base,
@@ -323,19 +299,6 @@ def create_umagoto_race_joho_df() -> pd.DataFrame:
         "mining_yoso_gosa_minus": "0090",
         "mining_yoso_juni": 5,
         "kyakushitsu_hantei": "2",
-        # convert_codes=True で追加されるカラム
-        "keibajo": "中山",
-        "umakigo": "",
-        "seibetsu": "牝",
-        "hinshu": "サラブレッド",
-        "moshoku": "栗毛",
-        "tozai_shozoku": "美浦",
-        "kishu_minarai": "",
-        "ijo_kubun": "",
-        "chakusa1": "クビ",
-        "chakusa2": "",
-        "chakusa3": "",
-        "kyakushitsu": "先",
     }
     return pd.DataFrame([horse1, horse2])
 
@@ -403,7 +366,7 @@ def create_odds1_tansho_df() -> pd.DataFrame:
     """mykeibadb ODDS1_TANSHO出力の典型データを生成する.
 
     Returns:
-        pd.DataFrame: convert_codes=True時のODDS1_TANSHO出力形式（2頭分）
+        pd.DataFrame: convert_codes=False時のODDS1_TANSHO出力形式（2頭分）
     """
     base = {
         "race_code": RACE_CODE,
@@ -413,7 +376,6 @@ def create_odds1_tansho_df() -> pd.DataFrame:
         "kaisai_kaiji": 5,
         "kaisai_nichiji": 8,
         "race_bango": 11,
-        "keibajo": "中山",
     }
     return pd.DataFrame(
         [
@@ -427,7 +389,7 @@ def create_odds1_fukusho_df() -> pd.DataFrame:
     """mykeibadb ODDS1_FUKUSHO出力の典型データを生成する.
 
     Returns:
-        pd.DataFrame: convert_codes=True時のODDS1_FUKUSHO出力形式（2頭分）
+        pd.DataFrame: convert_codes=False時のODDS1_FUKUSHO出力形式（2頭分）
     """
     base = {
         "race_code": RACE_CODE,
@@ -437,7 +399,6 @@ def create_odds1_fukusho_df() -> pd.DataFrame:
         "kaisai_kaiji": 5,
         "kaisai_nichiji": 8,
         "race_bango": 11,
-        "keibajo": "中山",
     }
     return pd.DataFrame(
         [
@@ -451,14 +412,13 @@ def create_haraimodoshi_df() -> pd.DataFrame:
     """mykeibadb HARAIMODOSHI出力の典型データを生成する.
 
     Returns:
-        pd.DataFrame: convert_codes=True時のHARAIMODOSHI出力形式（1行）
+        pd.DataFrame: convert_codes=False時のHARAIMODOSHI出力形式（1行）
     """
     data: dict[str, object] = {
         "race_code": RACE_CODE,
         "kaisai_nen": "2025",
         "kaisai_gappi": "0502",
         "keibajo_code": "06",
-        "keibajo": "中山",
         "kaisai_kaiji": 5,
         "kaisai_nichiji": 8,
         "race_bango": 11,
@@ -524,7 +484,7 @@ def create_kaisai_schedule_df() -> pd.DataFrame:
     """mykeibadb KAISAI_SCHEDULE出力の典型データを生成する.
 
     Returns:
-        pd.DataFrame: convert_codes=True時のKAISAI_SCHEDULE出力形式（2行）
+        pd.DataFrame: convert_codes=False時のKAISAI_SCHEDULE出力形式（2行）
     """
     return pd.DataFrame(
         [
@@ -533,11 +493,9 @@ def create_kaisai_schedule_df() -> pd.DataFrame:
                 "kaisai_nen": "2025",
                 "kaisai_gappi": "0502",
                 "keibajo_code": "06",
-                "keibajo": "中山",
                 "kaisai_kaiji": 5,
                 "kaisai_nichiji": 8,
                 "yobi_code": "0",
-                "yobi": "日",
                 "jusho1_tokubetsu_kyoso_bango": 1234,
                 "jusho1_kyosomei_hondai": "皐月賞",
                 "jusho1_kyosomei_ryakusho_10": "皐月賞",
@@ -556,11 +514,9 @@ def create_kaisai_schedule_df() -> pd.DataFrame:
                 "kaisai_nen": "2025",
                 "kaisai_gappi": "0502",
                 "keibajo_code": "05",
-                "keibajo": "東京",
                 "kaisai_kaiji": 5,
                 "kaisai_nichiji": 8,
                 "yobi_code": "0",
-                "yobi": "日",
             },
         ]
     )
