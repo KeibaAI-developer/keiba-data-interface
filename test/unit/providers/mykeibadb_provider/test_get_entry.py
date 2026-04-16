@@ -119,8 +119,8 @@ def test_code_converted_columns_renamed(
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
-    assert row["競馬場"] == "中山"
-    assert row["品種"] == "サラブレッド"
+    assert row["競馬場コード"] == "06"
+    assert row["品種コード"] == "1"
     assert row["性別コード"] == "1"
     assert row["所属コード"] == "2"
     assert row["異常区分コード"] == "0"

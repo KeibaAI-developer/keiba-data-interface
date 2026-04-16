@@ -217,8 +217,8 @@ def test_missing_columns_filled_with_nan(
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
-    assert pd.isna(row["品種"])
-    assert pd.isna(row["毛色"])
+    assert pd.isna(row["品種コード"])
+    assert pd.isna(row["毛色コード"])
     assert pd.isna(row["馬主コード"])
     assert pd.isna(row["確定着順"])
     assert pd.isna(row["走破タイム"])
@@ -239,7 +239,7 @@ def test_header_columns_from_race_code(
     row = result.iloc[0]
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 2
     assert row["開催日目"] == 12
     assert row["レース番号"] == 11

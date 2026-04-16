@@ -122,7 +122,7 @@ def test_header_columns(
     assert row["レースコード"] == race_code
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 5
     assert row["開催日目"] == 8
     assert row["レース番号"] == 11

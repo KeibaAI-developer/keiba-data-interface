@@ -51,6 +51,28 @@ def keibajo_code_to_name(code: str) -> str:
     return name
 
 
+# 競馬場名 → 競馬場コードマッピング（逆引き）
+_KEIBAJO_NAME_TO_CODE: dict[str, str] = {v: k for k, v in _KEIBAJO_CODE_TO_NAME.items()}
+
+
+def keibajo_name_to_code(name: str) -> str:
+    """競馬場名を競馬場コード（2桁）に変換する.
+
+    Args:
+        name (str): 競馬場名（例: "中山"）
+
+    Returns:
+        str: 競馬場コード（2桁、例: "06"）
+
+    Raises:
+        RaceCodeError: 未知の競馬場名の場合
+    """
+    code = _KEIBAJO_NAME_TO_CODE.get(name)
+    if code is None:
+        raise RaceCodeError(f"未知の競馬場名です: {name}")
+    return code
+
+
 def race_code_to_race_id(race_code: str) -> str:
     """16桁レースコードを12桁レースIDに変換する.
 
@@ -97,7 +119,7 @@ def extract_race_code_parts(race_code: str) -> dict[str, str]:
         dict[str, str]: 各要素を含む辞書
             - 年: 開催年（4桁）
             - 月日: 開催月日（4桁）
-            - 競馬場: 競馬場コード（2桁）
+            - 競馬場コード: 競馬場コード（2桁）
             - 回: 開催回（2桁）
             - 日目: 開催日目（2桁）
             - R: レース番号（2桁）
@@ -109,7 +131,7 @@ def extract_race_code_parts(race_code: str) -> dict[str, str]:
     return {
         "年": race_code[0:4],
         "月日": race_code[4:8],
-        "競馬場": race_code[8:10],
+        "競馬場コード": race_code[8:10],
         "回": race_code[10:12],
         "日目": race_code[12:14],
         "R": race_code[14:16],

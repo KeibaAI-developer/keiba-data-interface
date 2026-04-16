@@ -97,9 +97,9 @@ def test_keibajo_name_stored(
 
     result = provider_full.get_schedule("2025-01-05", "2025-01-05")
 
-    keibajo_set = set(result["競馬場"].tolist())
-    assert "中山" in keibajo_set
-    assert "京都" in keibajo_set
+    keibajo_set = set(result["競馬場コード"].tolist())
+    assert "06" in keibajo_set
+    assert "08" in keibajo_set
 
 
 def test_date_to_year_and_monthday(

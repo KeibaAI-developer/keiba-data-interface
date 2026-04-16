@@ -65,10 +65,10 @@ def test_header_columns_renamed(
     assert row["開催コード"] == "2025050206050800"
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 5
     assert row["開催日目"] == 8
-    assert row["曜日"] == "日"
+    assert row["曜日コード"] == "0"
 
 
 def test_jusho_columns_renamed(
@@ -85,10 +85,10 @@ def test_jusho_columns_renamed(
     assert row["重賞1競走名本題"] == "皐月賞"
     assert row["重賞1競走名略称3文字"] == "皐月"
     assert row["重賞1重賞回次"] == 85
-    assert row["重賞1グレード"] == "GI"
-    assert row["重賞1競走種別"] == "サラ系３歳"
+    assert row["重賞1グレードコード"] == "A"
+    assert row["重賞1競走種別コード"] == "12"
     assert row["重賞1距離"] == 2000
-    assert row["重賞1トラック"] == "芝・右"
+    assert row["重賞1トラックコード"] == "17"
 
 
 def test_missing_jusho_nan(
@@ -103,7 +103,7 @@ def test_missing_jusho_nan(
     row = result.iloc[1]  # 東京（重賞情報なし）
     assert pd.isna(row["重賞1特別競走番号"])
     assert pd.isna(row["重賞1競走名本題"])
-    assert pd.isna(row["重賞1グレード"])
+    assert pd.isna(row["重賞1グレードコード"])
 
 
 def test_second_row_data(
@@ -117,7 +117,7 @@ def test_second_row_data(
 
     row = result.iloc[1]
     assert row["開催コード"] == "2025050205050800"
-    assert row["競馬場"] == "東京"
+    assert row["競馬場コード"] == "05"
 
 
 def test_empty_schedule(

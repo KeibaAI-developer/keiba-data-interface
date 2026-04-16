@@ -14,10 +14,10 @@ _BASE_SCHEDULE_RENAME: dict[str, str] = {
     "kaisai_code": "開催コード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
-    "keibajo": "競馬場",
+    "keibajo_code": "競馬場コード",
     "kaisai_kaiji": "開催回",
     "kaisai_nichiji": "開催日目",
-    "yobi": "曜日",
+    "yobi_code": "曜日コード",
 }
 
 
@@ -32,12 +32,12 @@ def _build_schedule_rename() -> dict[str, str]:
         rename[f"jusho{i}_kyosomei_ryakusho_6"] = f"重賞{i}競走名略称6文字"
         rename[f"jusho{i}_kyosomei_ryakusho_3"] = f"重賞{i}競走名略称3文字"
         rename[f"jusho{i}_jusho_kaiji"] = f"重賞{i}重賞回次"
-        rename[f"jusho{i}_grade"] = f"重賞{i}グレード"
-        rename[f"jusho{i}_kyoso_shubetsu"] = f"重賞{i}競走種別"
-        rename[f"jusho{i}_kyoso_kigo"] = f"重賞{i}競走記号"
-        rename[f"jusho{i}_juryo_shubetsu"] = f"重賞{i}重量種別"
+        rename[f"jusho{i}_grade_code"] = f"重賞{i}グレードコード"
+        rename[f"jusho{i}_kyoso_shubetsu_code"] = f"重賞{i}競走種別コード"
+        rename[f"jusho{i}_kyoso_kigo_code"] = f"重賞{i}競走記号コード"
+        rename[f"jusho{i}_juryo_shubetsu_code"] = f"重賞{i}重量種別コード"
         rename[f"jusho{i}_kyori"] = f"重賞{i}距離"
-        rename[f"jusho{i}_track"] = f"重賞{i}トラック"
+        rename[f"jusho{i}_track_code"] = f"重賞{i}トラックコード"
 
     return rename
 

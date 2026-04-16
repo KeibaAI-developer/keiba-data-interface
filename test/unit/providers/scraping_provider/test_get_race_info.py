@@ -94,20 +94,20 @@ def test_direct_mapping_columns(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["競馬場"] == "京都"
+    assert row["競馬場コード"] == "08"
     assert row["開催回"] == 3
     assert row["開催日目"] == 4
     assert row["レース番号"] == 11
-    assert row["曜日"] == "日"
+    assert row["曜日コード"] == "2"
     assert row["競走名本題"] == "天皇賞(春)"
     assert row["発走時刻"] == "15:40"
-    assert row["天候"] == "晴"
+    assert row["天候コード"] == "1"
     assert row["距離"] == 3200
     assert row["競走種別コード"] == "14"
     assert row["競走条件名称"] == "オープン"
     assert row["グレードコード"] == "A"
     assert row["競走記号コード"] == "N01"
-    assert row["重量種別"] == "定量"
+    assert row["重量種別コード"] == "4"
     assert row["登録頭数"] == 18
 
 

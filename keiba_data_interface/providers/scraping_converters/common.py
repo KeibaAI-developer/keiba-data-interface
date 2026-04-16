@@ -5,7 +5,6 @@ import re
 import pandas as pd
 
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen, split_zogen
-from keiba_data_interface.utils.race_code import keibajo_code_to_name
 
 # 異常区分変換マッピング（scraping出力 → JRA-VANコード）
 # 降着(7)は着差テキストのパターン検出で判定するため別処理
@@ -55,8 +54,39 @@ BABAJOTAI_TO_CODE: dict[str, str] = {
     "重": "3",
     "不": "4",  # 不良
 }
-# 競走記号文字列 → 競走記号コード変換マッピング（scraping出力 → JRA-VANコード）
-# CODE_TABLE.md KYOSO_KIGO_CODE を参照
+# 曜日文字列 → 曜日コード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md YOBI_CODE を参照
+YOBI_TO_CODE: dict[str, str] = {
+    "土": "1",
+    "日": "2",
+    "祝": "3",
+    "月": "4",
+    "火": "5",
+    "水": "6",
+    "木": "7",
+    "金": "8",
+}
+
+# 重量種別文字列 → 重量種別コード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md JURYO_SHUBETSU_CODE を参照
+JURYO_SHUBETSU_TO_CODE: dict[str, str] = {
+    "ハンデ": "1",
+    "別定": "2",
+    "馬齢": "3",
+    "定量": "4",
+}
+
+# 天候文字列 → 天候コード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md TENKO_CODE を参照
+TENKO_TO_CODE: dict[str, str] = {
+    "晴": "1",
+    "曇": "2",
+    "雨": "3",
+    "小雨": "4",
+    "雪": "5",
+    "小雪": "6",
+}
+
 # investigate_kyoso_kigo.py の調査結果に基づく
 KYOSO_KIGO_TO_CODE: dict[str, str] = {
     "": "000",  # 記号なし
@@ -179,7 +209,7 @@ def set_header_columns(converted: dict[str, object], race_code: str, parts: dict
     converted["レースコード"] = race_code
     converted["開催年"] = parts["年"]
     converted["開催月日"] = parts["月日"]
-    converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
+    converted["競馬場コード"] = parts["競馬場コード"]
     converted["開催回"] = int(parts["回"])
     converted["開催日目"] = int(parts["日目"])
     converted["レース番号"] = int(parts["R"])

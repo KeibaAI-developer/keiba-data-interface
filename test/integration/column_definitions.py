@@ -19,7 +19,7 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "競走名本題",
     "グレードコード",  # netkeibaでグレード表示なしの特別競走（scraping=_、mykeibadb=E）の差異
     "競走記号コード",  # KYOSO_KIGO_TO_CODE未対応パターン導入と数少ないケース用に許容
-    "重量種別",
+    "重量種別コード",
     "コース区分",
     "競走条件名称",  # G1等の特別競走ではmykeibadb=NaN（全角スペース）vs scraping=オープン等
     "本賞金1着",  # netkeibaとJRA-VANで賞金データが異なる場合がある
@@ -29,7 +29,7 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "本賞金5着",
     "芝馬場状態コード",  # scraping=NA vs mykeibadb=空文字（該当トラックなし時の表現差異）
     "ダート馬場状態コード",  # 同上
-    "曜日",  # scraping="日" vs mykeibadb="祝"（祝日の表現差異）
+    "曜日コード",  # scraping="2"(日曜) vs mykeibadb="3"(祝日)(祝日の表現差異)
 }
 KNOWN_DIFF_HORSE_RACE: set[str] = {
     "所属コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
@@ -83,16 +83,16 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",
-    "競馬場",
+    "競馬場コード",
     "開催回",
     "開催日目",
     "レース番号",
-    "曜日",
+    "曜日コード",
     "競走名本題",
     "グレードコード",
     "競走種別コード",
     "競走記号コード",
-    "重量種別",
+    "重量種別コード",
     "競走条件名称",
     "距離",
     "レース種別",
@@ -107,7 +107,7 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "本賞金5着",
     "発走時刻",
     "登録頭数",
-    "天候",
+    "天候コード",
     "芝馬場状態コード",
     "ダート馬場状態コード",
 ]
@@ -130,7 +130,7 @@ HORSE_RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",
-    "競馬場",
+    "競馬場コード",
     "開催回",
     "開催日目",
     "レース番号",
@@ -209,7 +209,7 @@ def _build_payoff_scraping_columns() -> list[str]:
         "レースコード",
         "開催年",
         "開催月日",
-        "競馬場",
+        "競馬場コード",
         "開催回",
         "開催日目",
         "レース番号",
@@ -267,7 +267,7 @@ SCHEDULE_SCRAPING_COLUMNS: list[str] = [
     "開催コード",
     "開催年",
     "開催月日",
-    "競馬場",
+    "競馬場コード",
     "開催回",
     "開催日目",
 ]

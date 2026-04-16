@@ -113,18 +113,18 @@ def test_code_converted_columns_renamed(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["競馬場"] == "中山"
-    assert row["曜日"] == "日"
+    assert row["競馬場コード"] == "06"
+    assert row["曜日コード"] == "1"
     assert row["グレードコード"] == "A"
     assert row["競走種別コード"] == "13"
     assert row["競走記号コード"] == "N01"
-    assert row["重量種別"] == "定量"
+    assert row["重量種別コード"] == "4"
     assert row["トラックコード"] == "17"
     assert row["レース種別"] == "平地"
     assert row["芝ダ"] == "芝"
     assert row["左右"] == "右"
     assert pd.isna(row["内外"])
-    assert row["天候"] == "晴"
+    assert row["天候コード"] == "1"
     assert row["芝馬場状態コード"] == "1"
 
 

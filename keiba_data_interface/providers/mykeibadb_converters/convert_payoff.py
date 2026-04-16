@@ -14,7 +14,7 @@ _BASE_PAYOFF_RENAME: dict[str, str] = {
     "race_code": "レースコード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
-    "keibajo": "競馬場",
+    "keibajo_code": "競馬場コード",
     "kaisai_kaiji": "開催回",
     "kaisai_nichiji": "開催日目",
     "race_bango": "レース番号",
