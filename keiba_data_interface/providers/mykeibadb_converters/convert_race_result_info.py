@@ -99,7 +99,7 @@ def convert_race_result_info(raw: pd.DataFrame) -> pd.DataFrame:
                     continue
                 if dst_suffix == "コーナー通過順" and str(val).strip() == "":
                     continue
-                converted[dst] = val
+                converted[dst] = str(val).strip() if dst_suffix == "コーナー通過順" else val
 
     # その他のカラム
     for src, dst in _DIRECT_RENAME.items():

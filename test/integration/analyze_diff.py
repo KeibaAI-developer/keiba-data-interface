@@ -454,9 +454,7 @@ def _compare_dataframes(
                         )
                     )
             else:
-                s_cmp = s_val.strip() if isinstance(s_val, str) else s_val
-                m_cmp = m_val.strip() if isinstance(m_val, str) else m_val
-                if s_cmp != m_cmp:
+                if s_val != m_val:
                     col_diffs.append(
                         DiffRecord(
                             test_case,

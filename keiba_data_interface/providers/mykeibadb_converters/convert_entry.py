@@ -147,6 +147,11 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns=ENTRY_RENAME)
     df = df.rename(columns=_VALUE_CONVERT_RENAME)
 
+    # 騎手名略称: mykeibadb の固定長フィールドは末尾に\u3000が詰まっている場合がある
+    for col in ("騎手名略称", "変更前騎手名略称", "調教師名略称"):
+        if col in df.columns:
+            df[col] = df[col].apply(lambda v: v.strip() if isinstance(v, str) else v)
+
     # 異常区分コード: str型に統一
     if "異常区分コード" in df.columns:
         df["異常区分コード"] = df["異常区分コード"].apply(
