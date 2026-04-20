@@ -144,9 +144,6 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = pd.NA
 
-    # 馬番順にソート
-    df = df.sort_values("馬番").reset_index(drop=True)
-
     return df
 
 

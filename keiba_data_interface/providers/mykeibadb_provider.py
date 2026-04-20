@@ -58,10 +58,12 @@ class MykeibaDBProvider:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
+            pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム, 馬番順）
         """
         raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=False)
-        return convert_entry(raw)
+        df = convert_entry(raw)
+        df = df.sort_values("馬番").reset_index(drop=True)
+        return df
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
@@ -73,11 +75,13 @@ class MykeibaDBProvider:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: 単複オッズ（馬番数行、ODDS_COLUMNSのカラム）
+            pd.DataFrame: 単複オッズ（馬番数行、ODDS_COLUMNSのカラム, 馬番順）
         """
         raw_tansho = self._odds_getter.get_odds1_tansho(race_code=race_code, convert_codes=False)
         raw_fukusho = self._odds_getter.get_odds1_fukusho(race_code=race_code, convert_codes=False)
-        return convert_win_show_odds(raw_tansho, raw_fukusho)
+        df = convert_win_show_odds(raw_tansho, raw_fukusho)
+        df = df.sort_values("馬番").reset_index(drop=True)
+        return df
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
@@ -89,10 +93,12 @@ class MykeibaDBProvider:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: レース結果（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
+            pd.DataFrame: レース結果（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム, 確定着順順）
         """
         raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=False)
-        return convert_result(raw)
+        df = convert_result(raw)
+        df = df.sort_values("確定着順").reset_index(drop=True)
+        return df
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
@@ -127,7 +133,7 @@ class MykeibaDBProvider:
         """過去成績（馬柱）を取得する.
 
         RaceGetter.get_umagoto_race_joho()を馬ID（血統登録番号）指定で取得し、
-        get_resultと同じ変換を行う。
+        統一スキーマに変換する。
 
         Args:
             horse_id (str): 馬ID（血統登録番号）
@@ -138,7 +144,9 @@ class MykeibaDBProvider:
         raw = self._race_getter.get_umagoto_race_joho(
             ketto_toroku_bango=horse_id, convert_codes=False
         )
-        return convert_past_performances(raw)
+        df = convert_past_performances(raw)
+        df = df.sort_values("レースコード", ascending=False).reset_index(drop=True)
+        return df
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.

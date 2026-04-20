@@ -25,7 +25,4 @@ def convert_past_performances(raw: pd.DataFrame) -> pd.DataFrame:
     """
     df = convert_result_common(convert_base(raw))
 
-    # レースコードが大きい順（新しい順）にソート
-    df = df.sort_values("レースコード", ascending=False).reset_index(drop=True)
-
     return df

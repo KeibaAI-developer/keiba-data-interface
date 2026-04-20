@@ -47,9 +47,6 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
             )
         df.loc[~valid_mask, "単勝人気順"] = pd.NA
 
-    # 確定着順順にソート
-    df = df.sort_values("確定着順").reset_index(drop=True)
-
     return df
 
 
