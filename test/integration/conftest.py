@@ -83,7 +83,7 @@ class RaceFixtures:
             "result": _load_fixture(race_dir / "scraping_result"),
             "lap_time": _load_fixture(race_dir / "scraping_lap_time"),
             "corner": _load_fixture(race_dir / "scraping_corner"),
-            "odds": _load_fixture_optional(race_dir / "scraping_odds"),
+            "odds": _load_fixture(race_dir / "scraping_odds"),
             "payoff_win": _load_fixture(race_dir / "scraping_payoff_win"),
             "payoff_show": _load_fixture(race_dir / "scraping_payoff_show"),
             "payoff_bracket": _load_fixture(race_dir / "scraping_payoff_bracket"),
