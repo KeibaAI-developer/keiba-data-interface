@@ -263,3 +263,5 @@ SCHEDULE_SCRAPING_COLUMNS: list[str] = [
     "開催回",
     "開催日目",
 ]
+
+KNOWN_DIFF_SCHEDULE: set[str] = set()
