@@ -41,6 +41,7 @@ RACE_INFO_TYPES: dict[str, str] = {
     "競走条件4歳": "object",
     "競走条件5歳以上": "object",
     "競走条件最若年": "object",
+    "競走条件コード": "object",
     "競走条件名称": "object",
     "距離": "Int64",
     "変更前距離": "Int64",

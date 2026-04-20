@@ -6,6 +6,7 @@ from keiba_data_interface.providers.scraping_converters.common import (
     BABAJOTAI_TO_CODE,
     GRADE_TO_CODE,
     JURYO_SHUBETSU_TO_CODE,
+    KYOSO_JOKEN_TO_CODE,
     KYOSO_KIGO_TO_CODE,
     KYOSO_SHUBETSU_TO_CODE,
     TENKO_TO_CODE,
@@ -68,7 +69,9 @@ def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     converted["競走種別コード"] = KYOSO_SHUBETSU_TO_CODE.get(
         str(row["競走種別"]) if pd.notna(row.get("競走種別")) else ""
     )
-    converted["競走条件名称"] = row["競走条件"]
+    converted["競走条件コード"] = KYOSO_JOKEN_TO_CODE.get(
+        str(row["競走条件"]) if pd.notna(row.get("競走条件")) else ""
+    )
     converted["グレードコード"] = GRADE_TO_CODE.get(
         str(row["グレード"]) if pd.notna(row["グレード"]) else "", "_"
     )

@@ -21,7 +21,7 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "競走記号コード",  # KYOSO_KIGO_TO_CODE未対応パターン導入と数少ないケース用に許容
     "重量種別コード",
     "コース区分",
-    "競走条件名称",  # G1等の特別競走ではmykeibadb=NaN（全角スペース）vs scraping=オープン等
+    "競走条件名称",  # mykeibadb=JRA-VAN名称 vs scraping=NaN（scraping側は競走条件コードのみ対応）
     "本賞金1着",  # netkeibaとJRA-VANで賞金データが異なる場合がある
     "本賞金2着",
     "本賞金3着",
@@ -93,7 +93,7 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "競走種別コード",
     "競走記号コード",
     "重量種別コード",
-    "競走条件名称",
+    "競走条件コード",
     "距離",
     "レース種別",
     "芝ダ",

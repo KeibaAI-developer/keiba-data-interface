@@ -191,6 +191,21 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
             lambda v: pd.NA if pd.notna(v) and str(v).strip() == "" else v
         )
 
+    # 競走条件コード: 5つの年齢別条件カラムの最大値を採用
+    joken_cols = [
+        "kyoso_joken_code_2sai",
+        "kyoso_joken_code_3sai",
+        "kyoso_joken_code_4sai",
+        "kyoso_joken_code_5sai_ijo",
+        "kyoso_joken_code_saijakunen",
+    ]
+    existing_joken = [c for c in joken_cols if c in df.columns]
+    if existing_joken:
+        joken_values = df[existing_joken].apply(pd.to_numeric, errors="coerce")
+        df["競走条件コード"] = joken_values.max(axis=1).apply(
+            lambda v: f"{int(v):03d}" if pd.notna(v) else pd.NA
+        )
+
     # トラックコードからレース種別・芝ダ・左右・内外を導出
     if "track_code" in df.columns:
         tc = df["track_code"].apply(lambda v: str(v).strip() if pd.notna(v) else "")

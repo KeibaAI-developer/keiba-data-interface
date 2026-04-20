@@ -142,6 +142,20 @@ KYOSO_SHUBETSU_TO_CODE: dict[str, str] = {
     "障害４歳以上": "19",
 }
 
+# 競走条件文字列 → 競走条件コード変換マッピング（scraping出力 → JRA-VANコード）
+# CODE_TABLE.md KYOSO_JOKEN_CODE を参照
+KYOSO_JOKEN_TO_CODE: dict[str, str] = {
+    "新馬": "701",
+    "未勝利": "703",
+    "１勝クラス": "005",
+    "1勝クラス": "005",
+    "２勝クラス": "010",
+    "2勝クラス": "010",
+    "３勝クラス": "016",
+    "3勝クラス": "016",
+    "オープン": "999",
+}
+
 # 所属文字列 → 東西所属コード変換マッピング（scraping出力 → JRA-VANコード）
 TOZAI_SHOZOKU_TO_CODE: dict[str, str] = {
     "美浦": "1",
