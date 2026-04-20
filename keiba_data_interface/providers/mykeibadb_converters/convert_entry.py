@@ -93,6 +93,35 @@ _TENTH_SENTINELS: dict[str, int] = {
 }
 
 
+# get_entryでNaNに埋めるカラム（レース結果・着順・タイム等、出馬表では未確定の情報）
+_ENTRY_RESULT_COLUMNS = [
+    "入線順位",
+    "確定着順",
+    "同着区分",
+    "同着頭数",
+    "走破タイム",
+    "着差コード1",
+    "着差コード2",
+    "着差コード3",
+    "1コーナー順位",
+    "2コーナー順位",
+    "3コーナー順位",
+    "4コーナー順位",
+    "獲得本賞金",
+    "獲得付加賞金",
+    "後4ハロン",
+    "後3ハロン",
+    "相手1血統登録番号",
+    "相手1馬名",
+    "相手2血統登録番号",
+    "相手2馬名",
+    "相手3血統登録番号",
+    "相手3馬名",
+    "タイム差",
+    "レコード更新区分",
+]
+
+
 def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
     """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する（get_entry用）.
 
@@ -109,6 +138,11 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
         df["異常区分コード"] = df["異常区分コード"].apply(
             lambda v: "0" if pd.notna(v) and int(v) >= 4 else (str(int(v)) if pd.notna(v) else v)
         )
+
+    # 出馬表時点では取得できないレース結果カラムをNaNに埋める
+    for col in _ENTRY_RESULT_COLUMNS:
+        if col in df.columns:
+            df[col] = pd.NA
 
     # 馬番順にソート
     df = df.sort_values("馬番").reset_index(drop=True)

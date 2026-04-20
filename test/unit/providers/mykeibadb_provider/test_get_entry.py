@@ -80,32 +80,32 @@ def test_tansho_odds_converted(
     assert result.iloc[1]["単勝オッズ"] == 12.5
 
 
-def test_kohan_3f_converted(
+def test_kohan_3f_is_nan_in_entry(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """後3ハロンが0.1秒単位から秒単位に変換される."""
+    """後3ハロンはget_entryでは取得できないためNaNになる."""
     mock_race_getter.get_umagoto_race_joho.return_value = create_umagoto_race_joho_df()
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["後3ハロン"] == 34.6
-    assert result.iloc[1]["後3ハロン"] == 34.8
+    assert pd.isna(result.iloc[0]["後3ハロン"])
+    assert pd.isna(result.iloc[1]["後3ハロン"])
 
 
-def test_kohan_4f_converted(
+def test_kohan_4f_is_nan_in_entry(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """後4ハロンが0.1秒単位から秒単位に変換される."""
+    """後4ハロンはget_entryでは取得できないためNaNになる."""
     mock_race_getter.get_umagoto_race_joho.return_value = create_umagoto_race_joho_df()
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["後4ハロン"] == 47.9
-    assert result.iloc[1]["後4ハロン"] == 48.1
+    assert pd.isna(result.iloc[0]["後4ハロン"])
+    assert pd.isna(result.iloc[1]["後4ハロン"])
 
 
 def test_code_converted_columns_renamed(
@@ -178,7 +178,6 @@ def test_second_horse_data(
     assert row["性別コード"] == "2"
     assert row["所属コード"] == "1"
     assert row["負担重量"] == 56.0
-    assert row["着差コード1"] == "K__"
 
 
 def test_kakutei_chakujun_zero_to_nan(
