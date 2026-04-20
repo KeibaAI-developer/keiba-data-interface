@@ -199,16 +199,16 @@ def _create_scraping_provider(
     return ScrapingProvider(), mocks
 
 
-def _create_mykeibadb_provider(
+def _create_mykeibadb_mocks(
     fixtures: RaceFixtures,
-) -> tuple[MykeibaDBProvider, dict[str, MagicMock]]:
-    """フィクスチャデータでモックされたMykeibaDBProviderを生成する.
+) -> dict[str, MagicMock]:
+    """MykeibaDBProvider用のモック辞書を生成する.
 
     Args:
         fixtures (RaceFixtures): レースフィクスチャ
 
     Returns:
-        tuple[MykeibaDBProvider, dict[str, MagicMock]]: Provider + パッチモックの辞書
+        dict[str, MagicMock]: パッチモックの辞書
     """
     mock_race_getter = MagicMock()
     mock_race_getter.get_race_shosai.return_value = fixtures.mykeibadb["race_shosai"]
@@ -219,7 +219,7 @@ def _create_mykeibadb_provider(
     mock_odds_getter.get_odds1_tansho.return_value = fixtures.mykeibadb["odds1_tansho"]
     mock_odds_getter.get_odds1_fukusho.return_value = fixtures.mykeibadb["odds1_fukusho"]
 
-    return MykeibaDBProvider(), {"race_getter": mock_race_getter, "odds_getter": mock_odds_getter}
+    return {"race_getter": mock_race_getter, "odds_getter": mock_odds_getter}
 
 
 @pytest.fixture(params=RACE_CODES)
@@ -284,7 +284,7 @@ def mykeibadb_provider_with_mocks(
     Yields:
         tuple[MykeibaDBProvider, RaceFixtures]: MykeibaDBProviderとフィクスチャのペア
     """
-    _, mocks = _create_mykeibadb_provider(race_fixtures)
+    mocks = _create_mykeibadb_mocks(race_fixtures)
 
     with (
         patch(
