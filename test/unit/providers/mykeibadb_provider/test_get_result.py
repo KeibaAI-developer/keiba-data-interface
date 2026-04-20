@@ -259,7 +259,9 @@ def test_kakutei_chakujun_zero_to_nan(
 
     result = provider.get_result(race_code)
 
-    assert pd.isna(result.iloc[0]["確定着順"])
+    # kakutei_chakujun=0の馬（馬番1）のみNaNに変換される
+    horse1_chakujun = result.loc[result["馬番"] == 1, "確定着順"].iloc[0]
+    assert pd.isna(horse1_chakujun)
 
 
 # ---------------------------------------------------------------------------
