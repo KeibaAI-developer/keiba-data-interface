@@ -39,7 +39,6 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
         df["4コーナー順位"] = niigata_straight_rank.astype("Int64")
 
     # 単勝人気順: 単勝オッズから再計算（同一オッズは同順位、NaNオッズの馬はNaN）
-    # レース全馬が揃っている場合のみ有効。馬単位のget_past_performancesには適用しない。
     if "単勝オッズ" in df.columns and "単勝人気順" in df.columns:
         valid_mask = df["単勝オッズ"].notna()
         if valid_mask.any():
@@ -47,6 +46,9 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
                 df.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
             )
         df.loc[~valid_mask, "単勝人気順"] = pd.NA
+
+    # 確定着順順にソート
+    df = df.sort_values("確定着順").reset_index(drop=True)
 
     return df
 

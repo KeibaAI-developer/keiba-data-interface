@@ -110,6 +110,9 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
             lambda v: "0" if pd.notna(v) and int(v) >= 4 else (str(int(v)) if pd.notna(v) else v)
         )
 
+    # 馬番順にソート
+    df = df.sort_values("馬番").reset_index(drop=True)
+
     return df
 
 

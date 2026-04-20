@@ -23,4 +23,9 @@ def convert_past_performances(raw: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_RACE_INFO_COLUMNSのカラム）
     """
-    return convert_result_common(convert_base(raw))
+    df = convert_result_common(convert_base(raw))
+
+    # レースコードが大きい順（新しい順）にソート
+    df = df.sort_values("レースコード", ascending=False).reset_index(drop=True)
+
+    return df
