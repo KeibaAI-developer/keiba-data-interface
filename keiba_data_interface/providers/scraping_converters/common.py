@@ -238,9 +238,10 @@ def set_zogen(converted: dict[str, object], zogen: int | float | None) -> None:
     """
     if pd.notna(zogen):
         fugo, sa = split_zogen(int(zogen))
-        if fugo is not None:
-            converted["増減符号"] = fugo
+        converted["増減符号"] = fugo if fugo is not None else pd.NA
         converted["増減差"] = sa
+    else:
+        converted["増減符号"] = pd.NA
 
 
 def set_ijo_kubun(

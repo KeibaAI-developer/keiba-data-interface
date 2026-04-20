@@ -101,6 +101,8 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
 
         if pd.notna(row.get("タイム")):
             converted["走破タイム"] = row["タイム"]
+        else:
+            converted["走破タイム"] = pd.NA
 
         # 着差カラムの値はタイム差（秒）として格納する
         if pd.notna(row.get("着差")):
@@ -140,6 +142,8 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
             if horse_name.startswith("(") and horse_name.endswith(")"):
                 horse_name = horse_name[1:-1]
             converted["相手1馬名"] = horse_name
+        else:
+            converted["相手1馬名"] = pd.NA
 
         rows.append(converted)
 

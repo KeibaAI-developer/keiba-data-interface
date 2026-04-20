@@ -87,9 +87,13 @@ def convert_result(
 
         if pd.notna(row.get("タイム")):
             converted["走破タイム"] = row["タイム"]
+        else:
+            converted["走破タイム"] = pd.NA
 
         if pd.notna(chakusa) and not is_kokaku:
             converted["着差コード1"] = convert_chakusa_to_code(chakusa)
+        else:
+            converted["着差コード1"] = pd.NA
 
         if pd.notna(row.get("人気")) and str(row["人気"]).isdigit():
             converted["単勝人気順"] = int(row["人気"])

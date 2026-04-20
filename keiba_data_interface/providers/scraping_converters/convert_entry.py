@@ -53,6 +53,8 @@ def convert_entry(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         shutsuso_kubun = row["出走区分"]
         if pd.notna(shutsuso_kubun):
             converted["異常区分コード"] = SHUTSUSO_TO_IJO_CODE.get(str(shutsuso_kubun), "0")
+        else:
+            converted["異常区分コード"] = "0"
 
         rows.append(converted)
 
