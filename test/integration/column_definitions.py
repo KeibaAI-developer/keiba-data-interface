@@ -109,8 +109,8 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
 RACE_RESULT_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     *[f"ラップ{d}m" for d in range(100, 5001, 100)],
-    "前3ハロン",
     "後3ハロン",
+    "後4ハロン",
     "1コーナー通過順",
     "2コーナー通過順",
     "3コーナー通過順",

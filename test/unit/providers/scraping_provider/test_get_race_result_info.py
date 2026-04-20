@@ -86,7 +86,7 @@ def test_harlon_from_lap(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """前3ハロン・後3ハロンがラップタイムから格納される."""
+    """後3ハロン・後4ハロンがラップタイムの末尾合計から算出される."""
     from .conftest import create_scraping_corner, create_scraping_lap_time
 
     mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
@@ -95,8 +95,9 @@ def test_harlon_from_lap(
     result = provider_full.get_race_result_info(race_code)
 
     row = result.iloc[0]
-    assert row["前3ハロン"] == 35.5
-    assert row["後3ハロン"] == 34.8
+    assert pd.isna(row["前3ハロン"])
+    assert row["後3ハロン"] == 41.0
+    assert row["後4ハロン"] == 54.0
 
 
 def test_corner_passing_order(
@@ -149,8 +150,8 @@ def test_missing_columns_filled_with_nan(
     result = provider_full.get_race_result_info(race_code)
 
     row = result.iloc[0]
+    assert pd.isna(row["前3ハロン"])
     assert pd.isna(row["前4ハロン"])
-    assert pd.isna(row["後4ハロン"])
     assert pd.isna(row["障害マイルタイム"])
     assert pd.isna(row["1コーナー周回数"])
     assert pd.isna(row["レコード更新区分"])
