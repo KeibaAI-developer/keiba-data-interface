@@ -7,78 +7,66 @@ from keiba_data_interface.schema.columns import ODDS_COLUMNS
 
 # ============================================================================
 # 既知のデータソース差異（値一致比較から除外するカラム）
+# SCHEMA.md の「差分A: プロバイダー間の既知差分」に対応する。
 # ============================================================================
 
-# scrapingとmykeibadbでデータソースの表現が異なるため値一致比較から除外するカラム。
-# 各差異の理由:
-#   競走名本題: scraping=通称（例:日本ダービー）vs mykeibadb=正式名称（例:東京優駿）
-#   競走種別: scraping=○○ vs mykeibadb=（JRA-VANコード変換後名称の差異）
-#   重量種別: 同上
-#   コース区分: scrapingは文字列、mykeibadbはコード変換後名称で差異あり
 KNOWN_DIFF_RACE_INFO: set[str] = {
-    "競走名本題",
-    "グレードコード",  # netkeibaでグレード表示なしの特別競走（scraping=_、mykeibadb=E）の差異
-    "競走記号コード",  # KYOSO_KIGO_TO_CODE未対応パターン導入と数少ないケース用に許容
-    "重量種別コード",
-    "コース区分",
-    "競走条件名称",  # mykeibadb=JRA-VAN名称 vs scraping=NaN（scraping側は競走条件コードのみ対応）
-    "本賞金1着",  # netkeibaとJRA-VANで賞金データが異なる場合がある
+    "曜日コード",  # mykeibadbでは祝日の場合"3"になる
+    "競走名本題",  # 表記ゆれあり
+    "グレードコード",  # scrapingでは特別競走と一般競走を区別できない場合あり
+    "コース区分",  # scrapingでは障害のコース区分は不明
+    "本賞金1着",  # scrapingとmykeibadbで賞金データが若干異なる場合がある
     "本賞金2着",
     "本賞金3着",
     "本賞金4着",
     "本賞金5着",
-    "芝馬場状態コード",  # scraping=NA vs mykeibadb=空文字（該当トラックなし時の表現差異）
-    "ダート馬場状態コード",  # 同上
-    "曜日コード",  # scraping="2"(日曜) vs mykeibadb="3"(祝日)(祝日の表現差異)
 }
+KNOWN_DIFF_RACE_RESULT_INFO: set[str] = set()
 KNOWN_DIFF_HORSE_RACE: set[str] = {
-    "所属コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
-    "調教師名略称",  # 略称の長さが異なる
-    "騎手名略称",  # 略称の長さが異なる
-    "着差コード1",  # past_perf: scraping非対応カラム（NaN差異）
-    "獲得本賞金",  # scrapingは賞金なし=NA vs mykeibadb=0
-    "タイム差",  # 単位差異（scraping=秒, mykeibadb=0.1秒単位）および符号差異
-    "増減差",  # mykeibadbは「計測不能」を999で表現、scrapingはNA
-    "異常区分コード",  # mykeibadb=4以上（競走中止等）をscraping側と同様に0に正規化済み
-    "1コーナー順位",  # 異常馬(競走中止等)時にscraping=NaN vs mykeibadb=0
-    "2コーナー順位",  # 同上
-    "3コーナー順位",  # 同上
-    "4コーナー順位",  # 同上
-    "単勝オッズ",  # 異常馬(出走取消等)時にscraping=NaN vs mykeibadb=0
-    "単勝人気順",  # 異常馬時のデータソース差異、同率人気の扱い差異
-    "後3ハロン",  # 異常馬(競走中止等)時にscraping=NaN vs mykeibadb=99.9
-    "確定着順",  # 異常馬(競走中止等)時にscraping=NaN vs mykeibadb=0
-    "走破タイム",  # 異常馬(競走中止等)時にscraping=NaN vs mykeibadb="0000"
-    "馬体重",  # 出走取消時にscraping=NaN vs mykeibadb=0
-    "相手1馬名",  # scraping="(馬名)" vs mykeibadb="馬名"（括弧有無差異）
-    "調教師コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
-    "馬名",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
-    "馬齢",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
-    "性別コード",  # past_perf: 比較除外済み（PAST_PERF_EXCLUDEで管理）。result/entryでは差分なし
+    # entry/result
+    "調教師名略称",  # 表記ゆれあり
+    "騎手名略称",  # 表記ゆれあり
+    "獲得本賞金",  # scrapingとmykeibadbで賞金データが若干異なる場合がある
+    "着差コード1",  # 同着・失格・降着時に表現が異なる
+    # past_performances
+    "増減差",  # 前走が海外で計測不能のときはNaNが正しいがscrapingでは0になる
+    "4コーナー順位",  # 千直の場合mykeibadbではNaN
+    "タイム差",  # 失格の場合scrapingではNaNになる
 }
-KNOWN_DIFF_RACE_RESULT_INFO: set[str] = {
-    "1コーナー通過順",  # scraping=NaN（1000m直線等でコーナーなし時）、フォーマット差異
-    "2コーナー通過順",  # 同上
-    "3コーナー通過順",  # 同上。障害レースではJRA-VANが空白を返す
-    "4コーナー通過順",  # 同上
-}
-KNOWN_DIFF_PAYOFF: set[str] = {
-    "複勝1人気順",  # netkeibaとJRA-VANで同率人気の扱いが異なる場合がある
-    "複勝2人気順",  # 同上
-    "複勝3人気順",  # 同上
-    "単勝1人気順",  # 同上
-    "馬単1人気順",  # 同上
-    "3連複1人気順",  # 同上
-    "ワイド1人気順",  # 同上
-    "ワイド2人気順",  # 同上
-    "ワイド3人気順",  # 同上
-}
+
+
+def _build_payoff_known_diff() -> set[str]:
+    """払戻情報の既知差分カラムセットを生成する.
+
+    同オッズの場合にnetkeibaとJRA-VANで人気順が上下する場合がある。
+    """
+    cols: set[str] = set()
+    for i in range(1, 4):
+        cols.add(f"単勝{i}人気順")
+    for i in range(1, 6):
+        cols.add(f"複勝{i}人気順")
+    for i in range(1, 4):
+        cols.add(f"枠連{i}人気順")
+    for i in range(1, 4):
+        cols.add(f"馬連{i}人気順")
+    for i in range(1, 8):
+        cols.add(f"ワイド{i}人気順")
+    for i in range(1, 7):
+        cols.add(f"馬単{i}人気順")
+    for i in range(1, 4):
+        cols.add(f"3連複{i}人気順")
+    for i in range(1, 7):
+        cols.add(f"3連単{i}人気順")
+    return cols
+
+
+KNOWN_DIFF_PAYOFF: set[str] = _build_payoff_known_diff()
 
 # ============================================================================
 # scraping ○ カラム定義（SCHEMA.mdに基づく）
 # ============================================================================
 
-# テーブル1: レース基本情報
+# レース基本情報
 RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
@@ -112,20 +100,19 @@ RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "ダート馬場状態コード",
 ]
 
-# テーブル2: レース結果情報
-# 注意: SCHEMA.mdでは前3ハロン/後3ハロンがscraping=○だが、
-# scrapingのget_lap_time()にレース前3F/レース後3Fカラムが存在しないため
-# scraping converterは常にNaNを返す。値比較の対象外とする。
+# レース結果情報
 RACE_RESULT_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     *[f"ラップ{d}m" for d in range(100, 5001, 100)],
+    "前3ハロン",
+    "後3ハロン",
     "1コーナー通過順",
     "2コーナー通過順",
     "3コーナー通過順",
     "4コーナー通過順",
 ]
 
-# テーブル3: 馬毎レース情報（get_entry / get_result共通）
+# 馬毎レース情報（get_entry / get_result共通）
 HORSE_RACE_INFO_SCRAPING_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
@@ -202,7 +189,7 @@ PAST_PERF_EXCLUDE: set[str] = {
 }
 
 
-# テーブル4: 払戻情報（scraping ○ カラム）
+# 払戻情報
 def _build_payoff_scraping_columns() -> list[str]:
     """払戻情報のscraping○カラムを生成する."""
     cols: list[str] = [
@@ -259,10 +246,10 @@ def _build_payoff_scraping_columns() -> list[str]:
 
 PAYOFF_SCRAPING_COLUMNS: list[str] = _build_payoff_scraping_columns()
 
-# テーブル5: 単複オッズ情報（全カラムが scraping ○）
+# 単複オッズ情報
 ODDS_SCRAPING_COLUMNS: list[str] = ODDS_COLUMNS
 
-# テーブル6: 開催スケジュール情報
+# 開催スケジュール情報
 SCHEDULE_SCRAPING_COLUMNS: list[str] = [
     "開催コード",
     "開催年",
