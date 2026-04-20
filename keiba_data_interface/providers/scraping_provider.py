@@ -12,7 +12,9 @@ from scraping import (
     RaceScheduleScraper,
     ResultPageScraper,
     scrape_odds_from_jra,
+    scrape_odds_from_netkeiba,
 )
+from scraping.exceptions import PageNotFoundError
 
 from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
@@ -68,15 +70,22 @@ class ScrapingProvider:
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
 
+        JRA公式サイトから取得を試み、失敗した場合はnetkeibaから取得する。
+
         Args:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム）
+            pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム, 馬番順）
         """
         race_id = race_code_to_race_id(race_code)
-        raw = _run_async(scrape_odds_from_jra(race_id))
-        return convert_odds(raw, race_code)
+        try:
+            raw = _run_async(scrape_odds_from_jra(race_id))
+        except PageNotFoundError:
+            raw = scrape_odds_from_netkeiba(race_id)
+        df = convert_odds(raw, race_code)
+        df = df.sort_values("馬番").reset_index(drop=True)
+        return df
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
