@@ -181,7 +181,9 @@ keiba-data-interfaceは、keiba-scraping（netkeiba）とmykeibadb-python（JRA-
 
 #### 差分A: プロバイダー間の既知差分
 
-なし
+| カラム | 内容 | レースコードの例 |
+|--------|------|------|
+| 後3/4ハロン | 障害レースはnetkeibaでラップタイムが公開されないため、scrapingでは常にNaN | 2024122106050710 |
 
 #### 差分B: mykeibadbテーブルとの差分
 

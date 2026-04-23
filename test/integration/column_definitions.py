@@ -21,7 +21,10 @@ KNOWN_DIFF_RACE_INFO: set[str] = {
     "本賞金4着",
     "本賞金5着",
 }
-KNOWN_DIFF_RACE_RESULT_INFO: set[str] = set()
+KNOWN_DIFF_RACE_RESULT_INFO: set[str] = {
+    "後3ハロン",  # 障害レースはnetkeibaでラップタイムが公開されないためscrapingではNaN
+    "後4ハロン",  # 障害レースはnetkeibaでラップタイムが公開されないためscrapingではNaN
+}
 KNOWN_DIFF_HORSE_RACE: set[str] = {
     # entry/result
     "調教師名略称",  # 表記ゆれあり
