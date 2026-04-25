@@ -146,7 +146,8 @@ class ScrapingProvider:
         """
         scraper = HorsePageScraper(horse_id)
         raw = scraper.get_past_performances()
-        return convert_past_performances(raw, horse_id)
+        horse_basic_info = scraper.get_horse_basic_info()
+        return convert_past_performances(raw, horse_id, horse_basic_info)
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.

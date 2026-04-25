@@ -5,7 +5,12 @@ from datetime import date
 import pandas as pd
 
 from keiba_data_interface.exceptions import RaceCodeError
-from keiba_data_interface.providers.scraping_converters.common import set_ijo_kubun, set_zogen
+from keiba_data_interface.providers.scraping_converters.common import (
+    SEIBETSU_TO_CODE,
+    TOZAI_SHOZOKU_TO_CODE,
+    set_ijo_kubun,
+    set_zogen,
+)
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
@@ -13,12 +18,15 @@ from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 from keiba_data_interface.utils.race_code import keibajo_name_to_code
 
 
-def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
+def convert_past_performances(
+    raw: pd.DataFrame, horse_id: str, horse_basic_info: pd.DataFrame
+) -> pd.DataFrame:
     """get_past_performances用: scraping出力を統一スキーマに変換する.
 
     Args:
         raw (pd.DataFrame): HorsePageScraper.get_past_performances()の出力
         horse_id (str): 馬ID（血統登録番号）
+        horse_basic_info (pd.DataFrame): HorsePageScraper.get_horse_basic_info()の出力
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_RACE_INFO_COLUMNSのカラム）
@@ -28,6 +36,32 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
             ensure_columns(pd.DataFrame(), HORSE_RACE_INFO_COLUMNS),
             HORSE_RACE_INFO_TYPES,
         )
+
+    # horse_basic_infoから馬固有情報を取得（全レース共通）
+    horse_name: str | None = None
+    seibetsu_code: str | None = None
+    birth_year: int | None = None
+    shozoku_code: str | None = None
+    trainer_code: str | None = None
+    trainer_name: str | None = None
+
+    if len(horse_basic_info) > 0:
+        info = horse_basic_info.iloc[0]
+        if pd.notna(info.get("馬名")):
+            horse_name = str(info["馬名"])
+        seibetsu = str(info["性別"]) if pd.notna(info.get("性別")) else None
+        if seibetsu:
+            seibetsu_code = SEIBETSU_TO_CODE.get(seibetsu)
+        birthday = info.get("生年月日")
+        if pd.notna(birthday):
+            birth_year = int(str(int(birthday))[:4])
+        shozoku = str(info["所属"]) if pd.notna(info.get("所属")) else None
+        if shozoku:
+            shozoku_code = TOZAI_SHOZOKU_TO_CODE.get(shozoku)
+        if pd.notna(info.get("調教師ID")):
+            trainer_code = str(info["調教師ID"])
+        if pd.notna(info.get("調教師")):
+            trainer_name = str(info["調教師"])
 
     rows: list[dict[str, object]] = []
     for _, row in raw.iterrows():
@@ -69,8 +103,29 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
             converted["枠番"] = row["枠"]
         if pd.notna(row.get("馬番")):
             converted["馬番"] = row["馬番"]
-        if pd.notna(row.get("馬名")):
-            converted["馬名"] = row["馬名"]
+        # 馬名
+        if horse_name is not None:
+            converted["馬名"] = horse_name
+
+        # 性別コード
+        if seibetsu_code is not None:
+            converted["性別コード"] = seibetsu_code
+
+        # 馬齢: レース開催年 - 生年（競走馬は生まれた年を0歳とし、1/1に一斉に加齢）
+        if birth_year is not None and pd.notna(row.get("日付")):
+            dt = row["日付"]
+            if isinstance(dt, date):
+                converted["馬齢"] = dt.year - birth_year
+
+        # 所属コード
+        if shozoku_code is not None:
+            converted["所属コード"] = shozoku_code
+
+        # 調教師コード・調教師名略称
+        if trainer_code is not None:
+            converted["調教師コード"] = trainer_code
+        if trainer_name is not None:
+            converted["調教師名略称"] = trainer_name
 
         if pd.notna(row.get("斤量")):
             converted["負担重量"] = row["斤量"]
@@ -138,10 +193,10 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
 
         # 勝ち馬(2着馬) → 相手1馬名（先頭・末尾のカッコを除去）
         if pd.notna(row.get("勝ち馬(2着馬)")):
-            horse_name = str(row["勝ち馬(2着馬)"])
-            if horse_name.startswith("(") and horse_name.endswith(")"):
-                horse_name = horse_name[1:-1]
-            converted["相手1馬名"] = horse_name
+            opponent_name = str(row["勝ち馬(2着馬)"])
+            if opponent_name.startswith("(") and opponent_name.endswith(")"):
+                opponent_name = opponent_name[1:-1]
+            converted["相手1馬名"] = opponent_name
         else:
             converted["相手1馬名"] = pd.NA
 
