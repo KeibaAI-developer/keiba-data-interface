@@ -226,7 +226,7 @@ def _create_mykeibadb_mocks(
 def race_fixtures(request: pytest.FixtureRequest) -> RaceFixtures:
     """テスト用レースフィクスチャ.
 
-    race_test_cases.ymlから選択された各レースに対してパラメータ化される。
+    test_cases.jsonから選択された各レースに対してパラメータ化される。
     """
     race_code: str = request.param
     race_info = next(r for r in TEST_CASES["races"] if r["race_code"] == race_code)
