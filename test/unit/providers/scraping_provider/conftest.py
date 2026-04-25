@@ -391,19 +391,19 @@ def mock_odds_func() -> Generator[MagicMock, None, None]:
 
 @pytest.fixture()
 def mock_past_scraper() -> MagicMock:
-    """PastPerformancesScraperインスタンスのモックを返すfixture."""
+    """HorsePageScraperインスタンスのモックを返すfixture."""
     return MagicMock()
 
 
 @pytest.fixture()
 def mock_past_scraper_cls(mock_past_scraper: MagicMock) -> Generator[MagicMock, None, None]:
-    """PastPerformancesScraperをパッチしたモッククラスを返すfixture.
+    """HorsePageScraperをパッチしたモッククラスを返すfixture.
 
     Yields:
-        MagicMock: PastPerformancesScraperクラスのパッチモック。
+        MagicMock: HorsePageScraperクラスのパッチモック。
     """
     with patch(
-        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
         return_value=mock_past_scraper,
     ) as mock_cls:
         yield mock_cls

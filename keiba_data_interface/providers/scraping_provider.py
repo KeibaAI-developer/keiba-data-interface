@@ -8,7 +8,7 @@ from typing import TypeVar
 import pandas as pd
 from scraping import (
     EntryPageScraper,
-    PastPerformancesScraper,
+    HorsePageScraper,
     RaceScheduleScraper,
     ResultPageScraper,
     scrape_odds_from_jra,
@@ -144,7 +144,7 @@ class ScrapingProvider:
         Returns:
             pd.DataFrame: 過去成績（出走回数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
-        scraper = PastPerformancesScraper(horse_id)
+        scraper = HorsePageScraper(horse_id)
         raw = scraper.get_past_performances()
         return convert_past_performances(raw, horse_id)
 

@@ -178,14 +178,14 @@ ENTRY_ONLY_EXCLUDE: set[str] = {
     "増減差",
 }
 
-# PastPerformancesScraperのみ対応するscraping○カラム
+# HorsePageScraperのみ対応するscraping○カラム
 PAST_PERF_ADDITIONAL_SCRAPING_COLUMNS: list[str] = [
     "相手1馬名",
 ]
 
 # get_past_performances時にscraping非対応のため除外するカラム
 # (着差コード1はscrapingの着差カラムはタイム差として使用するため、着差コード1は常にNaNになる)
-# (性別コード・所属コード・馬齢・調教師コード・調教師名略称・馬名はPastPerformancesScraperが取得しない)
+# (性別コード・所属コード・馬齢・調教師コード・調教師名略称・馬名はHorsePageScraperが取得しない)
 PAST_PERF_EXCLUDE: set[str] = {
     "着差コード1",
     "性別コード",

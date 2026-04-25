@@ -30,7 +30,7 @@ def test_get_past_performances_columns_match(
     ]
 
     with patch(
-        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
         return_value=mock_past_scraper,
     ):
         s_provider = ScrapingProvider()
@@ -68,7 +68,7 @@ def test_get_past_performances_scraping_nan_columns(
     ]
 
     with patch(
-        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
         return_value=mock_past_scraper,
     ):
         s_provider = ScrapingProvider()

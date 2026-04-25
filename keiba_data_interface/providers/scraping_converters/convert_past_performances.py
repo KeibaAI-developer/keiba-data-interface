@@ -17,7 +17,7 @@ def convert_past_performances(raw: pd.DataFrame, horse_id: str) -> pd.DataFrame:
     """get_past_performances用: scraping出力を統一スキーマに変換する.
 
     Args:
-        raw (pd.DataFrame): PastPerformancesScraper.get_past_performances()の出力
+        raw (pd.DataFrame): HorsePageScraper.get_past_performances()の出力
         horse_id (str): 馬ID（血統登録番号）
 
     Returns:
