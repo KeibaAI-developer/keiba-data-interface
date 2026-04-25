@@ -78,7 +78,7 @@ RACE_INFO_COLUMNS: list[str] = [
 ]
 
 
-# レース結果情報テーブルのカラム名リスト（69カラム）
+# レース結果情報テーブルのカラム名リスト（65カラム）
 def _generate_lap_columns() -> list[str]:
     """ラップタイムカラム名を100m刻みで生成する."""
     return [f"ラップ{distance}m" for distance in range(100, 5001, 100)]
