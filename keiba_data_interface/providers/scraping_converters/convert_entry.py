@@ -3,7 +3,9 @@
 import pandas as pd
 
 from keiba_data_interface.providers.scraping_converters.common import (
-    IJO_KUBUN_MAP,
+    SEIBETSU_TO_CODE,
+    SHUTSUSO_TO_IJO_CODE,
+    TOZAI_SHOZOKU_TO_CODE,
     set_header_columns,
     set_zogen,
 )
@@ -33,12 +35,13 @@ def convert_entry(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         converted["馬番"] = row["馬番"]
         converted["血統登録番号"] = row["馬ID"]
         converted["馬名"] = row["馬名"]
-        converted["性別"] = row["性別"]
+        converted["性別コード"] = SEIBETSU_TO_CODE.get(str(row["性別"]), str(row["性別"]))
         converted["馬齢"] = row["年齢"]
         converted["負担重量"] = row["斤量"]
         converted["騎手名略称"] = row["騎手"]
         converted["騎手コード"] = row["騎手ID"]
-        converted["所属"] = row["所属"]
+        shozoku = str(row["所属"]) if pd.notna(row["所属"]) else ""
+        converted["所属コード"] = TOZAI_SHOZOKU_TO_CODE.get(shozoku, shozoku)
         converted["調教師名略称"] = row["厩舎"]
         converted["調教師コード"] = row["厩舎ID"]
         converted["馬体重"] = row["馬体重"]
@@ -46,10 +49,12 @@ def convert_entry(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         # 増減 → 増減符号 + 増減差
         set_zogen(converted, row["増減"])
 
-        # 出走区分 → 異常区分
+        # 出走区分 → 異常区分コード（レース前に確定できる出走取消・競走除外のみ）
         shutsuso_kubun = row["出走区分"]
         if pd.notna(shutsuso_kubun):
-            converted["異常区分"] = IJO_KUBUN_MAP.get(str(shutsuso_kubun), str(shutsuso_kubun))
+            converted["異常区分コード"] = SHUTSUSO_TO_IJO_CODE.get(str(shutsuso_kubun), "0")
+        else:
+            converted["異常区分コード"] = "0"
 
         rows.append(converted)
 

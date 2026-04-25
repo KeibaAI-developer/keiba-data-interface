@@ -84,16 +84,17 @@ def convert_manyen_to_hyakuyen(value: int) -> int:
     return value * 100
 
 
-def split_zogen(value: int) -> tuple[str, int]:
+def split_zogen(value: int) -> tuple[str | None, int]:
     """増減値を増減符号と増減差に分離する.
 
     符号付き整数を増減符号文字列と増減差（絶対値）に分離する。
+    増減なし（0）の場合、符号は存在しないため None を返す。
 
     Args:
         value (int): 増減値（例: 2, -4, 0）
 
     Returns:
-        str: 増減符号（"+", "-", " "）
+        str | None: 増減符号（"+", "-"）または None（増減なし）
         int: 増減差（絶対値）
     """
     if value > 0:
@@ -101,4 +102,4 @@ def split_zogen(value: int) -> tuple[str, int]:
     elif value < 0:
         return "-", abs(value)
     else:
-        return " ", 0
+        return None, 0

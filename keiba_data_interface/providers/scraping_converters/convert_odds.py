@@ -5,7 +5,7 @@ import pandas as pd
 from keiba_data_interface.schema.columns import ODDS_COLUMNS
 from keiba_data_interface.schema.types import ODDS_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import extract_race_code_parts, keibajo_code_to_name
+from keiba_data_interface.utils.race_code import extract_race_code_parts
 
 
 def convert_odds(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
@@ -26,7 +26,7 @@ def convert_odds(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         converted["レースコード"] = race_code
         converted["開催年"] = parts["年"]
         converted["開催月日"] = parts["月日"]
-        converted["競馬場"] = keibajo_code_to_name(parts["競馬場"])
+        converted["競馬場コード"] = parts["競馬場コード"]
         converted["開催回"] = int(parts["回"])
         converted["開催日目"] = int(parts["日目"])
         converted["レース番号"] = int(parts["R"])

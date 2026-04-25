@@ -51,10 +51,10 @@ def test_odds_getter_called_with_correct_args(
     provider.get_win_show_odds(race_code)
 
     mock_odds_getter.get_odds1_tansho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
     mock_odds_getter.get_odds1_fukusho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 
@@ -122,7 +122,7 @@ def test_header_columns(
     assert row["レースコード"] == race_code
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 5
     assert row["開催日目"] == 8
     assert row["レース番号"] == 11
@@ -213,3 +213,55 @@ def test_fukusho_empty_returns_tansho_only(
     assert result.iloc[0]["馬番"] == 1
     assert result.iloc[0]["単勝オッズ"] == 3.8
     assert pd.isna(result.iloc[0]["複勝最低オッズ"])
+
+
+def test_scratched_horse_odds_are_nan(
+    provider: MykeibaDBProvider,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """取消馬（'****'）のオッズ・人気はNaNになる."""
+    tansho = create_odds1_tansho_df().copy()
+    tansho.at[0, "odds"] = "****"
+    tansho.at[0, "ninki"] = "**"
+    fukusho = create_odds1_fukusho_df().copy()
+    fukusho.at[0, "odds_saitei"] = "****"
+    fukusho.at[0, "odds_saikou"] = "****"
+    fukusho.at[0, "ninki"] = "**"
+    mock_odds_getter.get_odds1_tansho.return_value = tansho
+    mock_odds_getter.get_odds1_fukusho.return_value = fukusho
+
+    result = provider.get_win_show_odds(race_code)
+
+    row = result[result["馬番"] == 1].iloc[0]
+    assert pd.isna(row["単勝オッズ"])
+    assert pd.isna(row["単勝人気"])
+    assert pd.isna(row["複勝最低オッズ"])
+    assert pd.isna(row["複勝最高オッズ"])
+    assert pd.isna(row["複勝人気"])
+
+
+def test_excluded_horse_odds_are_nan(
+    provider: MykeibaDBProvider,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """除外馬（'----'）のオッズ・人気はNaNになる."""
+    tansho = create_odds1_tansho_df().copy()
+    tansho.at[0, "odds"] = "----"
+    tansho.at[0, "ninki"] = "--"
+    fukusho = create_odds1_fukusho_df().copy()
+    fukusho.at[0, "odds_saitei"] = "----"
+    fukusho.at[0, "odds_saikou"] = "----"
+    fukusho.at[0, "ninki"] = "--"
+    mock_odds_getter.get_odds1_tansho.return_value = tansho
+    mock_odds_getter.get_odds1_fukusho.return_value = fukusho
+
+    result = provider.get_win_show_odds(race_code)
+
+    row = result[result["馬番"] == 1].iloc[0]
+    assert pd.isna(row["単勝オッズ"])
+    assert pd.isna(row["単勝人気"])
+    assert pd.isna(row["複勝最低オッズ"])
+    assert pd.isna(row["複勝最高オッズ"])
+    assert pd.isna(row["複勝人気"])

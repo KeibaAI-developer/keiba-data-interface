@@ -12,7 +12,7 @@ def test_extract_race_code_parts_normal() -> None:
     assert result == {
         "年": "2025",
         "月日": "0502",
-        "競馬場": "06",
+        "競馬場コード": "06",
         "回": "02",
         "日目": "12",
         "R": "11",
@@ -25,7 +25,7 @@ def test_extract_race_code_parts_first_race() -> None:
     assert result == {
         "年": "2024",
         "月日": "0101",
-        "競馬場": "05",
+        "競馬場コード": "05",
         "回": "01",
         "日目": "01",
         "R": "01",
@@ -38,7 +38,7 @@ def test_extract_race_code_parts_last_race() -> None:
     assert result == {
         "年": "2023",
         "月日": "1231",
-        "競馬場": "10",
+        "競馬場コード": "10",
         "回": "05",
         "日目": "08",
         "R": "12",

@@ -10,16 +10,65 @@ from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_hhmm_to_display
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
+# トラックコード → レース種別の変換マッピング
+_TRACK_CODE_TO_RACE_SHUBETSU: dict[str, str] = {
+    **{str(c): "平地" for c in range(10, 30)},
+    **{str(c): "障害" for c in range(51, 60)},
+}
+
+# トラックコード → 芝ダの変換マッピング
+_TRACK_CODE_TO_SHIBA_DA: dict[str, str] = {
+    **{str(c): "芝" for c in range(10, 23)},
+    **{str(c): "ダ" for c in range(23, 30)},
+    **{str(c): "芝" for c in range(51, 60)},
+}
+
+# トラックコード → 左右の変換マッピング
+_TRACK_CODE_TO_SAYUU: dict[str, str] = {
+    "10": "直",
+    **{str(c): "左" for c in range(11, 17)},
+    **{str(c): "右" for c in range(17, 23)},
+    "23": "左",
+    "24": "右",
+    "25": "左",
+    "26": "右",
+    "27": "左",
+    "28": "右",
+    "29": "直",
+    "53": "左",
+}
+
+# トラックコード → 内外の変換マッピング
+_TRACK_CODE_TO_UCHISOTO: dict[str, str] = {
+    "12": "外",
+    "13": "内-外",
+    "14": "外-内",
+    "15": "内",
+    "16": "外",
+    "18": "外",
+    "19": "内-外",
+    "20": "外-内",
+    "21": "内",
+    "22": "外",
+    "25": "内",
+    "26": "外",
+    "55": "外",
+    "56": "外-内",
+    "57": "内-外",
+    "58": "内",
+    "59": "外",
+}
+
 # RACE_SHOSAI → レース基本情報のカラムリネームマッピング
 RACE_INFO_RENAME: dict[str, str] = {
     "race_code": "レースコード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
-    "keibajo": "競馬場",
+    "keibajo_code": "競馬場コード",
     "kaisai_kai": "開催回",
     "kaisai_nichime": "開催日目",
     "race_bango": "レース番号",
-    "yobi": "曜日",
+    "yobi_code": "曜日コード",
     "tokubetsu_kyoso_bango": "特別競走番号",
     "kyosomei_hondai": "競走名本題",
     "kyosomei_fukudai": "競走名副題",
@@ -32,11 +81,11 @@ RACE_INFO_RENAME: dict[str, str] = {
     "kyosomei_ryakusho_3": "競走名略称3文字",
     "kyosomei_kubun": "競走名区分",
     "jusho_kaiji": "重賞回次",
-    "grade": "グレード",
-    "henkomae_grade": "変更前グレード",
-    "kyoso_shubetsu": "競走種別",
-    "kyoso_kigo": "競走記号",
-    "juryo_shubetsu": "重量種別",
+    "grade_code": "グレードコード",
+    "henkomae_grade_code": "変更前グレードコード",
+    "kyoso_shubetsu_code": "競走種別コード",
+    "kyoso_kigo_code": "競走記号コード",
+    "juryo_shubetsu_code": "重量種別コード",
     "kyoso_joken_code_2sai": "競走条件2歳",
     "kyoso_joken_code_3sai": "競走条件3歳",
     "kyoso_joken_code_4sai": "競走条件4歳",
@@ -45,8 +94,8 @@ RACE_INFO_RENAME: dict[str, str] = {
     "kyoso_joken_meisho": "競走条件名称",
     "kyori": "距離",
     "henkomae_kyori": "変更前距離",
-    "track": "トラック",
-    "henkomae_track": "変更前トラック",
+    "track_code": "トラックコード",
+    "henkomae_track_code": "変更前トラックコード",
     "course_kubun": "コース区分",
     "henkomae_course_kubun": "変更前コース区分",
     "honshokin1": "本賞金1着",
@@ -74,9 +123,9 @@ RACE_INFO_RENAME: dict[str, str] = {
     "toroku_tosu": "登録頭数",
     "shusso_tosu": "出走頭数",
     "nyusen_tosu": "入線頭数",
-    "tenko": "天候",
-    "shiba_babajotai": "芝馬場状態",
-    "dirt_babajotai": "ダート馬場状態",
+    "tenko_code": "天候コード",
+    "shiba_babajotai_code": "芝馬場状態コード",
+    "dirt_babajotai_code": "ダート馬場状態コード",
 }
 
 
@@ -116,6 +165,54 @@ def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].apply(
                 lambda v: convert_hhmm_to_display(str(v)) if pd.notna(v) and str(v).strip() else v
             )
+
+    # グレードコード: スペース（未設定の初期値）は "_"（一般競走）に統一する
+    for col in ["grade_code", "henkomae_grade_code"]:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda v: "_" if pd.notna(v) and str(v).strip() == "" else v)
+
+    # 馬場状態コード: "0"（未設定）または空白（対象トラックなし）は NaN に統一する
+    for col in ["shiba_babajotai_code", "dirt_babajotai_code"]:
+        if col in df.columns:
+            df[col] = df[col].apply(
+                lambda v: (
+                    pd.NA if pd.isna(v) or str(v).strip() == "" or str(v).strip() == "0" else v
+                )
+            )
+
+    # コース区分: 末尾スペース除去（例: "A " → "A"）
+    for col in ["course_kubun", "henkomae_course_kubun"]:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda v: str(v).strip() if pd.notna(v) else v)
+
+    # 競走条件名称: 全角スペースのみの場合はNaNに統一する
+    if "kyoso_joken_meisho" in df.columns:
+        df["kyoso_joken_meisho"] = df["kyoso_joken_meisho"].apply(
+            lambda v: pd.NA if pd.notna(v) and str(v).strip() == "" else v
+        )
+
+    # 競走条件コード: 5つの年齢別条件カラムの最大値を採用
+    joken_cols = [
+        "kyoso_joken_code_2sai",
+        "kyoso_joken_code_3sai",
+        "kyoso_joken_code_4sai",
+        "kyoso_joken_code_5sai_ijo",
+        "kyoso_joken_code_saijakunen",
+    ]
+    existing_joken = [c for c in joken_cols if c in df.columns]
+    if existing_joken:
+        joken_values = df[existing_joken].apply(pd.to_numeric, errors="coerce")
+        df["競走条件コード"] = joken_values.max(axis=1).apply(
+            lambda v: f"{int(v):03d}" if pd.notna(v) else pd.NA
+        )
+
+    # トラックコードからレース種別・芝ダ・左右・内外を導出
+    if "track_code" in df.columns:
+        tc = df["track_code"].apply(lambda v: str(v).strip() if pd.notna(v) else "")
+        df["レース種別"] = tc.map(_TRACK_CODE_TO_RACE_SHUBETSU)
+        df["芝ダ"] = tc.map(_TRACK_CODE_TO_SHIBA_DA)
+        df["左右"] = tc.map(_TRACK_CODE_TO_SAYUU)
+        df["内外"] = tc.map(_TRACK_CODE_TO_UCHISOTO)
 
     df = df.rename(columns=RACE_INFO_RENAME)
 

@@ -94,35 +94,124 @@ def test_direct_mapping_columns(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["競馬場"] == "京都"
+    assert row["競馬場コード"] == "08"
     assert row["開催回"] == 3
     assert row["開催日目"] == 4
     assert row["レース番号"] == 11
-    assert row["曜日"] == "日"
+    assert row["曜日コード"] == "2"
     assert row["競走名本題"] == "天皇賞(春)"
     assert row["発走時刻"] == "15:40"
-    assert row["天候"] == "晴"
+    assert row["天候コード"] == "1"
     assert row["距離"] == 3200
-    assert row["競走種別"] == "サラ系4歳以上"
-    assert row["競走条件名称"] == "オープン"
-    assert row["グレード"] == "G1"
-    assert row["競走記号"] == "(国際)(指)"
-    assert row["重量種別"] == "定量"
-    assert row["出走頭数"] == 18
+    assert row["競走種別コード"] == "14"
+    assert row["競走条件コード"] == "999"
+    assert row["グレードコード"] == "A"
+    assert row["競走記号コード"] == "N01"
+    assert row["重量種別コード"] == "4"
+    assert row["登録頭数"] == 18
 
 
-def test_track_concatenation(
+def test_race_shubetsu_mapping(
     provider: ScrapingProvider,
     mock_scraper: MagicMock,
     turf_race_info: pd.DataFrame,
     race_code: str,
 ) -> None:
-    """芝ダと左右が結合されてトラックカラムになる."""
+    """レース種別がそのままマッピングされる."""
     mock_scraper.get_race_info.return_value = turf_race_info
 
     result = provider.get_race_info(race_code)
 
-    assert result.iloc[0]["トラック"] == "芝左"
+    assert result.iloc[0]["レース種別"] == "平地"
+
+
+def test_shiba_da_mapping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """芝ダがそのままマッピングされる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["芝ダ"] == "芝"
+
+
+def test_sayuu_mapping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """左右がそのままマッピングされる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["左右"] == "左"
+
+
+def test_uchisoto_mapping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """内外がそのままマッピングされる."""
+    from .conftest import create_scraping_race_info
+
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(uchisoto="外")
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["内外"] == "外"
+
+
+def test_uchisoto_empty_becomes_nan(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """内外が空文字の場合NaNになる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert pd.isna(result.iloc[0]["内外"])
+
+
+def test_steeplechase_shiba_da_and_race_shubetsu(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    race_code: str,
+) -> None:
+    """障害レースの芝ダが芝、レース種別が障害となる."""
+    from .conftest import create_scraping_race_info
+
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(
+        shiba_da="芝", race_shubetsu="障害"
+    )
+
+    result = provider.get_race_info(race_code)
+
+    assert result.iloc[0]["芝ダ"] == "芝"
+    assert result.iloc[0]["レース種別"] == "障害"
+
+
+def test_track_code_is_nan_for_scraping(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """scrapingではトラックコードはNaNになる."""
+    mock_scraper.get_race_info.return_value = turf_race_info
+
+    result = provider.get_race_info(race_code)
+
+    assert pd.isna(result.iloc[0]["トラックコード"])
 
 
 def test_course_division_concatenation(
@@ -130,14 +219,14 @@ def test_course_division_concatenation(
     mock_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """コースと内外が結合されてコース区分カラムになる."""
-    from .conftest import _create_scraping_race_info
+    """コースがコース区分カラムになる."""
+    from .conftest import create_scraping_race_info
 
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info(course="B", uchisoto="内")
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(course="B", uchisoto="内")
 
     result = provider.get_race_info(race_code)
 
-    assert result.iloc[0]["コース区分"] == "B内"
+    assert result.iloc[0]["コース区分"] == "B"
 
 
 def test_prize_money_conversion(
@@ -171,8 +260,8 @@ def test_turf_race_baba_assignment(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["芝馬場状態"] == "良"
-    assert pd.isna(row["ダート馬場状態"])
+    assert row["芝馬場状態コード"] == "1"
+    assert pd.isna(row["ダート馬場状態コード"])
 
 
 def test_dirt_race_baba_assignment(
@@ -187,8 +276,8 @@ def test_dirt_race_baba_assignment(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert pd.isna(row["芝馬場状態"])
-    assert row["ダート馬場状態"] == "重"
+    assert pd.isna(row["芝馬場状態コード"])
+    assert row["ダート馬場状態コード"] == "3"
 
 
 def test_missing_columns_filled_with_nan(
@@ -209,7 +298,7 @@ def test_missing_columns_filled_with_nan(
     assert pd.isna(row["競走名カッコ内"])
     assert pd.isna(row["変更前距離"])
     assert pd.isna(row["本賞金6着"])
-    assert pd.isna(row["登録頭数"])
+    assert pd.isna(row["出走頭数"])
     assert pd.isna(row["入線頭数"])
 
 
@@ -219,15 +308,17 @@ def test_steeplechase_baba_assignment(
     race_code: str,
 ) -> None:
     """障害レースで馬場状態が芝馬場状態に格納される."""
-    from .conftest import _create_scraping_race_info
+    from .conftest import create_scraping_race_info
 
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info(shiba_da="障", baba="稍")
+    mock_scraper.get_race_info.return_value = create_scraping_race_info(
+        shiba_da="芝", race_shubetsu="障害", baba="稍"
+    )
 
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["芝馬場状態"] == "稍"
-    assert pd.isna(row["ダート馬場状態"])
+    assert row["芝馬場状態コード"] == "2"
+    assert pd.isna(row["ダート馬場状態コード"])
 
 
 def test_date_differs_from_race_code_year_and_monthday_come_from_race_code(
@@ -238,10 +329,10 @@ def test_date_differs_from_race_code_year_and_monthday_come_from_race_code(
     """rawの日付がrace_codeと異なる場合でも開催年/開催月日はrace_codeから導出される."""
     from datetime import date
 
-    from .conftest import _create_scraping_race_info
+    from .conftest import create_scraping_race_info
 
     # race_code=2025050206021211 に対して日付を意図的にずらす
-    raw = _create_scraping_race_info()
+    raw = create_scraping_race_info()
     raw["日付"] = date(2099, 12, 31)
     mock_scraper.get_race_info.return_value = raw
 

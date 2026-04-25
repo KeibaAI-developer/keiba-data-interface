@@ -49,7 +49,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_payoff(race_code)
 
     mock_race_getter.get_haraimodoshi.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 
@@ -67,7 +67,7 @@ def test_header_columns_renamed(
     assert row["レースコード"] == race_code
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 5
     assert row["開催日目"] == 8
     assert row["レース番号"] == 11

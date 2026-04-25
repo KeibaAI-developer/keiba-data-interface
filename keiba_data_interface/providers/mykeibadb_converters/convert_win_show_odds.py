@@ -17,7 +17,7 @@ _TANSHO_RENAME: dict[str, str] = {
     "race_code": "レースコード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
-    "keibajo": "競馬場",
+    "keibajo_code": "競馬場コード",
     "kaisai_kaiji": "開催回",
     "kaisai_nichiji": "開催日目",
     "race_bango": "レース番号",
@@ -81,12 +81,26 @@ def convert_win_show_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -
         result = df_t[keep_cols_t].merge(df_f[keep_cols_f], on="馬番", how="outer")
         result = ensure_columns(result, ODDS_COLUMNS)
 
+    for col in ("単勝人気", "複勝人気"):
+        if col in result.columns:
+            result[col] = result[col].apply(_convert_ninki_value)
+
     result = apply_types(result, ODDS_TYPES)
     return result
 
 
 def _convert_odds_value(value: Any) -> Any:
-    """オッズ値を0.1倍単位から倍単位に変換する（0やNAはpd.NAを返す）."""
-    if pd.notna(value) and int(value) > 0:
-        return convert_tenth_to_unit(int(value))
+    """オッズ値を0.1倍単位から倍単位に変換する（数値以外・0・NAはpd.NAを返す）."""
+    if pd.isna(value) or not str(value).isdigit():
+        return pd.NA
+    int_value = int(value)
+    if int_value > 0:
+        return convert_tenth_to_unit(int_value)
     return pd.NA
+
+
+def _convert_ninki_value(value: Any) -> Any:
+    """人気文字列を整数に変換する（数値以外・NAはpd.NAを返す）."""
+    if pd.isna(value) or not str(value).isdigit():
+        return pd.NA
+    return int(value)

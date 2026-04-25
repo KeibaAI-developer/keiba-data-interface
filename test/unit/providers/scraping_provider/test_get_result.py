@@ -15,9 +15,9 @@ def test_output_columns_match_schema(
     race_code: str,
 ) -> None:
     """出力DataFrameのカラム構成がHORSE_RACE_INFO_COLUMNSと一致する."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -30,9 +30,9 @@ def test_output_row_count(
     race_code: str,
 ) -> None:
     """出力DataFrameの行数が入力と一致する."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -45,14 +45,14 @@ def test_time_sa_normal(
     race_code: str,
 ) -> None:
     """タイム差が1着タイムとの差から正しく計算される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
-    # 1着: 3:12.5 = 192.5秒、2着: 3:13.0 = 193.0秒 → 差: 0.5
-    assert result.iloc[0]["タイム差"] == 0.0
+    # 1着: 3:12.5 = 192.5秒、2着: 3:13.0 = 193.0秒 → 1着は-(2着-1着)=-0.5
+    assert result.iloc[0]["タイム差"] == -0.5
     assert result.iloc[1]["タイム差"] == 0.5
 
 
@@ -62,9 +62,9 @@ def test_time_sa_excluded_for_chushi(
     race_code: str,
 ) -> None:
     """競走中止馬のタイム差はNaNになる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "異常区分"] = "中止"
     raw.loc[1, "着順"] = "中止"
     raw.loc[1, "タイム"] = None
@@ -81,15 +81,15 @@ def test_ijo_kubun_kokaku(
     race_code: str,
 ) -> None:
     """降着が着差テキストから正しく検出される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "着差"] = "1位降着"
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[0]["異常区分"] == "降着"
+    assert result.iloc[0]["異常区分コード"] == "7"
 
 
 def test_ijo_kubun_chushi(
@@ -98,16 +98,16 @@ def test_ijo_kubun_chushi(
     race_code: str,
 ) -> None:
     """競走中止の異常区分が正しく変換される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "異常区分"] = "中止"
     raw.loc[1, "着順"] = "中止"
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["異常区分"] == "競走中止"
+    assert result.iloc[1]["異常区分コード"] == "4"
 
 
 def test_ijo_kubun_shikkaku(
@@ -116,16 +116,16 @@ def test_ijo_kubun_shikkaku(
     race_code: str,
 ) -> None:
     """失格の異常区分が正しく変換される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "異常区分"] = "失格"
     raw.loc[1, "着順"] = "失格"
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["異常区分"] == "失格"
+    assert result.iloc[1]["異常区分コード"] == "5"
 
 
 def test_result_columns_mapped(
@@ -134,9 +134,9 @@ def test_result_columns_mapped(
     race_code: str,
 ) -> None:
     """結果固有カラムが正しくマッピングされる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -155,14 +155,14 @@ def test_chakusa_mapped(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """着差が着差1に正しくマッピングされる."""
-    from .conftest import _create_scraping_result
+    """着差が着差コード1に正しくマッピングされる."""
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
-    assert result.iloc[1]["着差1"] == "クビ"
+    assert result.iloc[1]["着差コード1"] == "K__"
 
 
 def test_cockaku_chakusa_not_mapped_to_chakusa1(
@@ -170,16 +170,16 @@ def test_cockaku_chakusa_not_mapped_to_chakusa1(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """降着の場合、着差テキストは着差1にマッピングされない."""
-    from .conftest import _create_scraping_result
+    """降着の場合、着差テキストは着差コード1にマッピングされない."""
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "着差"] = "1位降着"
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
 
-    assert pd.isna(result.iloc[0]["着差1"])
+    assert pd.isna(result.iloc[0]["着差コード1"])
 
 
 def test_header_columns_from_race_code(
@@ -188,16 +188,16 @@ def test_header_columns_from_race_code(
     race_code: str,
 ) -> None:
     """ヘッダカラムがレースコードから正しく導出される."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
     row = result.iloc[0]
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 2
     assert row["開催日目"] == 12
     assert row["レース番号"] == 11
@@ -210,10 +210,10 @@ def test_kakutoku_honshokin_derived(
     race_code: str,
 ) -> None:
     """着順とRaceInfo賞金から獲得本賞金が正しく導出される."""
-    from .conftest import _create_scraping_race_info, _create_scraping_result
+    from .conftest import create_scraping_race_info, create_scraping_result
 
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
-    mock_result_scraper.get_result.return_value = _create_scraping_result()
+    mock_scraper.get_race_info.return_value = create_scraping_race_info()
+    mock_result_scraper.get_result.return_value = create_scraping_result()
 
     result = provider_full.get_result(race_code)
 
@@ -229,17 +229,17 @@ def test_kakutoku_honshokin_nan_for_6th_and_below(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """6着以下の獲得本賞金はNaNになる."""
-    from .conftest import _create_scraping_race_info, _create_scraping_result
+    """6着以下の獲得本賞金は0になる."""
+    from .conftest import create_scraping_race_info, create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[1, "着順"] = "6"
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_scraper.get_race_info.return_value = create_scraping_race_info()
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
 
-    assert pd.isna(result.iloc[1]["獲得本賞金"])
+    assert result.iloc[1]["獲得本賞金"] == 0
 
 
 def test_kakutoku_honshokin_nan_for_ijo_kubun(
@@ -248,18 +248,18 @@ def test_kakutoku_honshokin_nan_for_ijo_kubun(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """異常区分が空でない馬の獲得本賞金はNaNになる."""
-    from .conftest import _create_scraping_race_info, _create_scraping_result
+    """異常区分が空でない馬の獲得本賞金は0になる."""
+    from .conftest import create_scraping_race_info, create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "異常区分"] = "失格"
     raw.loc[0, "着順"] = "失格"
-    mock_scraper.get_race_info.return_value = _create_scraping_race_info()
+    mock_scraper.get_race_info.return_value = create_scraping_race_info()
     mock_result_scraper.get_result.return_value = raw
 
     result = provider_full.get_result(race_code)
 
-    assert pd.isna(result.iloc[0]["獲得本賞金"])
+    assert result.iloc[0]["獲得本賞金"] == 0
 
 
 def test_time_sa_nan_when_all_chushi(
@@ -268,9 +268,9 @@ def test_time_sa_nan_when_all_chushi(
     race_code: str,
 ) -> None:
     """全馬競走中止の場合、全行のタイム差がNaNになる."""
-    from .conftest import _create_scraping_result
+    from .conftest import create_scraping_result
 
-    raw = _create_scraping_result()
+    raw = create_scraping_result()
     raw.loc[0, "着順"] = "中止"
     raw.loc[0, "タイム"] = None
     raw.loc[0, "異常区分"] = "中止"

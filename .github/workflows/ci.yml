@@ -94,6 +94,6 @@ jobs:
         pytest test/unit -v --cov=keiba_data_interface --cov-report=xml --cov-report=term-missing
 
     # 結合テスト実装後に有効化
-    # - name: Run integration test
-    #   run: |
-    #     pytest test/integration -v --cov=keiba_data_interface --cov-append --cov-report=xml --cov-report=term-missing
+    - name: Run integration test
+      run: |
+        pytest test/integration -v --cov=keiba_data_interface --cov-append --cov-report=xml --cov-report=term-missing

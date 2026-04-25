@@ -14,7 +14,7 @@ _BASE_PAYOFF_RENAME: dict[str, str] = {
     "race_code": "レースコード",
     "kaisai_nen": "開催年",
     "kaisai_gappi": "開催月日",
-    "keibajo": "競馬場",
+    "keibajo_code": "競馬場コード",
     "kaisai_kaiji": "開催回",
     "kaisai_nichiji": "開催日目",
     "race_bango": "レース番号",
@@ -162,4 +162,8 @@ def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
     df = raw.rename(columns=_PAYOFF_RENAME)
     df = ensure_columns(df, PAYOFF_COLUMNS)
     df = apply_types(df, PAYOFF_TYPES)
+    # 組番・馬番が 0 の場合は NaN に変換する（未設定を表す）
+    kumiban_cols = [c for c in df.columns if c.endswith(("馬番", "組番1", "組番2", "組番3"))]
+    for col in kumiban_cols:
+        df[col] = df[col].replace(0, pd.NA)
     return df

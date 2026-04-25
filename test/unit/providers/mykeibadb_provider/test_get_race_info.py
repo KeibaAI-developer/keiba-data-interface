@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock
 
+import pandas as pd
 import pytest
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
@@ -48,7 +49,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_race_info(race_code)
 
     mock_race_getter.get_race_shosai.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 
@@ -112,15 +113,19 @@ def test_code_converted_columns_renamed(
     result = provider.get_race_info(race_code)
 
     row = result.iloc[0]
-    assert row["競馬場"] == "中山"
-    assert row["曜日"] == "日"
-    assert row["グレード"] == "GI"
-    assert row["競走種別"] == "サラ系３歳以上"
-    assert row["競走記号"] == "(国際)(指定)"
-    assert row["重量種別"] == "定量"
-    assert row["トラック"] == "芝・右"
-    assert row["天候"] == "晴"
-    assert row["芝馬場状態"] == "良"
+    assert row["競馬場コード"] == "06"
+    assert row["曜日コード"] == "1"
+    assert row["グレードコード"] == "A"
+    assert row["競走種別コード"] == "13"
+    assert row["競走記号コード"] == "N01"
+    assert row["重量種別コード"] == "4"
+    assert row["トラックコード"] == "17"
+    assert row["レース種別"] == "平地"
+    assert row["芝ダ"] == "芝"
+    assert row["左右"] == "右"
+    assert pd.isna(row["内外"])
+    assert row["天候コード"] == "1"
+    assert row["芝馬場状態コード"] == "1"
 
 
 def test_direct_rename_columns(

@@ -26,16 +26,20 @@ def convert_race_result_info(
     # ラップタイム
     if len(raw_lap) > 0:
         lap_row = raw_lap.iloc[0]
+        lap_values: list[float] = []
         for dist in range(100, 5001, 100):
             col = f"{dist}m"
             if col in lap_row.index and pd.notna(lap_row[col]):
                 converted[f"ラップ{dist}m"] = lap_row[col]
+                lap_values.append(float(lap_row[col]))
 
-        # 前3ハロン / 後3ハロン
-        if "レース前3F" in lap_row.index and pd.notna(lap_row["レース前3F"]):
-            converted["前3ハロン"] = lap_row["レース前3F"]
-        if "レース後3F" in lap_row.index and pd.notna(lap_row["レース後3F"]):
-            converted["後3ハロン"] = lap_row["レース後3F"]
+        # 後3ハロン: ラップの後ろから3つの値を合計
+        if len(lap_values) >= 3:
+            converted["後3ハロン"] = round(sum(lap_values[-3:]), 1)
+
+        # 後4ハロン: ラップの後ろから4つの値を合計
+        if len(lap_values) >= 4:
+            converted["後4ハロン"] = round(sum(lap_values[-4:]), 1)
 
     # コーナー通過順
     if len(raw_corner) > 0:

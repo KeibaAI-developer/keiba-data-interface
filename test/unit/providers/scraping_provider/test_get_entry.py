@@ -15,9 +15,9 @@ def test_output_columns_match_schema(
     race_code: str,
 ) -> None:
     """出力DataFrameのカラム構成がHORSE_RACE_INFO_COLUMNSと一致する."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
@@ -30,9 +30,9 @@ def test_output_row_count(
     race_code: str,
 ) -> None:
     """出力DataFrameの行数が入力と一致する."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
@@ -45,9 +45,9 @@ def test_race_code_is_16_digits(
     race_code: str,
 ) -> None:
     """レースコードに引数の16桁がそのまま格納される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
@@ -61,9 +61,9 @@ def test_column_mapping(
     race_code: str,
 ) -> None:
     """カラム名マッピングが正しく変換される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
@@ -76,8 +76,8 @@ def test_column_mapping(
     assert row["調教師名略称"] == "テスト厩舎1"
     assert row["調教師コード"] == "01111"
     assert row["馬名"] == "テスト馬1"
-    assert row["性別"] == "牡"
-    assert row["所属"] == "栗東"
+    assert row["性別コード"] == "1"
+    assert row["所属コード"] == "2"
     assert row["枠番"] == 1
     assert row["馬番"] == 1
     assert row["馬体重"] == 480
@@ -89,9 +89,9 @@ def test_zogen_positive(
     race_code: str,
 ) -> None:
     """増減がプラスの場合、符号と差が正しく分離される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
@@ -106,9 +106,9 @@ def test_zogen_negative(
     race_code: str,
 ) -> None:
     """増減がマイナスの場合、符号と差が正しく分離される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
@@ -122,17 +122,17 @@ def test_zogen_zero(
     mock_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """増減がゼロの場合、符号と差が正しく分離される."""
-    from .conftest import _create_scraping_entry
+    """増減がゼロの場合、増減差=0・増減符号=NaNになる."""
+    from .conftest import create_scraping_entry
 
-    entry = _create_scraping_entry()
+    entry = create_scraping_entry()
     entry.loc[0, "増減"] = 0
     mock_scraper.get_entry.return_value = entry
 
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
-    assert row["増減符号"] == " "
+    assert pd.isna(row["増減符号"])
     assert row["増減差"] == 0
 
 
@@ -142,9 +142,9 @@ def test_zogen_nan(
     race_code: str,
 ) -> None:
     """増減がNaN（前計不）の場合、増減符号と増減差がNaNになる."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    entry = _create_scraping_entry()
+    entry = create_scraping_entry()
     entry.loc[0, "増減"] = None
     mock_scraper.get_entry.return_value = entry
 
@@ -161,13 +161,13 @@ def test_ijo_kubun_shutsuso(
     race_code: str,
 ) -> None:
     """出走区分"出走"が空文字に変換される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["異常区分"] == ""
+    assert result.iloc[0]["異常区分コード"] == "0"
 
 
 def test_ijo_kubun_torikeshi(
@@ -176,15 +176,15 @@ def test_ijo_kubun_torikeshi(
     race_code: str,
 ) -> None:
     """出走区分"取消"が"出走取消"に変換される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    entry = _create_scraping_entry()
+    entry = create_scraping_entry()
     entry.loc[0, "出走区分"] = "取消"
     mock_scraper.get_entry.return_value = entry
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["異常区分"] == "出走取消"
+    assert result.iloc[0]["異常区分コード"] == "1"
 
 
 def test_ijo_kubun_jogai(
@@ -193,15 +193,15 @@ def test_ijo_kubun_jogai(
     race_code: str,
 ) -> None:
     """出走区分"除外"が"競走除外"に変換される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    entry = _create_scraping_entry()
+    entry = create_scraping_entry()
     entry.loc[0, "出走区分"] = "除外"
     mock_scraper.get_entry.return_value = entry
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["異常区分"] == "競走除外"
+    assert result.iloc[0]["異常区分コード"] == "3"
 
 
 def test_missing_columns_filled_with_nan(
@@ -210,15 +210,15 @@ def test_missing_columns_filled_with_nan(
     race_code: str,
 ) -> None:
     """不足カラムがNaN埋めされる."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
-    assert pd.isna(row["品種"])
-    assert pd.isna(row["毛色"])
+    assert pd.isna(row["品種コード"])
+    assert pd.isna(row["毛色コード"])
     assert pd.isna(row["馬主コード"])
     assert pd.isna(row["確定着順"])
     assert pd.isna(row["走破タイム"])
@@ -230,16 +230,16 @@ def test_header_columns_from_race_code(
     race_code: str,
 ) -> None:
     """開催年・開催月日・レース番号がrace_codeから導出される."""
-    from .conftest import _create_scraping_entry
+    from .conftest import create_scraping_entry
 
-    mock_scraper.get_entry.return_value = _create_scraping_entry()
+    mock_scraper.get_entry.return_value = create_scraping_entry()
 
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
     assert row["開催年"] == "2025"
     assert row["開催月日"] == "0502"
-    assert row["競馬場"] == "中山"
+    assert row["競馬場コード"] == "06"
     assert row["開催回"] == 2
     assert row["開催日目"] == 12
     assert row["レース番号"] == 11

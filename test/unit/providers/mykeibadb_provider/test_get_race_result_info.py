@@ -49,7 +49,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_race_result_info(race_code)
 
     mock_race_getter.get_race_shosai.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 
@@ -170,17 +170,18 @@ def test_corner_info_copied(
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """コーナー情報が正しくコピーされる."""
+    """コーナー通過順が実際のコーナー番号に対応するカラムに格納される."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_with_result_info_df()
 
     result = provider.get_race_result_info(race_code)
 
     row = result.iloc[0]
-    assert row["1コーナー"] == "3コーナー奥"
-    assert row["1コーナー周回数"] == 1
-    assert row["1コーナー通過順"] == "5-3(1,8)-2-4-6"
-    assert row["4コーナー"] == "4コーナー"
+    assert pd.isna(row["1コーナー通過順"])
+    assert pd.isna(row["2コーナー通過順"])
+    assert row["3コーナー通過順"] == "5-3(1,8)-2-4-6"
+    assert row["3コーナー周回数"] == 1
     assert row["4コーナー通過順"] == "1-3-5-8-2-4-6"
+    assert row["4コーナー周回数"] == 1
 
 
 def test_record_koshin_kubun_copied(

@@ -14,9 +14,9 @@ def test_output_columns_match_schema(
     mock_past_scraper: MagicMock,
 ) -> None:
     """出力DataFrameのカラム構成がHORSE_RACE_INFO_COLUMNSと一致する."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -41,9 +41,9 @@ def test_date_split(
     mock_past_scraper: MagicMock,
 ) -> None:
     """日付が開催年と開催月日に正しく分割される."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -57,9 +57,9 @@ def test_prize_money_conversion(
     mock_past_scraper: MagicMock,
 ) -> None:
     """賞金の万円→百円単位変換が正しい."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -73,9 +73,9 @@ def test_opponent_name(
     mock_past_scraper: MagicMock,
 ) -> None:
     """勝ち馬(2着馬)が相手1馬名に格納される."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -88,9 +88,9 @@ def test_result_columns_mapped(
     mock_past_scraper: MagicMock,
 ) -> None:
     """結果カラムが正しくマッピングされる."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -98,7 +98,12 @@ def test_result_columns_mapped(
     assert row["確定着順"] == 1
     assert row["走破タイム"] == "2:00.5"
     assert row["後3ハロン"] == 34.5
-    assert row["異常区分"] == ""
+    assert row["異常区分コード"] == "0"
+    # 着差カラムはタイム差が格納され、着差コード1はscraping非対応（NaN）
+    assert row["タイム差"] == 0.5
+    import pandas as pd
+
+    assert pd.isna(row["着差コード1"])
 
 
 def test_zogen_split(
@@ -106,9 +111,9 @@ def test_zogen_split(
     mock_past_scraper: MagicMock,
 ) -> None:
     """増減が増減符号と増減差に正しく分離される."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -122,9 +127,9 @@ def test_horse_id_stored(
     mock_past_scraper: MagicMock,
 ) -> None:
     """血統登録番号が全行に格納される."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 
@@ -136,9 +141,9 @@ def test_race_code_derived(
     mock_past_scraper: MagicMock,
 ) -> None:
     """レースIDと日付からレースコードが正しく構築される."""
-    from .conftest import _create_scraping_past_performances
+    from .conftest import create_scraping_past_performances
 
-    mock_past_scraper.get_past_performances.return_value = _create_scraping_past_performances()
+    mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
 
     result = provider_full.get_past_performances("2021105001")
 

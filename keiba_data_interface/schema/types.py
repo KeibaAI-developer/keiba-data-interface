@@ -14,11 +14,11 @@ RACE_INFO_TYPES: dict[str, str] = {
     "レースコード": "object",
     "開催年": "object",
     "開催月日": "object",
-    "競馬場": "object",
+    "競馬場コード": "object",
     "開催回": "Int64",
     "開催日目": "Int64",
     "レース番号": "Int64",
-    "曜日": "object",
+    "曜日コード": "object",
     "特別競走番号": "Int64",
     "競走名本題": "object",
     "競走名副題": "object",
@@ -31,21 +31,26 @@ RACE_INFO_TYPES: dict[str, str] = {
     "競走名略称3文字": "object",
     "競走名区分": "object",
     "重賞回次": "Int64",
-    "グレード": "object",
-    "変更前グレード": "object",
-    "競走種別": "object",
-    "競走記号": "object",
-    "重量種別": "object",
+    "グレードコード": "object",
+    "変更前グレードコード": "object",
+    "競走種別コード": "object",
+    "競走記号コード": "object",
+    "重量種別コード": "object",
     "競走条件2歳": "object",
     "競走条件3歳": "object",
     "競走条件4歳": "object",
     "競走条件5歳以上": "object",
     "競走条件最若年": "object",
+    "競走条件コード": "object",
     "競走条件名称": "object",
     "距離": "Int64",
     "変更前距離": "Int64",
-    "トラック": "object",
-    "変更前トラック": "object",
+    "トラックコード": "object",
+    "変更前トラックコード": "object",
+    "レース種別": "object",
+    "芝ダ": "object",
+    "左右": "object",
+    "内外": "object",
     "コース区分": "object",
     "変更前コース区分": "object",
     "本賞金1着": "Int64",
@@ -73,9 +78,9 @@ RACE_INFO_TYPES: dict[str, str] = {
     "登録頭数": "Int64",
     "出走頭数": "Int64",
     "入線頭数": "Int64",
-    "天候": "object",
-    "芝馬場状態": "object",
-    "ダート馬場状態": "object",
+    "天候コード": "object",
+    "芝馬場状態コード": "object",
+    "ダート馬場状態コード": "object",
 }
 
 
@@ -93,16 +98,12 @@ def _generate_race_result_info_types() -> dict[str, str]:
     types["前4ハロン"] = "Float64"
     types["後3ハロン"] = "Float64"
     types["後4ハロン"] = "Float64"
-    types["1コーナー"] = "object"
     types["1コーナー周回数"] = "Int64"
     types["1コーナー通過順"] = "object"
-    types["2コーナー"] = "object"
     types["2コーナー周回数"] = "Int64"
     types["2コーナー通過順"] = "object"
-    types["3コーナー"] = "object"
     types["3コーナー周回数"] = "Int64"
     types["3コーナー通過順"] = "object"
-    types["4コーナー"] = "object"
     types["4コーナー周回数"] = "Int64"
     types["4コーナー通過順"] = "object"
     types["レコード更新区分"] = "object"
@@ -117,7 +118,7 @@ HORSE_RACE_INFO_TYPES: dict[str, str] = {
     "レースコード": "object",
     "開催年": "object",
     "開催月日": "object",
-    "競馬場": "object",
+    "競馬場コード": "object",
     "開催回": "Int64",
     "開催日目": "Int64",
     "レース番号": "Int64",
@@ -125,12 +126,12 @@ HORSE_RACE_INFO_TYPES: dict[str, str] = {
     "馬番": "Int64",
     "血統登録番号": "object",
     "馬名": "object",
-    "馬記号": "object",
-    "性別": "object",
-    "品種": "object",
-    "毛色": "object",
+    "馬記号コード": "object",
+    "性別コード": "object",
+    "品種コード": "object",
+    "毛色コード": "object",
     "馬齢": "Int64",
-    "所属": "object",
+    "所属コード": "object",
     "調教師コード": "object",
     "調教師名略称": "object",
     "馬主コード": "object",
@@ -148,15 +149,15 @@ HORSE_RACE_INFO_TYPES: dict[str, str] = {
     "馬体重": "Int64",
     "増減符号": "object",
     "増減差": "Int64",
-    "異常区分": "object",
+    "異常区分コード": "object",
     "入線順位": "Int64",
     "確定着順": "Int64",
     "同着区分": "object",
     "同着頭数": "Int64",
     "走破タイム": "object",
-    "着差1": "object",
-    "着差2": "object",
-    "着差3": "object",
+    "着差コード1": "object",
+    "着差コード2": "object",
+    "着差コード3": "object",
     "1コーナー順位": "Int64",
     "2コーナー順位": "Int64",
     "3コーナー順位": "Int64",
@@ -180,7 +181,7 @@ HORSE_RACE_INFO_TYPES: dict[str, str] = {
     "マイニング予想誤差プラス": "object",
     "マイニング予想誤差マイナス": "object",
     "マイニング予想順位": "Int64",
-    "脚質判定": "object",
+    "脚質判定コード": "object",
 }
 
 
@@ -191,7 +192,7 @@ def _generate_payoff_types() -> dict[str, str]:
         "レースコード": "object",
         "開催年": "object",
         "開催月日": "object",
-        "競馬場": "object",
+        "競馬場コード": "object",
         "開催回": "Int64",
         "開催日目": "Int64",
         "レース番号": "Int64",
@@ -290,7 +291,7 @@ ODDS_TYPES: dict[str, str] = {
     "レースコード": "object",
     "開催年": "object",
     "開催月日": "object",
-    "競馬場": "object",
+    "競馬場コード": "object",
     "開催回": "Int64",
     "開催日目": "Int64",
     "レース番号": "Int64",
@@ -310,10 +311,10 @@ def _generate_schedule_types() -> dict[str, str]:
         "開催コード": "object",
         "開催年": "object",
         "開催月日": "object",
-        "競馬場": "object",
+        "競馬場コード": "object",
         "開催回": "Int64",
         "開催日目": "Int64",
-        "曜日": "object",
+        "曜日コード": "object",
     }
 
     for i in range(1, 4):
@@ -323,12 +324,12 @@ def _generate_schedule_types() -> dict[str, str]:
         types[f"重賞{i}競走名略称6文字"] = "object"
         types[f"重賞{i}競走名略称3文字"] = "object"
         types[f"重賞{i}重賞回次"] = "Int64"
-        types[f"重賞{i}グレード"] = "object"
-        types[f"重賞{i}競走種別"] = "object"
-        types[f"重賞{i}競走記号"] = "object"
-        types[f"重賞{i}重量種別"] = "object"
+        types[f"重賞{i}グレードコード"] = "object"
+        types[f"重賞{i}競走種別コード"] = "object"
+        types[f"重賞{i}競走記号コード"] = "object"
+        types[f"重賞{i}重量種別コード"] = "object"
         types[f"重賞{i}距離"] = "Int64"
-        types[f"重賞{i}トラック"] = "object"
+        types[f"重賞{i}トラックコード"] = "object"
 
     return types
 

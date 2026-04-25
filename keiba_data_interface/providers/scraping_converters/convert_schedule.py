@@ -4,9 +4,11 @@ from datetime import date
 
 import pandas as pd
 
+from keiba_data_interface.exceptions import RaceCodeError
 from keiba_data_interface.schema.columns import SCHEDULE_COLUMNS
 from keiba_data_interface.schema.types import SCHEDULE_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
+from keiba_data_interface.utils.race_code import keibajo_name_to_code
 
 
 def convert_schedule(raw: pd.DataFrame) -> pd.DataFrame:
@@ -47,7 +49,11 @@ def convert_schedule(raw: pd.DataFrame) -> pd.DataFrame:
             converted["開催年"] = year
             converted["開催月日"] = monthday
 
-        converted["競馬場"] = row.get("競馬場")
+        keibajo_name = str(row.get("競馬場")) if pd.notna(row.get("競馬場")) else ""
+        try:
+            converted["競馬場コード"] = keibajo_name_to_code(keibajo_name)
+        except RaceCodeError:
+            pass
         if pd.notna(row.get("回")):
             converted["開催回"] = row["回"]
         if pd.notna(row.get("開催日")):

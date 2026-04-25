@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock
 
+import pandas as pd
+
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
 
@@ -46,7 +48,7 @@ def test_race_getter_called_with_correct_args(
     provider.get_entry(race_code)
 
     mock_race_getter.get_umagoto_race_joho.assert_called_once_with(
-        race_code=race_code, convert_codes=True
+        race_code=race_code, convert_codes=False
     )
 
 
@@ -78,32 +80,32 @@ def test_tansho_odds_converted(
     assert result.iloc[1]["単勝オッズ"] == 12.5
 
 
-def test_kohan_3f_converted(
+def test_kohan_3f_is_nan_in_entry(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """後3ハロンが0.1秒単位から秒単位に変換される."""
+    """後3ハロンはget_entryでは取得できないためNaNになる."""
     mock_race_getter.get_umagoto_race_joho.return_value = create_umagoto_race_joho_df()
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["後3ハロン"] == 34.6
-    assert result.iloc[1]["後3ハロン"] == 34.8
+    assert pd.isna(result.iloc[0]["後3ハロン"])
+    assert pd.isna(result.iloc[1]["後3ハロン"])
 
 
-def test_kohan_4f_converted(
+def test_kohan_4f_is_nan_in_entry(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """後4ハロンが0.1秒単位から秒単位に変換される."""
+    """後4ハロンはget_entryでは取得できないためNaNになる."""
     mock_race_getter.get_umagoto_race_joho.return_value = create_umagoto_race_joho_df()
 
     result = provider.get_entry(race_code)
 
-    assert result.iloc[0]["後4ハロン"] == 47.9
-    assert result.iloc[1]["後4ハロン"] == 48.1
+    assert pd.isna(result.iloc[0]["後4ハロン"])
+    assert pd.isna(result.iloc[1]["後4ハロン"])
 
 
 def test_code_converted_columns_renamed(
@@ -117,13 +119,12 @@ def test_code_converted_columns_renamed(
     result = provider.get_entry(race_code)
 
     row = result.iloc[0]
-    assert row["競馬場"] == "中山"
-    assert row["性別"] == "牡"
-    assert row["品種"] == "サラブレッド"
-    assert row["毛色"] == "鹿毛"
-    assert row["所属"] == "栗東"
-    assert row["異常区分"] == ""
-    assert row["脚質判定"] == "差"
+    assert row["競馬場コード"] == "06"
+    assert row["品種コード"] == "1"
+    assert row["性別コード"] == "1"
+    assert row["所属コード"] == "2"
+    assert row["異常区分コード"] == "0"
+    assert row["脚質判定コード"] == "4"
 
 
 def test_direct_rename_columns(
@@ -174,7 +175,21 @@ def test_second_horse_data(
     assert row["馬番"] == 3
     assert row["血統登録番号"] == "2021105002"
     assert row["馬名"] == "テスト馬2"
-    assert row["性別"] == "牝"
-    assert row["所属"] == "美浦"
+    assert row["性別コード"] == "2"
+    assert row["所属コード"] == "1"
     assert row["負担重量"] == 56.0
-    assert row["着差1"] == "クビ"
+
+
+def test_kakutei_chakujun_zero_to_nan(
+    provider: MykeibaDBProvider,
+    mock_race_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """確定着順て0のDB値（出走取消等）はNaNに変換される."""
+    raw = create_umagoto_race_joho_df()
+    raw.at[0, "kakutei_chakujun"] = 0
+    mock_race_getter.get_umagoto_race_joho.return_value = raw
+
+    result = provider.get_entry(race_code)
+
+    assert pd.isna(result.iloc[0]["確定着順"])

@@ -15,10 +15,10 @@ def test_output_columns_match_schema(
     race_code: str,
 ) -> None:
     """出力DataFrameのカラム構成がRACE_RESULT_INFO_COLUMNSと一致する."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -31,10 +31,10 @@ def test_output_is_single_row(
     race_code: str,
 ) -> None:
     """出力DataFrameが1行である."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -47,10 +47,10 @@ def test_lap_time_stored_correctly(
     race_code: str,
 ) -> None:
     """ラップタイムが100m刻みカラムに正しく格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -69,10 +69,10 @@ def test_lap_time_beyond_distance_is_nan(
     race_code: str,
 ) -> None:
     """レース距離を超えるラップタイムカラムはNaN."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -86,17 +86,18 @@ def test_harlon_from_lap(
     mock_result_scraper: MagicMock,
     race_code: str,
 ) -> None:
-    """前3ハロン・後3ハロンがラップタイムから格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    """後3ハロン・後4ハロンがラップタイムの末尾合計から算出される."""
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
     row = result.iloc[0]
-    assert row["前3ハロン"] == 35.5
-    assert row["後3ハロン"] == 34.8
+    assert pd.isna(row["前3ハロン"])
+    assert row["後3ハロン"] == 41.0
+    assert row["後4ハロン"] == 54.0
 
 
 def test_corner_passing_order(
@@ -105,10 +106,10 @@ def test_corner_passing_order(
     race_code: str,
 ) -> None:
     """コーナー通過順が正しく格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -125,10 +126,10 @@ def test_race_code_stored(
     race_code: str,
 ) -> None:
     """レースコードが格納される."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
@@ -141,16 +142,16 @@ def test_missing_columns_filled_with_nan(
     race_code: str,
 ) -> None:
     """不足カラムがNaN埋めされる."""
-    from .conftest import _create_scraping_corner, _create_scraping_lap_time
+    from .conftest import create_scraping_corner, create_scraping_lap_time
 
-    mock_result_scraper.get_lap_time.return_value = _create_scraping_lap_time()
-    mock_result_scraper.get_corner.return_value = _create_scraping_corner()
+    mock_result_scraper.get_lap_time.return_value = create_scraping_lap_time()
+    mock_result_scraper.get_corner.return_value = create_scraping_corner()
 
     result = provider_full.get_race_result_info(race_code)
 
     row = result.iloc[0]
+    assert pd.isna(row["前3ハロン"])
     assert pd.isna(row["前4ハロン"])
-    assert pd.isna(row["後4ハロン"])
     assert pd.isna(row["障害マイルタイム"])
     assert pd.isna(row["1コーナー周回数"])
     assert pd.isna(row["レコード更新区分"])

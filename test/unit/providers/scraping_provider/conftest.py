@@ -10,12 +10,13 @@ import pytest
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 
 
-def _create_scraping_race_info(
+def create_scraping_race_info(
     shiba_da: str = "芝",
     baba: str = "良",
     sayuu: str = "左",
     course: str = "A",
     uchisoto: str = "",
+    race_shubetsu: str = "平地",
 ) -> pd.DataFrame:
     """scraping出力の典型的なレース情報DataFrameを生成する.
 
@@ -25,6 +26,7 @@ def _create_scraping_race_info(
         sayuu (str): 左右
         course (str): コース
         uchisoto (str): 内外
+        race_shubetsu (str): レース種別
 
     Returns:
         pd.DataFrame: scraping出力形式のレース情報
@@ -39,6 +41,7 @@ def _create_scraping_race_info(
                 "発走時刻": "15:40",
                 "天候": "晴",
                 "馬場": baba,
+                "レース種別": race_shubetsu,
                 "芝ダ": shiba_da,
                 "距離": 3200,
                 "左右": sayuu,
@@ -47,7 +50,7 @@ def _create_scraping_race_info(
                 "競馬場": "京都",
                 "回": 3,
                 "開催日": 4,
-                "競走種別": "サラ系4歳以上",
+                "競走種別": "サラ系４歳以上",
                 "競走条件": "オープン",
                 "グレード": "G1",
                 "競走記号": "(国際)(指)",
@@ -63,7 +66,7 @@ def _create_scraping_race_info(
     )
 
 
-def _create_scraping_entry() -> pd.DataFrame:
+def create_scraping_entry() -> pd.DataFrame:
     """scraping出力の典型的な出馬表DataFrameを生成する."""
     return pd.DataFrame(
         [
@@ -107,7 +110,7 @@ def _create_scraping_entry() -> pd.DataFrame:
     )
 
 
-def _create_scraping_result() -> pd.DataFrame:
+def create_scraping_result() -> pd.DataFrame:
     """scraping出力の典型的なレース結果DataFrameを生成する."""
     return pd.DataFrame(
         [
@@ -171,7 +174,7 @@ def _create_scraping_result() -> pd.DataFrame:
     )
 
 
-def _create_scraping_odds() -> pd.DataFrame:
+def create_scraping_odds() -> pd.DataFrame:
     """scraping出力の典型的なオッズDataFrameを生成する."""
     return pd.DataFrame(
         [
@@ -195,7 +198,7 @@ def _create_scraping_odds() -> pd.DataFrame:
     )
 
 
-def _create_scraping_lap_time() -> pd.DataFrame:
+def create_scraping_lap_time() -> pd.DataFrame:
     """scraping出力の典型的なラップタイムDataFrameを生成する."""
     data: dict[str, object] = {"レースID": "202506021211", "ペース": "M"}
     # 2000mレースの場合: 100m〜2000mに値, 2100m以降はNaN
@@ -210,7 +213,7 @@ def _create_scraping_lap_time() -> pd.DataFrame:
     return pd.DataFrame([data])
 
 
-def _create_scraping_corner() -> pd.DataFrame:
+def create_scraping_corner() -> pd.DataFrame:
     """scraping出力の典型的なコーナー通過順DataFrameを生成する."""
     return pd.DataFrame(
         [
@@ -225,7 +228,7 @@ def _create_scraping_corner() -> pd.DataFrame:
     )
 
 
-def _create_scraping_past_performances() -> pd.DataFrame:
+def create_scraping_past_performances() -> pd.DataFrame:
     """scraping出力の典型的な過去成績DataFrameを生成する."""
     return pd.DataFrame(
         [
@@ -252,7 +255,7 @@ def _create_scraping_past_performances() -> pd.DataFrame:
                 "距離": 2000,
                 "馬場": "良",
                 "タイム": "2:00.5",
-                "着差": "",
+                "着差": 0.5,
                 "1コーナー通過順": 3,
                 "2コーナー通過順": 3,
                 "3コーナー通過順": 2,
@@ -271,7 +274,7 @@ def _create_scraping_past_performances() -> pd.DataFrame:
     )
 
 
-def _create_scraping_schedule() -> pd.DataFrame:
+def create_scraping_schedule() -> pd.DataFrame:
     """scraping出力の典型的な開催スケジュールDataFrameを生成する."""
     return pd.DataFrame(
         [
@@ -324,13 +327,13 @@ def _create_scraping_schedule() -> pd.DataFrame:
 @pytest.fixture()
 def turf_race_info() -> pd.DataFrame:
     """芝レースのscraping出力を返すfixture."""
-    return _create_scraping_race_info(shiba_da="芝", baba="良")
+    return create_scraping_race_info(shiba_da="芝", baba="良")
 
 
 @pytest.fixture()
 def dirt_race_info() -> pd.DataFrame:
     """ダートレースのscraping出力を返すfixture."""
-    return _create_scraping_race_info(shiba_da="ダ", baba="重", sayuu="右")
+    return create_scraping_race_info(shiba_da="ダ", baba="重", sayuu="右")
 
 
 @pytest.fixture()
@@ -388,19 +391,19 @@ def mock_odds_func() -> Generator[MagicMock, None, None]:
 
 @pytest.fixture()
 def mock_past_scraper() -> MagicMock:
-    """PastPerformancesScraperインスタンスのモックを返すfixture."""
+    """HorsePageScraperインスタンスのモックを返すfixture."""
     return MagicMock()
 
 
 @pytest.fixture()
 def mock_past_scraper_cls(mock_past_scraper: MagicMock) -> Generator[MagicMock, None, None]:
-    """PastPerformancesScraperをパッチしたモッククラスを返すfixture.
+    """HorsePageScraperをパッチしたモッククラスを返すfixture.
 
     Yields:
-        MagicMock: PastPerformancesScraperクラスのパッチモック。
+        MagicMock: HorsePageScraperクラスのパッチモック。
     """
     with patch(
-        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
         return_value=mock_past_scraper,
     ) as mock_cls:
         yield mock_cls
