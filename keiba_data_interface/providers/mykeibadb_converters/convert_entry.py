@@ -126,7 +126,7 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
     """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する（get_entry用）.
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame
