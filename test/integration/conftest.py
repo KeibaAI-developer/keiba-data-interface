@@ -44,7 +44,7 @@ def _load_fixture_optional(path: Path) -> pd.DataFrame:
 
 def _load_test_cases() -> dict[str, list[dict[str, str]]]:
     """テストケース情報を読み込む."""
-    with open(FIXTURES_DIR / "test_cases.json") as f:
+    with open(FIXTURES_DIR / "test_cases.json", encoding="utf-8") as f:
         return json.load(f)
 
 

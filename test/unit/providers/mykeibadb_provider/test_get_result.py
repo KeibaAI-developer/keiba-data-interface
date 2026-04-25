@@ -168,7 +168,7 @@ def test_soha_time_zero_not_converted(
 
     result = provider.get_result(race_code)
 
-    # "0000"はint値て0と扱われ、タイム未計測（競走中止等）としてNaNに変換される
+    # "0000"はint値で0と扱われ、タイム未計測（競走中止等）としてNaNに変換される
     assert pd.isna(result.iloc[0]["走破タイム"])
 
 
@@ -252,7 +252,7 @@ def test_kakutei_chakujun_zero_to_nan(
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """確定着順て0のDB値（出走取消等）はNaNに変換される."""
+    """確定着順が0のDB値（出走取消等）はNaNに変換される."""
     raw = create_umagoto_race_joho_df()
     raw.at[0, "kakutei_chakujun"] = 0
     mock_race_getter.get_umagoto_race_joho.return_value = raw
