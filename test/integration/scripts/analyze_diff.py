@@ -268,7 +268,7 @@ def _get_scraping_horse_outputs(
     )
 
     with patch(
-        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
         return_value=mock_pp_scraper,
     ):
         provider = ScrapingProvider()
