@@ -1,4 +1,4 @@
-"""ScrapingProvider.get_horse_info関数のテスト."""
+"""ScrapingProvider.get_horse_master関数のテスト."""
 
 from datetime import date
 from unittest.mock import MagicMock
@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import HORSE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import HORSE_MASTER_COLUMNS
 
 
 def _create_chuo_past_performances() -> pd.DataFrame:
@@ -61,12 +61,12 @@ def test_output_columns_match_schema(
     provider_full: ScrapingProvider,
     mock_past_scraper: MagicMock,
 ) -> None:
-    """出力DataFrameのカラム構成がHORSE_INFO_COLUMNSと一致する."""
+    """出力DataFrameのカラム構成がHORSE_MASTER_COLUMNSと一致する."""
     mock_past_scraper.get_past_performances.return_value = _create_chuo_past_performances()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
-    assert list(result.columns) == HORSE_INFO_COLUMNS
+    assert list(result.columns) == HORSE_MASTER_COLUMNS
 
 
 def test_output_row_count(
@@ -76,7 +76,7 @@ def test_output_row_count(
     """出力DataFrameの行数が1行である."""
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     assert len(result) == 1
 
@@ -88,7 +88,7 @@ def test_horse_id_stored(
     """血統登録番号（馬ID）が格納される."""
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     assert result.iloc[0]["血統登録番号"] == "2021105001"
 
@@ -100,7 +100,7 @@ def test_basic_info_columns_from_horse_basic_info(
     """horse_basic_infoから基本情報が設定される."""
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     row = result.iloc[0]
     assert row["馬名"] == "テスト馬"
@@ -119,7 +119,7 @@ def test_seisansha_code_appended(
     """生産者コードに'00'が付加される."""
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     assert result.iloc[0]["生産者コード"] == "65432100"
 
@@ -131,7 +131,7 @@ def test_ketto_columns_from_horse_basic_info(
     """horse_basic_infoから血統情報が設定される."""
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     row = result.iloc[0]
     assert row["父馬名"] == "テスト父"
@@ -147,9 +147,9 @@ def test_empty_horse_basic_info_does_not_raise(
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
     mock_past_scraper.get_horse_basic_info.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
-    assert list(result.columns) == HORSE_INFO_COLUMNS
+    assert list(result.columns) == HORSE_MASTER_COLUMNS
     assert len(result) == 1
 
 
@@ -160,7 +160,7 @@ def test_chaku_count_from_past_performances(
     """過去成績から着回数が算出される."""
     mock_past_scraper.get_past_performances.return_value = _create_chuo_past_performances()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     row = result.iloc[0]
     assert row["総合1着"] == 1
@@ -175,7 +175,7 @@ def test_empty_past_performances_chaku_zero(
     """過去成績が空の場合は着回数が0になる."""
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     row = result.iloc[0]
     assert row["総合1着"] == 0
@@ -189,7 +189,7 @@ def test_direction_chaku_count_from_keibajo(
     """競馬場から方向別着回数が算出される（中山=右回りなので芝右に加算）."""
     mock_past_scraper.get_past_performances.return_value = _create_chuo_past_performances()
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     row = result.iloc[0]
     assert row["芝右1着"] == 1
@@ -220,7 +220,7 @@ def test_tozai_shozoku_code(
         shozoku=shozoku
     )
 
-    result = provider_full.get_horse_info("2021105001")
+    result = provider_full.get_horse_master("2021105001")
 
     if expected_code is None:
         assert pd.isna(result.iloc[0]["東西所属コード"])

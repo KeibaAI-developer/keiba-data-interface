@@ -382,7 +382,7 @@ _KYORI_BETSU_PREFIXES: list[str] = [
 ]
 
 
-def _generate_horse_info_columns() -> list[str]:
+def _generate_horse_master_columns() -> list[str]:
     """競走馬情報テーブルのカラム名リストを生成する."""
     cols: list[str] = [
         "テーブル作成時間",
@@ -449,4 +449,4 @@ def _generate_horse_info_columns() -> list[str]:
     return cols
 
 
-HORSE_INFO_COLUMNS: list[str] = _generate_horse_info_columns()
+HORSE_MASTER_COLUMNS: list[str] = _generate_horse_master_columns()

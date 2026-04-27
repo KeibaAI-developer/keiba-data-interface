@@ -72,7 +72,7 @@ class DataProvider(Protocol):
         """
         ...
 
-    def get_horse_info(self, horse_id: str) -> pd.DataFrame:
+    def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する.
 
         Args:

@@ -117,7 +117,7 @@ class DataInterface:
         """
         return self._provider.get_past_performances(horse_id)
 
-    def get_horse_info(self, horse_id: str) -> pd.DataFrame:
+    def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する.
 
         Args:
@@ -126,7 +126,7 @@ class DataInterface:
         Returns:
             競走馬情報のDataFrame（1行）
         """
-        return self._provider.get_horse_info(horse_id)
+        return self._provider.get_horse_master(horse_id)
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.

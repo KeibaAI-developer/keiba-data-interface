@@ -54,7 +54,7 @@ def main() -> None:
     results: dict[str, pd.DataFrame] = {}
     for provider in ("scraping", "mykeibadb"):
         di = DataInterface(provider)
-        df = di.get_horse_info(horse_id)
+        df = di.get_horse_master(horse_id)
         results[provider] = df
         print(f"\n【競走馬情報 ({provider})】")
         if df.empty:

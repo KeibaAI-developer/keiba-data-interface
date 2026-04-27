@@ -1,10 +1,10 @@
-"""get_horse_info: 両Providerの出力一致テスト."""
+"""get_horse_master: 両Providerの出力一致テスト."""
 
 from unittest.mock import MagicMock, patch
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import HORSE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import HORSE_MASTER_COLUMNS
 
 from .assertion_helpers import (
     assert_columns_match,
@@ -12,15 +12,15 @@ from .assertion_helpers import (
     assert_scraping_nan_columns,
     get_scraping_only_columns,
 )
-from .column_definitions import HORSE_INFO_SCRAPING_COLUMNS, KNOWN_DIFF_HORSE_INFO
+from .column_definitions import HORSE_MASTER_SCRAPING_COLUMNS, KNOWN_DIFF_HORSE_MASTER
 from .conftest import HorseFixtures
 
 
 # 正常系
-def test_get_horse_info_columns_match(
+def test_get_horse_master_columns_match(
     horse_fixtures: HorseFixtures,
 ) -> None:
-    """get_horse_info: 両Providerの出力DataFrameが同一カラム構成を持つ."""
+    """get_horse_master: 両Providerの出力DataFrameが同一カラム構成を持つ."""
     mock_horse_scraper = MagicMock()
     mock_horse_scraper.get_past_performances.return_value = horse_fixtures.scraping[
         "past_performances"
@@ -33,7 +33,7 @@ def test_get_horse_info_columns_match(
         return_value=mock_horse_scraper,
     ):
         s_provider = ScrapingProvider()
-        s_df = s_provider.get_horse_info(horse_fixtures.horse_id)
+        s_df = s_provider.get_horse_master(horse_fixtures.horse_id)
 
     mock_master_getter = MagicMock()
     kyosoba_master2 = horse_fixtures.mykeibadb["kyosoba_master2"]
@@ -54,15 +54,15 @@ def test_get_horse_info_columns_match(
         ),
     ):
         m_provider = MykeibaDBProvider()
-        m_df = m_provider.get_horse_info(horse_fixtures.horse_id)
+        m_df = m_provider.get_horse_master(horse_fixtures.horse_id)
 
-    assert_columns_match(s_df, m_df, HORSE_INFO_COLUMNS, "競走馬情報")
+    assert_columns_match(s_df, m_df, HORSE_MASTER_COLUMNS, "競走馬情報")
 
 
-def test_get_horse_info_common_values_match(
+def test_get_horse_master_common_values_match(
     horse_fixtures: HorseFixtures,
 ) -> None:
-    """get_horse_info: 共通カラムの型と値が一致する."""
+    """get_horse_master: 共通カラムの型と値が一致する."""
     mock_horse_scraper = MagicMock()
     mock_horse_scraper.get_past_performances.return_value = horse_fixtures.scraping[
         "past_performances"
@@ -75,7 +75,7 @@ def test_get_horse_info_common_values_match(
         return_value=mock_horse_scraper,
     ):
         s_provider = ScrapingProvider()
-        s_df = s_provider.get_horse_info(horse_fixtures.horse_id)
+        s_df = s_provider.get_horse_master(horse_fixtures.horse_id)
 
     mock_master_getter = MagicMock()
     kyosoba_master2 = horse_fixtures.mykeibadb["kyosoba_master2"]
@@ -96,21 +96,21 @@ def test_get_horse_info_common_values_match(
         ),
     ):
         m_provider = MykeibaDBProvider()
-        m_df = m_provider.get_horse_info(horse_fixtures.horse_id)
+        m_df = m_provider.get_horse_master(horse_fixtures.horse_id)
 
     assert_common_values_match(
         s_df,
         m_df,
-        HORSE_INFO_SCRAPING_COLUMNS,
+        HORSE_MASTER_SCRAPING_COLUMNS,
         "競走馬情報",
-        exclude_columns=KNOWN_DIFF_HORSE_INFO,
+        exclude_columns=KNOWN_DIFF_HORSE_MASTER,
     )
 
 
-def test_get_horse_info_scraping_nan_columns(
+def test_get_horse_master_scraping_nan_columns(
     horse_fixtures: HorseFixtures,
 ) -> None:
-    """get_horse_info: scraping×のカラムがNaNである."""
+    """get_horse_master: scraping×のカラムがNaNである."""
     mock_horse_scraper = MagicMock()
     mock_horse_scraper.get_past_performances.return_value = horse_fixtures.scraping[
         "past_performances"
@@ -123,7 +123,7 @@ def test_get_horse_info_scraping_nan_columns(
         return_value=mock_horse_scraper,
     ):
         s_provider = ScrapingProvider()
-        s_df = s_provider.get_horse_info(horse_fixtures.horse_id)
+        s_df = s_provider.get_horse_master(horse_fixtures.horse_id)
 
-    nan_cols = get_scraping_only_columns(HORSE_INFO_COLUMNS, HORSE_INFO_SCRAPING_COLUMNS)
+    nan_cols = get_scraping_only_columns(HORSE_MASTER_COLUMNS, HORSE_MASTER_SCRAPING_COLUMNS)
     assert_scraping_nan_columns(s_df, nan_cols, "競走馬情報")

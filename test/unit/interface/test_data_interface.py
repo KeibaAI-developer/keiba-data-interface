@@ -107,13 +107,13 @@ def test_get_past_performances_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [7]}))
 
 
-def test_get_horse_info_delegates(
+def test_get_horse_master_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:
-    """get_horse_infoがProviderに委譲される."""
+    """get_horse_masterがProviderに委譲される."""
     interface, mock_provider = interface_with_mock
-    result = interface.get_horse_info("2022105081")
-    mock_provider.get_horse_info.assert_called_once_with("2022105081")
+    result = interface.get_horse_master("2022105081")
+    mock_provider.get_horse_master.assert_called_once_with("2022105081")
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [8]}))
 
 

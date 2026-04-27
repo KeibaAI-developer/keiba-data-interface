@@ -1,12 +1,12 @@
-"""get_horse_info用の変換関数.
+"""get_horse_master用の変換関数.
 
 KYOSOBA_MASTER2テーブルの出力を統一スキーマに変換する。
 """
 
 import pandas as pd
 
-from keiba_data_interface.schema.columns import HORSE_INFO_COLUMNS
-from keiba_data_interface.schema.types import HORSE_INFO_TYPES
+from keiba_data_interface.schema.columns import HORSE_MASTER_COLUMNS
+from keiba_data_interface.schema.types import HORSE_MASTER_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
 _COLUMN_MAP: dict[str, str] = {
@@ -241,17 +241,17 @@ _COLUMN_MAP: dict[str, str] = {
 }
 
 
-def convert_horse_info(raw: pd.DataFrame) -> pd.DataFrame:
+def convert_horse_master(raw: pd.DataFrame) -> pd.DataFrame:
     """KYOSOBA_MASTER2出力を統一スキーマに変換する.
 
     Args:
         raw (pd.DataFrame): MasterGetter.get_kyosoba_master2()の出力（convert_codes=False）
 
     Returns:
-        pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_INFO_COLUMNSのカラム、1行）
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_MASTER_COLUMNSのカラム、1行）
     """
     if raw.empty:
-        return apply_types(ensure_columns(pd.DataFrame(), HORSE_INFO_COLUMNS), HORSE_INFO_TYPES)
+        return apply_types(ensure_columns(pd.DataFrame(), HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)
 
     row = raw.iloc[0].to_dict()
     converted: dict[str, object] = {}
@@ -265,4 +265,4 @@ def convert_horse_info(raw: pd.DataFrame) -> pd.DataFrame:
             converted[ja_col] = val
 
     df = pd.DataFrame([converted])
-    return apply_types(ensure_columns(df, HORSE_INFO_COLUMNS), HORSE_INFO_TYPES)
+    return apply_types(ensure_columns(df, HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)

@@ -1,11 +1,11 @@
-"""MykeibaDBProvider.get_horse_info関数のテスト."""
+"""MykeibaDBProvider.get_horse_master関数のテスト."""
 
 from unittest.mock import MagicMock
 
 import pandas as pd
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
-from keiba_data_interface.schema.columns import HORSE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import HORSE_MASTER_COLUMNS
 
 from .conftest import create_kyosoba_master2_df
 
@@ -15,12 +15,12 @@ def test_output_columns_match_schema(
     provider: MykeibaDBProvider,
     mock_master_getter: MagicMock,
 ) -> None:
-    """出力DataFrameのカラム構成がHORSE_INFO_COLUMNSと一致する."""
+    """出力DataFrameのカラム構成がHORSE_MASTER_COLUMNSと一致する."""
     mock_master_getter.get_kyosoba_master2.return_value = create_kyosoba_master2_df()
 
-    result = provider.get_horse_info("2022105081")
+    result = provider.get_horse_master("2022105081")
 
-    assert list(result.columns) == HORSE_INFO_COLUMNS
+    assert list(result.columns) == HORSE_MASTER_COLUMNS
 
 
 def test_output_row_count(
@@ -30,7 +30,7 @@ def test_output_row_count(
     """出力DataFrameの行数が1行である."""
     mock_master_getter.get_kyosoba_master2.return_value = create_kyosoba_master2_df()
 
-    result = provider.get_horse_info("2022105081")
+    result = provider.get_horse_master("2022105081")
 
     assert len(result) == 1
 
@@ -42,7 +42,7 @@ def test_master_getter_called_with_horse_id(
     """MasterGetter.get_kyosoba_master2()が馬IDで呼ばれる."""
     mock_master_getter.get_kyosoba_master2.return_value = create_kyosoba_master2_df()
 
-    provider.get_horse_info("2022105081")
+    provider.get_horse_master("2022105081")
 
     mock_master_getter.get_kyosoba_master2.assert_called_once_with(
         ketto_toroku_bango="2022105081", convert_codes=False
@@ -56,7 +56,7 @@ def test_column_mapping(
     """カラムマッピングが正しく適用される."""
     mock_master_getter.get_kyosoba_master2.return_value = create_kyosoba_master2_df()
 
-    result = provider.get_horse_info("2022105081")
+    result = provider.get_horse_master("2022105081")
 
     row = result.iloc[0]
     assert row["血統登録番号"] == "2022105081"
@@ -75,7 +75,7 @@ def test_ketto_columns_mapped(
     """血統情報カラムが正しくマッピングされる."""
     mock_master_getter.get_kyosoba_master2.return_value = create_kyosoba_master2_df()
 
-    result = provider.get_horse_info("2022105081")
+    result = provider.get_horse_master("2022105081")
 
     row = result.iloc[0]
     assert row["父繁殖登録番号"] == "1120002395"
@@ -90,7 +90,7 @@ def test_chaku_columns_mapped(
     """着回数カラムが正しくマッピングされる."""
     mock_master_getter.get_kyosoba_master2.return_value = create_kyosoba_master2_df()
 
-    result = provider.get_horse_info("2022105081")
+    result = provider.get_horse_master("2022105081")
 
     row = result.iloc[0]
     assert row["総合1着"] == 5
@@ -106,7 +106,7 @@ def test_empty_dataframe_returns_empty(
     """空データの場合は空DataFrameが返る."""
     mock_master_getter.get_kyosoba_master2.return_value = pd.DataFrame()
 
-    result = provider.get_horse_info("9999999999")
+    result = provider.get_horse_master("9999999999")
 
     assert len(result) == 0
-    assert list(result.columns) == HORSE_INFO_COLUMNS
+    assert list(result.columns) == HORSE_MASTER_COLUMNS

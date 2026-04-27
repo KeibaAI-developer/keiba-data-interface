@@ -338,7 +338,7 @@ SCHEDULE_TYPES: dict[str, str] = _generate_schedule_types()
 
 
 # 競走馬情報テーブルの型定義辞書
-def _generate_horse_info_types() -> dict[str, str]:
+def _generate_horse_master_types() -> dict[str, str]:
     """競走馬情報テーブルの型定義辞書を生成する."""
     from keiba_data_interface.schema.columns import (
         _BABA_BETSU_PREFIXES,
@@ -414,4 +414,4 @@ def _generate_horse_info_types() -> dict[str, str]:
     return types
 
 
-HORSE_INFO_TYPES: dict[str, str] = _generate_horse_info_types()
+HORSE_MASTER_TYPES: dict[str, str] = _generate_horse_master_types()

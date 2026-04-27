@@ -2,7 +2,9 @@
 
 from keiba_data_interface.providers.scraping_converters.common import build_prize_map
 from keiba_data_interface.providers.scraping_converters.convert_entry import convert_entry
-from keiba_data_interface.providers.scraping_converters.convert_horse_info import convert_horse_info
+from keiba_data_interface.providers.scraping_converters.convert_horse_master import (
+    convert_horse_master,
+)
 from keiba_data_interface.providers.scraping_converters.convert_odds import convert_odds
 from keiba_data_interface.providers.scraping_converters.convert_past_performances import (
     convert_past_performances,
@@ -18,7 +20,7 @@ from keiba_data_interface.providers.scraping_converters.convert_schedule import 
 __all__ = [
     "build_prize_map",
     "convert_entry",
-    "convert_horse_info",
+    "convert_horse_master",
     "convert_odds",
     "convert_past_performances",
     "convert_payoff",

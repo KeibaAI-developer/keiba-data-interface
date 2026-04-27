@@ -11,7 +11,7 @@ from mykeibadb import MasterGetter, OddsGetter, RaceGetter
 
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_entry,
-    convert_horse_info,
+    convert_horse_master,
     convert_past_performances,
     convert_payoff,
     convert_race_info,
@@ -150,8 +150,8 @@ class MykeibaDBProvider:
         df = df.sort_values("レースコード", ascending=False).reset_index(drop=True)
         return df
 
-    def get_horse_info(self, horse_id: str) -> pd.DataFrame:
-        """競走馬情報を取得する.
+    def get_horse_master(self, horse_id: str) -> pd.DataFrame:
+        """競走馬マスタを取得する.
 
         MasterGetter.get_kyosoba_master2()で競走馬マスタを取得し、
         統一スキーマに変換する。
@@ -160,12 +160,12 @@ class MykeibaDBProvider:
             horse_id (str): 馬ID（血統登録番号）
 
         Returns:
-            pd.DataFrame: 競走馬情報（1行、HORSE_INFO_COLUMNSのカラム）
+            pd.DataFrame: 競走馬マスタ情報（1行、HORSE_MASTER_COLUMNSのカラム）
         """
         raw = self._master_getter.get_kyosoba_master2(
             ketto_toroku_bango=horse_id, convert_codes=False
         )
-        return convert_horse_info(raw)
+        return convert_horse_master(raw)
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.

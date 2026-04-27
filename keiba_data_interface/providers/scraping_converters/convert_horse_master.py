@@ -1,4 +1,4 @@
-"""get_horse_info用のscraping変換関数.
+"""get_horse_master用のscraping変換関数.
 
 HorsePageScraperの出力を統一スキーマに変換する。
 """
@@ -11,9 +11,9 @@ from keiba_data_interface.schema.columns import (
     _BABA_JOTAI_PREFIXES,
     _CHAKU_SUFFIXES,
     _KYORI_BETSU_PREFIXES,
-    HORSE_INFO_COLUMNS,
+    HORSE_MASTER_COLUMNS,
 )
-from keiba_data_interface.schema.types import HORSE_INFO_TYPES
+from keiba_data_interface.schema.types import HORSE_MASTER_TYPES
 from keiba_data_interface.utils.converters import to_half_kana
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
@@ -75,7 +75,7 @@ _KEIBAJO_TO_DIRECTION: dict[str, str] = {
 }
 
 
-def convert_horse_info(
+def convert_horse_master(
     past_perf: pd.DataFrame,
     horse_id: str,
     horse_basic_info: pd.DataFrame,
@@ -88,7 +88,7 @@ def convert_horse_info(
         horse_basic_info (pd.DataFrame): HorsePageScraper.get_horse_basic_info()の出力
 
     Returns:
-        pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_INFO_COLUMNSのカラム、1行）
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_MASTER_COLUMNSのカラム、1行）
     """
     data: dict[str, object] = {}
 
@@ -132,7 +132,7 @@ def convert_horse_info(
         data.update(chaku_vals)
 
     df = pd.DataFrame([data])
-    return apply_types(ensure_columns(df, HORSE_INFO_COLUMNS), HORSE_INFO_TYPES)
+    return apply_types(ensure_columns(df, HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)
 
 
 def _get_chaku_key(row: pd.Series) -> str | None:

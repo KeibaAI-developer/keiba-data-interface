@@ -270,7 +270,7 @@ KNOWN_DIFF_SCHEDULE: set[str] = set()
 # ============================================================================
 
 
-def _build_horse_info_known_diff() -> set[str]:
+def _build_horse_master_known_diff() -> set[str]:
     """競走馬情報の既知差分カラムセットを生成する."""
     chaku_sfx = ["1着", "2着", "3着", "4着", "5着", "着外"]
     cols: set[str] = {
@@ -299,10 +299,10 @@ def _build_horse_info_known_diff() -> set[str]:
     return cols
 
 
-KNOWN_DIFF_HORSE_INFO: set[str] = _build_horse_info_known_diff()
+KNOWN_DIFF_HORSE_MASTER: set[str] = _build_horse_master_known_diff()
 
 
-def _build_horse_info_scraping_columns() -> list[str]:
+def _build_horse_master_scraping_columns() -> list[str]:
     """競走馬情報のscraping○カラムリストを生成する."""
     chaku_sfx = ["1着", "2着", "3着", "4着", "5着", "着外"]
     cols: list[str] = [
@@ -346,4 +346,4 @@ def _build_horse_info_scraping_columns() -> list[str]:
     return cols
 
 
-HORSE_INFO_SCRAPING_COLUMNS: list[str] = _build_horse_info_scraping_columns()
+HORSE_MASTER_SCRAPING_COLUMNS: list[str] = _build_horse_master_scraping_columns()

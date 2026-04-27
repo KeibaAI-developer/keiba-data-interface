@@ -329,11 +329,11 @@ keiba-data-interfaceは、keiba-scraping（netkeiba）とmykeibadb-python（JRA-
 
 ---
 
-### 競走馬情報
+### 競走馬マスタ
 
 競走馬のプロフィール・血統・着回数等の情報。1行のDataFrame。
 
-関数: `DataInterface.get_horse_info()`
+関数: `DataInterface.get_horse_master()`
 
 対応元:
 - mykeibadb: `KYOSOBA_MASTER2`
