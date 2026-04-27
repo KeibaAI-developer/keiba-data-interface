@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock
 
 import pandas as pd
+import pytest
 
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
@@ -194,18 +195,35 @@ def test_horse_age_calculated_from_birthday(
     assert result.iloc[0]["馬齢"] == 4
 
 
+@pytest.mark.parametrize(
+    "shozoku, expected_code",
+    [
+        ("美浦", "1"),
+        ("栗東", "2"),
+        ("地方", "3"),
+        ("海外", "4"),
+        ("浦和", "3"),
+        ("兵庫", "3"),
+    ],
+    ids=["miho", "ritto", "chiho", "kaigai", "urawa", "hyogo"],
+)
 def test_shozoku_code_from_horse_basic_info(
     provider_full: ScrapingProvider,
     mock_past_scraper: MagicMock,
+    shozoku: str,
+    expected_code: str,
 ) -> None:
     """horse_basic_infoから所属コードが設定される."""
-    from .conftest import create_scraping_past_performances
+    from .conftest import create_scraping_horse_basic_info, create_scraping_past_performances
 
     mock_past_scraper.get_past_performances.return_value = create_scraping_past_performances()
+    mock_past_scraper.get_horse_basic_info.return_value = create_scraping_horse_basic_info(
+        shozoku=shozoku
+    )
 
     result = provider_full.get_past_performances("2021105001")
 
-    assert result.iloc[0]["所属コード"] == "2"  # 栗東→2
+    assert result.iloc[0]["所属コード"] == expected_code
 
 
 def test_trainer_code_from_horse_basic_info(

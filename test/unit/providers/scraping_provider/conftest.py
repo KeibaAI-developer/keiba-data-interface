@@ -228,8 +228,15 @@ def create_scraping_corner() -> pd.DataFrame:
     )
 
 
-def create_scraping_horse_basic_info() -> pd.DataFrame:
-    """scraping出力の典型的な馬基本情報DataFrameを生成する."""
+def create_scraping_horse_basic_info(shozoku: str = "栗東") -> pd.DataFrame:
+    """scraping出力の典型的な馬基本情報DataFrameを生成する.
+
+    Args:
+        shozoku (str): 所属名
+
+    Returns:
+        pd.DataFrame: scraping出力形式の馬基本情報
+    """
     return pd.DataFrame(
         [
             {
@@ -239,7 +246,7 @@ def create_scraping_horse_basic_info() -> pd.DataFrame:
                 "生年月日": 20210101,
                 "調教師": "テスト調教師",
                 "調教師ID": "01234",
-                "所属": "栗東",
+                "所属": shozoku,
                 "馬主": "テスト馬主",
                 "馬主ID": "123456",
                 "募集情報": float("nan"),

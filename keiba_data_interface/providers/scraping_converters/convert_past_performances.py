@@ -57,7 +57,7 @@ def convert_past_performances(
             birth_year = int(str(int(birthday))[:4])
         shozoku = str(info["所属"]) if pd.notna(info.get("所属")) else None
         if shozoku:
-            shozoku_code = TOZAI_SHOZOKU_TO_CODE.get(shozoku)
+            shozoku_code = TOZAI_SHOZOKU_TO_CODE.get(shozoku, "3")  # 浦和などその他は地方扱い
         if pd.notna(info.get("調教師ID")):
             trainer_code = str(info["調教師ID"])
         if pd.notna(info.get("調教師")):
