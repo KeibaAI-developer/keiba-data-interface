@@ -266,9 +266,12 @@ def _get_scraping_horse_outputs(
     mock_pp_scraper.get_past_performances.return_value = _load_pkl(
         horse_dir / "scraping_past_performances.pkl",
     )
+    mock_pp_scraper.get_horse_basic_info.return_value = _load_pkl(
+        horse_dir / "scraping_horse_basic_info.pkl",
+    )
 
     with patch(
-        "keiba_data_interface.providers.scraping_provider.PastPerformancesScraper",
+        "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
         return_value=mock_pp_scraper,
     ):
         provider = ScrapingProvider()

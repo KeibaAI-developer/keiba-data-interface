@@ -127,6 +127,7 @@ class HorseFixtures:
 
         self.scraping: dict[str, pd.DataFrame] = {
             "past_performances": _load_fixture(horse_dir / "scraping_past_performances"),
+            "horse_basic_info": _load_fixture_optional(horse_dir / "scraping_horse_basic_info"),
         }
         self.mykeibadb: dict[str, pd.DataFrame] = {
             "umagoto_race_joho": _load_fixture(horse_dir / "mykeibadb_umagoto_race_joho"),

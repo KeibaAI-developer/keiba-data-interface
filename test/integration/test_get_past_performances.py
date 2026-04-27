@@ -28,6 +28,8 @@ def test_get_past_performances_columns_match(
     mock_past_scraper.get_past_performances.return_value = horse_fixtures.scraping[
         "past_performances"
     ]
+    horse_basic_info = horse_fixtures.scraping["horse_basic_info"]
+    mock_past_scraper.get_horse_basic_info.return_value = horse_basic_info
 
     with patch(
         "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
@@ -66,6 +68,8 @@ def test_get_past_performances_scraping_nan_columns(
     mock_past_scraper.get_past_performances.return_value = horse_fixtures.scraping[
         "past_performances"
     ]
+    horse_basic_info = horse_fixtures.scraping["horse_basic_info"]
+    mock_past_scraper.get_horse_basic_info.return_value = horse_basic_info
 
     with patch(
         "keiba_data_interface.providers.scraping_provider.HorsePageScraper",

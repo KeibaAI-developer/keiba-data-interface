@@ -228,6 +228,54 @@ def create_scraping_corner() -> pd.DataFrame:
     )
 
 
+def create_scraping_horse_basic_info(shozoku: str = "栗東") -> pd.DataFrame:
+    """scraping出力の典型的な馬基本情報DataFrameを生成する.
+
+    Args:
+        shozoku (str): 所属名
+
+    Returns:
+        pd.DataFrame: scraping出力形式の馬基本情報
+    """
+    return pd.DataFrame(
+        [
+            {
+                "馬名": "テスト馬",
+                "性別": "牡",
+                "年齢": 4,
+                "生年月日": 20210101,
+                "調教師": "テスト調教師",
+                "調教師ID": "01234",
+                "所属": shozoku,
+                "馬主": "テスト馬主",
+                "馬主ID": "123456",
+                "募集情報": float("nan"),
+                "生産者": "テスト牧場",
+                "生産者ID": "654321",
+                "産地": "安平町",
+                "セリ取引価格": float("nan"),
+                "獲得賞金 (中央)": 5000,
+                "獲得賞金 (地方)": 0,
+                "通算成績": "5-2-1-2",
+                "主な勝鞍": "テストレース",
+                "近親馬": float("nan"),
+                "父": "テスト父",
+                "父ID": "2018100000",
+                "母": "テスト母",
+                "母ID": "2015100000",
+                "母父": "テスト母父",
+                "母父ID": "2010100000",
+                "母母": "テスト母母",
+                "母母ID": "2005100000",
+                "父父": "テスト父父",
+                "父父ID": "2010100001",
+                "父母": "テスト父母",
+                "父母ID": "2010100002",
+            }
+        ]
+    )
+
+
 def create_scraping_past_performances() -> pd.DataFrame:
     """scraping出力の典型的な過去成績DataFrameを生成する."""
     return pd.DataFrame(
@@ -392,7 +440,9 @@ def mock_odds_func() -> Generator[MagicMock, None, None]:
 @pytest.fixture()
 def mock_past_scraper() -> MagicMock:
     """HorsePageScraperインスタンスのモックを返すfixture."""
-    return MagicMock()
+    mock = MagicMock()
+    mock.get_horse_basic_info.return_value = create_scraping_horse_basic_info()
+    return mock
 
 
 @pytest.fixture()
