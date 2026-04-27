@@ -170,10 +170,15 @@ def _get_shiba_da(row: pd.Series) -> str | None:
 
 
 def _get_direction_prefix(shiba_da: str | None, row: pd.Series) -> str | None:
-    """馬場別（方向）プレフィックス（例: 芝右, ダ左）を返す."""
+    """馬場別（方向）プレフィックス（例: 芝右, ダ左, 芝直）を返す."""
     if shiba_da not in ("芝", "ダ"):
         return None
     keibajo = str(row.get("競馬場", "")).strip()
+    # 新潟芝1000mは直線コース
+    if shiba_da == "芝" and keibajo == "新潟":
+        kyori = row.get("距離")
+        if not pd.isna(kyori) and int(kyori) == 1000:
+            return "芝直"
     direction = _KEIBAJO_TO_DIRECTION.get(keibajo)
     if direction is None:
         return None
@@ -313,11 +318,11 @@ def _init_chaku_cols(data: dict[str, object]) -> None:
         for suf in _CHAKU_SUFFIXES:
             data[f"{prefix}{suf}"] = 0
     # 方向別（芝直/芝右/芝左/ダ直/ダ右/ダ左）は0で初期化
-    # 芝直/ダ直はscrapingから判別不能のためpd.NAとする
+    # ダ直はscrapingから判別不能のためpd.NAとする
     for prefix in _BABA_BETSU_PREFIXES:
         if prefix == "障害":
             continue
-        if prefix in ("芝直", "ダ直"):
+        if prefix == "ダ直":
             for suf in _CHAKU_SUFFIXES:
                 data[f"{prefix}{suf}"] = pd.NA
         else:
