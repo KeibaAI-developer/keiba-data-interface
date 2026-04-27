@@ -20,7 +20,8 @@ class _MockProvider:
         self.get_race_result_info = MagicMock(return_value=pd.DataFrame({"col": [5]}))
         self.get_payoff = MagicMock(return_value=pd.DataFrame({"col": [6]}))
         self.get_past_performances = MagicMock(return_value=pd.DataFrame({"col": [7]}))
-        self.get_schedule = MagicMock(return_value=pd.DataFrame({"col": [8]}))
+        self.get_horse_info = MagicMock(return_value=pd.DataFrame({"col": [8]}))
+        self.get_schedule = MagicMock(return_value=pd.DataFrame({"col": [9]}))
 
 
 @pytest.fixture()
