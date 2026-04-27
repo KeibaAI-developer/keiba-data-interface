@@ -35,13 +35,8 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import yaml
-from mykeibadb import OddsGetter, RaceGetter
-from scraping import (
-    EntryPageScraper,
-    PastPerformancesScraper,
-    RaceScheduleScraper,
-    ResultPageScraper,
-)
+from mykeibadb import MasterGetter, OddsGetter, RaceGetter
+from scraping import EntryPageScraper, HorsePageScraper, RaceScheduleScraper, ResultPageScraper
 from scraping.odds import scrape_odds_from_netkeiba
 
 _LIBS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
@@ -86,13 +81,13 @@ def _create_result_scraper(race_id: str) -> ResultPageScraper:
         return ResultPageScraper(race_id)
 
 
-def _create_past_performances_scraper(horse_id: str) -> PastPerformancesScraper:
-    """HTMLフィクスチャからPastPerformancesScraperを生成する."""
+def _create_horse_page_scraper(horse_id: str) -> HorsePageScraper:
+    """HTMLフィクスチャからHorsePageScraperを生成する."""
     html_text = _load_html(f"past_performances_{horse_id}.html")
     mock_driver = MagicMock()
     mock_driver.page_source = html_text
-    with patch("scraping.past_performances.webdriver.Chrome", return_value=mock_driver):
-        return PastPerformancesScraper(horse_id)
+    with patch("scraping.horse_page.webdriver.Chrome", return_value=mock_driver):
+        return HorsePageScraper(horse_id)
 
 
 def _create_schedule_scraper(
@@ -292,10 +287,14 @@ def extract_horse_fixtures(
     print("[Scraping]")
     if has_html:
         try:
-            scraper = _create_past_performances_scraper(horse_id)
+            scraper = _create_horse_page_scraper(horse_id)
             _save_df(
                 scraper.get_past_performances(),
                 horse_dir / "scraping_past_performances.pkl",
+            )
+            _save_df(
+                scraper.get_horse_basic_info(),
+                horse_dir / "scraping_horse_basic_info.pkl",
             )
         except Exception as e:
             print(f"  Scrapingエラー: {e}")
@@ -307,9 +306,14 @@ def extract_horse_fixtures(
     print("[MykeibaDB]")
     try:
         rg = RaceGetter()
+        mg = MasterGetter()
         _save_df(
             rg.get_umagoto_race_joho(ketto_toroku_bango=horse_id, convert_codes=True),
             horse_dir / "mykeibadb_umagoto_race_joho.pkl",
+        )
+        _save_df(
+            mg.get_kyosoba_master2(ketto_toroku_bango=horse_id, convert_codes=False),
+            horse_dir / "mykeibadb_kyosoba_master2.pkl",
         )
     except Exception as e:
         print(f"  MykeibaDBエラー: {e}")
