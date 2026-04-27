@@ -131,6 +131,7 @@ class HorseFixtures:
         }
         self.mykeibadb: dict[str, pd.DataFrame] = {
             "umagoto_race_joho": _load_fixture(horse_dir / "mykeibadb_umagoto_race_joho"),
+            "kyosoba_master2": _load_fixture(horse_dir / "mykeibadb_kyosoba_master2"),
         }
 
 

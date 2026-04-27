@@ -335,3 +335,83 @@ def _generate_schedule_types() -> dict[str, str]:
 
 
 SCHEDULE_TYPES: dict[str, str] = _generate_schedule_types()
+
+
+# 競走馬情報テーブルの型定義辞書
+def _generate_horse_info_types() -> dict[str, str]:
+    """競走馬情報テーブルの型定義辞書を生成する."""
+    from keiba_data_interface.schema.columns import (
+        _BABA_BETSU_PREFIXES,
+        _BABA_JOTAI_PREFIXES,
+        _CHAKU_SUFFIXES,
+        _KETTO_NAMES,
+        _KYORI_BETSU_PREFIXES,
+    )
+
+    types: dict[str, str] = {
+        "テーブル作成時間": "object",
+        "テーブル更新時間": "object",
+        "レコード種別ID": "object",
+        "データ区分": "object",
+        "データ作成年月日": "object",
+        "血統登録番号": "object",
+        "競走馬抹消区分": "object",
+        "競走馬登録年月日": "object",
+        "競走馬抹消年月日": "object",
+        "生年月日": "object",
+        "馬名": "object",
+        "馬名半角ｶﾅ": "object",
+        "馬名欧字": "object",
+        "JRA施設在きゅうフラグ": "object",
+        "馬記号コード": "object",
+        "性別コード": "object",
+        "品種コード": "object",
+        "毛色コード": "object",
+    }
+    for name in _KETTO_NAMES:
+        types[f"{name}血統登録番号"] = "object"
+        types[f"{name}馬名"] = "object"
+    types.update(
+        {
+            "東西所属コード": "object",
+            "調教師コード": "object",
+            "調教師名略称": "object",
+            "招待地域名": "object",
+            "生産者コード": "object",
+            "生産者名": "object",
+            "産地名": "object",
+            "馬主コード": "object",
+            "馬主名": "object",
+            "平地本賞金累計": "Int64",
+            "障害本賞金累計": "Int64",
+            "平地付加賞金累計": "Int64",
+            "障害付加賞金累計": "Int64",
+            "平地収得賞金累計": "Int64",
+            "障害収得賞金累計": "Int64",
+        }
+    )
+    for prefix in ["総合", "中央合計"]:
+        for suf in _CHAKU_SUFFIXES:
+            types[f"{prefix}{suf}"] = "Int64"
+    for prefix in _BABA_BETSU_PREFIXES:
+        for suf in _CHAKU_SUFFIXES:
+            types[f"{prefix}{suf}"] = "Int64"
+    for prefix in _BABA_JOTAI_PREFIXES:
+        for suf in _CHAKU_SUFFIXES:
+            types[f"{prefix}{suf}"] = "Int64"
+    for prefix in _KYORI_BETSU_PREFIXES:
+        for suf in _CHAKU_SUFFIXES:
+            types[f"{prefix}{suf}"] = "Int64"
+    types.update(
+        {
+            "脚質傾向逃げ": "Int64",
+            "脚質傾向先行": "Int64",
+            "脚質傾向差し": "Int64",
+            "脚質傾向追込": "Int64",
+            "登録レース数": "Int64",
+        }
+    )
+    return types
+
+
+HORSE_INFO_TYPES: dict[str, str] = _generate_horse_info_types()

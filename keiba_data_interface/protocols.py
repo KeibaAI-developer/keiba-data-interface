@@ -72,6 +72,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_horse_info(self, horse_id: str) -> pd.DataFrame:
+        """競走馬情報を取得する.
+
+        Args:
+            horse_id: 馬ID
+        """
+        ...
+
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
 

@@ -19,6 +19,7 @@ from scraping.exceptions import PageNotFoundError
 from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
     convert_entry,
+    convert_horse_info,
     convert_odds,
     convert_past_performances,
     convert_payoff,
@@ -148,6 +149,20 @@ class ScrapingProvider:
         raw = scraper.get_past_performances()
         horse_basic_info = scraper.get_horse_basic_info()
         return convert_past_performances(raw, horse_id, horse_basic_info)
+
+    def get_horse_info(self, horse_id: str) -> pd.DataFrame:
+        """競走馬情報を取得する.
+
+        Args:
+            horse_id (str): 馬ID（血統登録番号）
+
+        Returns:
+            pd.DataFrame: 競走馬情報（1行、HORSE_INFO_COLUMNSのカラム）
+        """
+        scraper = HorsePageScraper(horse_id)
+        past_perf = scraper.get_past_performances()
+        horse_basic_info = scraper.get_horse_basic_info()
+        return convert_horse_info(past_perf, horse_id, horse_basic_info)
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
