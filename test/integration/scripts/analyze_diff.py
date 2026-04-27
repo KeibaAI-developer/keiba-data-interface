@@ -519,9 +519,12 @@ def _compare_dataframes(
             if s_na and m_na:
                 continue
 
-            # 行ラベルを決定: get_past_performancesはレースコード、それ以外は馬番/馬名
+            # 行ラベルを決定
             if method == "get_past_performances" and "レースコード" in s.columns:
                 row_label = f"レースコード={s['レースコード'].iloc[idx]}"
+            elif method == "get_horse_info":
+                # 1馬1行のためケース名で識別済み、行情報不要
+                row_label = ""
             elif "馬番" in s.columns:
                 row_label = f"馬番={s['馬番'].iloc[idx]}"
             elif "馬名" in s.columns:
@@ -1157,15 +1160,22 @@ def _build_method_detail_report(method: str, diffs: list[DiffRecord]) -> str:
 
             # テーブルヘッダ
             id_label = _get_id_label(method)
-            lines.append(f"| {id_label} | scraping値 | mykeibadb値 | 行情報 |")
-            lines.append("|------|------------|-------------|--------|")
+            show_row_info = method != "get_horse_info"
+            if show_row_info:
+                lines.append(f"| {id_label} | scraping値 | mykeibadb値 | 行情報 |")
+                lines.append("|------|------------|-------------|--------|")
+            else:
+                lines.append(f"| {id_label} | scraping値 | mykeibadb値 |")
+                lines.append("|------|------------|-------------|")
 
             for d in type_records:
                 case_id = _extract_case_id(d.test_case)
                 s_val = d.scraping_value[:50]
                 m_val = d.mykeibadb_value[:50]
-                row = d.row_info
-                lines.append(f"| {case_id} | {s_val} | {m_val} | {row} |")
+                if show_row_info:
+                    lines.append(f"| {case_id} | {s_val} | {m_val} | {d.row_info} |")
+                else:
+                    lines.append(f"| {case_id} | {s_val} | {m_val} |")
 
             lines.append("")
 
@@ -1174,7 +1184,7 @@ def _build_method_detail_report(method: str, diffs: list[DiffRecord]) -> str:
 
 def _get_id_label(method: str) -> str:
     """メソッドに応じたID列ラベルを返す."""
-    if method == "get_past_performances":
+    if method in ("get_past_performances", "get_horse_info"):
         return "馬ID"
     if method == "get_schedule":
         return "日付"
