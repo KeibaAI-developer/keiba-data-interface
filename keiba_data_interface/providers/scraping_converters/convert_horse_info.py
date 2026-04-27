@@ -318,13 +318,8 @@ def _init_chaku_cols(data: dict[str, object]) -> None:
         for suf in _CHAKU_SUFFIXES:
             data[f"{prefix}{suf}"] = 0
     # 方向別（芝直/芝右/芝左/ダ直/ダ右/ダ左）は0で初期化
-    # ダ直はscrapingから判別不能のためpd.NAとする
     for prefix in _BABA_BETSU_PREFIXES:
         if prefix == "障害":
             continue
-        if prefix == "ダ直":
-            for suf in _CHAKU_SUFFIXES:
-                data[f"{prefix}{suf}"] = pd.NA
-        else:
-            for suf in _CHAKU_SUFFIXES:
-                data[f"{prefix}{suf}"] = 0
+        for suf in _CHAKU_SUFFIXES:
+            data[f"{prefix}{suf}"] = 0

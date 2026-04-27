@@ -330,8 +330,8 @@ def _build_horse_info_scraping_columns() -> list[str]:
         for suf in chaku_sfx:
             cols.append(f"{prefix}{suf}")
     # 方向別（直線・右回り・左回り）: 競馬場から算出
-    # 芝直: 新潟芝1000mのみ算出可能
-    for prefix in ["芝直", "芝右", "芝左", "ダ右", "ダ左"]:
+    # 芝直: 新潟芝1000mのみ算出可能 / ダ直: 中央に存在しないため常に0
+    for prefix in ["芝直", "芝右", "芝左", "ダ直", "ダ右", "ダ左"]:
         for suf in chaku_sfx:
             cols.append(f"{prefix}{suf}")
     # 馬場状態別
