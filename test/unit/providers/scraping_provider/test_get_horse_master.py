@@ -210,7 +210,7 @@ def test_tozai_shozoku_code(
     provider_full: ScrapingProvider,
     mock_past_scraper: MagicMock,
     shozoku: str,
-    expected_code: str,
+    expected_code: str | None,
 ) -> None:
     """所属から東西所属コードが設定される."""
     from .conftest import create_scraping_horse_basic_info
