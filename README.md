@@ -38,15 +38,31 @@
 
 ## インストール
 
-```bash
-# 基本インストール（DataInterfaceクラスのみ）
-pip install -e /path/to/keiba-data-interface
+`keiba-scraping`・`mykeibadb-python`はPyPIに公開されていないため、事前にリポジトリをcloneしてインストールする必要があります。
 
+### 1. 依存ライブラリのインストール
+
+```bash
 # scrapingプロバイダーを使用する場合
-pip install -e /path/to/keiba-data-interface[scraping]
+git clone https://github.com/KeibaAI-developer/keiba-scraping
+pip install -e ./keiba-scraping
 
 # mykeibadbプロバイダーを使用する場合
-pip install -e /path/to/keiba-data-interface[mykeibadb]
+git clone https://github.com/KeibaAI-developer/mykeibadb-python
+pip install -e ./mykeibadb-python
+```
+
+### 2. keiba-data-interfaceのインストール
+
+```bash
+# 基本インストール（DataInterfaceクラスのみ）
+pip install -e "/path/to/keiba-data-interface"
+
+# scrapingプロバイダーを使用する場合
+pip install -e "/path/to/keiba-data-interface[scraping]"
+
+# mykeibadbプロバイダーを使用する場合
+pip install -e "/path/to/keiba-data-interface[mykeibadb]"
 ```
 
 
@@ -55,12 +71,12 @@ pip install -e /path/to/keiba-data-interface[mykeibadb]
 ### scrapingプロバイダーを使用する場合
 
 keiba-scrapingが利用する外部ツール（ChromeDriver、Playwright等）のセットアップが必要です。
-詳細は[keiba-scraping の README](../keiba-scraping/README.md)を参照してください。
+詳細は[keiba-scraping の README](https://github.com/KeibaAI-developer/keiba-scraping/blob/main/README.md)を参照してください。
 
 ### mykeibadbプロバイダーを使用する場合
 
-mykeibadb-python が利用するPostgreSQLサーバーへの接続設定が必要です。
-詳細は[mykeibadb-python の README](../mykeibadb-python/README.md)を参照してください。
+mykeibadb-pythonが利用するPostgreSQLサーバーへの接続設定が必要です。
+詳細は[mykeibadb-python の README](https://github.com/KeibaAI-developer/mykeibadb-python/blob/main/README.md)を参照してください。
 
 
 ## 使い方
