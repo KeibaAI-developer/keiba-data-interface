@@ -21,9 +21,6 @@ class DataProvider(Protocol):
 
         Args:
             race_code: 16桁レースコード
-
-        Returns:
-            レース基本情報のDataFrame（1行）
         """
         ...
 
@@ -32,9 +29,6 @@ class DataProvider(Protocol):
 
         Args:
             race_code: 16桁レースコード
-
-        Returns:
-            出馬表のDataFrame（出走頭数行）
         """
         ...
 
@@ -43,9 +37,6 @@ class DataProvider(Protocol):
 
         Args:
             race_code: 16桁レースコード
-
-        Returns:
-            単複オッズのDataFrame（出走頭数行）
         """
         ...
 
@@ -54,9 +45,6 @@ class DataProvider(Protocol):
 
         Args:
             race_code: 16桁レースコード
-
-        Returns:
-            レース結果のDataFrame（出走頭数行）
         """
         ...
 
@@ -65,9 +53,6 @@ class DataProvider(Protocol):
 
         Args:
             race_code: 16桁レースコード
-
-        Returns:
-            レース結果情報のDataFrame（1行）
         """
         ...
 
@@ -76,9 +61,6 @@ class DataProvider(Protocol):
 
         Args:
             race_code: 16桁レースコード
-
-        Returns:
-            払戻情報のDataFrame（1行）
         """
         ...
 
@@ -86,10 +68,7 @@ class DataProvider(Protocol):
         """過去成績（馬柱）を取得する.
 
         Args:
-            horse_id: 馬ID
-
-        Returns:
-            過去成績のDataFrame（過去レース分の行数）
+            horse_id: 馬ID（血統登録番号）
         """
         ...
 
@@ -97,10 +76,7 @@ class DataProvider(Protocol):
         """競走馬情報を取得する.
 
         Args:
-            horse_id: 馬ID
-
-        Returns:
-            競走馬情報のDataFrame（1行）
+            horse_id: 馬ID（血統登録番号）
         """
         ...
 
@@ -110,8 +86,5 @@ class DataProvider(Protocol):
         Args:
             start_date: 開始日（YYYY-MM-DD形式）
             end_date: 終了日（YYYY-MM-DD形式）
-
-        Returns:
-            開催スケジュールのDataFrame（開催日数分の行数）
         """
         ...

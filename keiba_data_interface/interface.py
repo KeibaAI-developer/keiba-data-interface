@@ -104,7 +104,7 @@ class DataInterface:
         """過去成績（馬柱）を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id: 馬ID（血統登録番号）
 
         Returns:
             過去成績のDataFrame
@@ -115,7 +115,7 @@ class DataInterface:
         """競走馬情報を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id: 馬ID（血統登録番号）
 
         Returns:
             競走馬情報のDataFrame（1行）
@@ -149,9 +149,7 @@ def _create_provider(provider: str) -> DataProvider:
     """
     if provider not in _PROVIDER_MAP:
         valid = ", ".join(_PROVIDER_MAP)
-        raise KeibaDataInterfaceError(
-            f"不正なprovider名です: '{provider}' （有効な値: {valid}）"
-        )
+        raise KeibaDataInterfaceError(f"不正なprovider名です: '{provider}' （有効な値: {valid}）")
     module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
     module = importlib.import_module(module_path)
     provider_class = getattr(module, class_name)
