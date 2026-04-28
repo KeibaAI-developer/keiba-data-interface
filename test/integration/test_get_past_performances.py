@@ -56,6 +56,9 @@ def test_get_past_performances_columns_match(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=MagicMock(),
         ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
+        ),
     ):
         m_provider = MykeibaDBProvider()
         m_df = m_provider.get_past_performances(horse_fixtures.horse_id)
@@ -94,6 +97,9 @@ def test_get_past_performances_common_values_match(
         patch(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=MagicMock(),
+        ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
         ),
     ):
         m_provider = MykeibaDBProvider()

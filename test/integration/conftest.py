@@ -131,6 +131,7 @@ class HorseFixtures:
         }
         self.mykeibadb: dict[str, pd.DataFrame] = {
             "umagoto_race_joho": _load_fixture(horse_dir / "mykeibadb_umagoto_race_joho"),
+            "kyosoba_master2": _load_fixture(horse_dir / "mykeibadb_kyosoba_master2"),
         }
 
 
@@ -295,6 +296,9 @@ def mykeibadb_provider_with_mocks(
         patch(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=mocks["odds_getter"],
+        ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
         ),
     ):
         yield MykeibaDBProvider(), race_fixtures

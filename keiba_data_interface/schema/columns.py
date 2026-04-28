@@ -325,3 +325,128 @@ def _generate_schedule_columns() -> list[str]:
 
 
 SCHEDULE_COLUMNS: list[str] = _generate_schedule_columns()
+
+
+# 競走馬情報テーブルのカラム名リスト（228カラム）
+_KETTO_NAMES: list[str] = [
+    "父",
+    "母",
+    "父父",
+    "父母",
+    "母父",
+    "母母",
+    "父父父",
+    "父父母",
+    "父母父",
+    "父母母",
+    "母父父",
+    "母父母",
+    "母母父",
+    "母母母",
+]
+
+_CHAKU_SUFFIXES: list[str] = ["1着", "2着", "3着", "4着", "5着", "着外"]
+
+_BABA_BETSU_PREFIXES: list[str] = [
+    "芝直",
+    "芝右",
+    "芝左",
+    "ダ直",
+    "ダ右",
+    "ダ左",
+    "障害",
+]
+
+_BABA_JOTAI_PREFIXES: list[str] = [
+    "芝良",
+    "芝稍",
+    "芝重",
+    "芝不",
+    "ダ良",
+    "ダ稍",
+    "ダ重",
+    "ダ不",
+    "障良",
+    "障稍",
+    "障重",
+    "障不",
+]
+
+_KYORI_BETSU_PREFIXES: list[str] = [
+    "芝16下",
+    "芝22下",
+    "芝22超",
+    "ダ16下",
+    "ダ22下",
+    "ダ22超",
+]
+
+
+def _generate_horse_master_columns() -> list[str]:
+    """競走馬情報テーブルのカラム名リストを生成する."""
+    cols: list[str] = [
+        "テーブル作成時間",
+        "テーブル更新時間",
+        "レコード種別ID",
+        "データ区分",
+        "データ作成年月日",
+        "血統登録番号",
+        "競走馬抹消区分",
+        "競走馬登録年月日",
+        "競走馬抹消年月日",
+        "生年月日",
+        "馬名",
+        "馬名半角ｶﾅ",
+        "馬名欧字",
+        "JRA施設在きゅうフラグ",
+        "馬記号コード",
+        "性別コード",
+        "品種コード",
+        "毛色コード",
+    ]
+    for name in _KETTO_NAMES:
+        cols.extend([f"{name}繁殖登録番号", f"{name}馬名"])
+    cols.extend(
+        [
+            "東西所属コード",
+            "調教師コード",
+            "調教師名略称",
+            "招待地域名",
+            "生産者コード",
+            "生産者名",
+            "産地名",
+            "馬主コード",
+            "馬主名",
+            "平地本賞金累計",
+            "障害本賞金累計",
+            "平地付加賞金累計",
+            "障害付加賞金累計",
+            "平地収得賞金累計",
+            "障害収得賞金累計",
+        ]
+    )
+    for prefix in ["総合", "中央合計"]:
+        for suf in _CHAKU_SUFFIXES:
+            cols.append(f"{prefix}{suf}")
+    for prefix in _BABA_BETSU_PREFIXES:
+        for suf in _CHAKU_SUFFIXES:
+            cols.append(f"{prefix}{suf}")
+    for prefix in _BABA_JOTAI_PREFIXES:
+        for suf in _CHAKU_SUFFIXES:
+            cols.append(f"{prefix}{suf}")
+    for prefix in _KYORI_BETSU_PREFIXES:
+        for suf in _CHAKU_SUFFIXES:
+            cols.append(f"{prefix}{suf}")
+    cols.extend(
+        [
+            "脚質傾向逃げ",
+            "脚質傾向先行",
+            "脚質傾向差し",
+            "脚質傾向追込",
+            "登録レース数",
+        ]
+    )
+    return cols
+
+
+HORSE_MASTER_COLUMNS: list[str] = _generate_horse_master_columns()

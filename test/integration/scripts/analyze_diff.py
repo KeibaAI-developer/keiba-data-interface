@@ -24,7 +24,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pandas as pd  # noqa: E402
 from column_definitions import (  # noqa: E402
     ENTRY_ONLY_EXCLUDE,
+    HORSE_MASTER_SCRAPING_COLUMNS,
     HORSE_RACE_INFO_SCRAPING_COLUMNS,
+    KNOWN_DIFF_HORSE_MASTER,
     KNOWN_DIFF_HORSE_RACE,
     KNOWN_DIFF_ODDS,
     KNOWN_DIFF_PAYOFF,
@@ -55,6 +57,7 @@ SCRAPING_COLUMNS_BY_METHOD: dict[str, list[str]] = {
         [c for c in HORSE_RACE_INFO_SCRAPING_COLUMNS if c not in PAST_PERF_EXCLUDE]
         + PAST_PERF_ADDITIONAL_SCRAPING_COLUMNS
     ),
+    "get_horse_master": HORSE_MASTER_SCRAPING_COLUMNS,
     "get_schedule": SCHEDULE_SCRAPING_COLUMNS,
 }
 
@@ -67,6 +70,7 @@ KNOWN_DIFF_BY_METHOD: dict[str, set[str]] = {
     "get_payoff": KNOWN_DIFF_PAYOFF,
     "get_win_show_odds": KNOWN_DIFF_ODDS,
     "get_past_performances": KNOWN_DIFF_HORSE_RACE,
+    "get_horse_master": KNOWN_DIFF_HORSE_MASTER,
     "get_schedule": KNOWN_DIFF_SCHEDULE,
 }
 
@@ -257,7 +261,7 @@ def _get_scraping_horse_outputs(
     horse_id: str,
     horse_dir: Path,
 ) -> dict[str, pd.DataFrame | str]:
-    """ScrapingProviderのget_past_performances出力を取得する."""
+    """ScrapingProviderのhorse系メソッド出力を取得する."""
     outputs: dict[str, pd.DataFrame | str] = {}
     if not (horse_dir / "scraping_past_performances.pkl").exists():
         return outputs
@@ -279,6 +283,10 @@ def _get_scraping_horse_outputs(
             outputs["get_past_performances"] = provider.get_past_performances(horse_id)
         except Exception as e:
             outputs["get_past_performances_error"] = str(e)
+        try:
+            outputs["get_horse_master"] = provider.get_horse_master(horse_id)
+        except Exception as e:
+            outputs["get_horse_master_error"] = str(e)
 
     return outputs
 
@@ -287,12 +295,17 @@ def _get_mykeibadb_horse_outputs(
     horse_id: str,
     horse_dir: Path,
 ) -> dict[str, pd.DataFrame | str]:
-    """MykeibaDBProviderのget_past_performances出力を取得する."""
+    """MykeibaDBProviderのhorse系メソッド出力を取得する."""
     outputs: dict[str, pd.DataFrame | str] = {}
 
     mock_race_getter = MagicMock()
     mock_race_getter.get_umagoto_race_joho.return_value = _load_pkl(
         horse_dir / "mykeibadb_umagoto_race_joho.pkl",
+    )
+
+    mock_master_getter = MagicMock()
+    mock_master_getter.get_kyosoba_master2.return_value = _load_pkl(
+        horse_dir / "mykeibadb_kyosoba_master2.pkl",
     )
 
     with (
@@ -304,12 +317,20 @@ def _get_mykeibadb_horse_outputs(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=MagicMock(),
         ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
+            return_value=mock_master_getter,
+        ),
     ):
         provider = MykeibaDBProvider()
         try:
             outputs["get_past_performances"] = provider.get_past_performances(horse_id)
         except Exception as e:
             outputs["get_past_performances_error"] = str(e)
+        try:
+            outputs["get_horse_master"] = provider.get_horse_master(horse_id)
+        except Exception as e:
+            outputs["get_horse_master_error"] = str(e)
 
     return outputs
 
@@ -498,9 +519,12 @@ def _compare_dataframes(
             if s_na and m_na:
                 continue
 
-            # 行ラベルを決定: get_past_performancesはレースコード、それ以外は馬番/馬名
+            # 行ラベルを決定
             if method == "get_past_performances" and "レースコード" in s.columns:
                 row_label = f"レースコード={s['レースコード'].iloc[idx]}"
+            elif method == "get_horse_master":
+                # 1馬1行のためケース名で識別済み、行情報不要
+                row_label = ""
             elif "馬番" in s.columns:
                 row_label = f"馬番={s['馬番'].iloc[idx]}"
             elif "馬名" in s.columns:
@@ -654,6 +678,29 @@ def analyze_horses(test_cases: dict[str, Any]) -> list[DiffRecord]:
 
         s_out = _get_scraping_horse_outputs(horse_id, horse_dir)
         m_out = _get_mykeibadb_horse_outputs(horse_id, horse_dir)
+
+        # get_horse_master の比較
+        hi_method = "get_horse_master"
+        hi_s_err = f"{hi_method}_error"
+        hi_m_err = f"{hi_method}_error"
+
+        if hi_s_err in s_out or hi_m_err in m_out:
+            all_diffs.append(
+                DiffRecord(
+                    label,
+                    hi_method,
+                    "(エラー)",
+                    "変換エラー",
+                    str(s_out.get(hi_s_err, "OK")),
+                    str(m_out.get(hi_m_err, "OK")),
+                )
+            )
+        elif hi_method in s_out and hi_method in m_out:
+            s_hi_df = s_out[hi_method]
+            m_hi_df = m_out[hi_method]
+            if isinstance(s_hi_df, pd.DataFrame) and isinstance(m_hi_df, pd.DataFrame):
+                hi_diffs = _compare_dataframes(s_hi_df, m_hi_df, label, hi_method)
+                all_diffs.extend(hi_diffs)
 
         method = "get_past_performances"
         s_err = f"{method}_error"
@@ -1113,15 +1160,22 @@ def _build_method_detail_report(method: str, diffs: list[DiffRecord]) -> str:
 
             # テーブルヘッダ
             id_label = _get_id_label(method)
-            lines.append(f"| {id_label} | scraping値 | mykeibadb値 | 行情報 |")
-            lines.append("|------|------------|-------------|--------|")
+            show_row_info = method != "get_horse_master"
+            if show_row_info:
+                lines.append(f"| {id_label} | scraping値 | mykeibadb値 | 行情報 |")
+                lines.append("|------|------------|-------------|--------|")
+            else:
+                lines.append(f"| {id_label} | scraping値 | mykeibadb値 |")
+                lines.append("|------|------------|-------------|")
 
             for d in type_records:
                 case_id = _extract_case_id(d.test_case)
                 s_val = d.scraping_value[:50]
                 m_val = d.mykeibadb_value[:50]
-                row = d.row_info
-                lines.append(f"| {case_id} | {s_val} | {m_val} | {row} |")
+                if show_row_info:
+                    lines.append(f"| {case_id} | {s_val} | {m_val} | {d.row_info} |")
+                else:
+                    lines.append(f"| {case_id} | {s_val} | {m_val} |")
 
             lines.append("")
 
@@ -1130,7 +1184,7 @@ def _build_method_detail_report(method: str, diffs: list[DiffRecord]) -> str:
 
 def _get_id_label(method: str) -> str:
     """メソッドに応じたID列ラベルを返す."""
-    if method == "get_past_performances":
+    if method in ("get_past_performances", "get_horse_master"):
         return "馬ID"
     if method == "get_schedule":
         return "日付"

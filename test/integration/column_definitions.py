@@ -263,3 +263,87 @@ SCHEDULE_SCRAPING_COLUMNS: list[str] = [
 ]
 
 KNOWN_DIFF_SCHEDULE: set[str] = set()
+
+
+# ============================================================================
+# 競走馬情報
+# ============================================================================
+
+
+def _build_horse_master_known_diff() -> set[str]:
+    """競走馬情報の既知差分カラムセットを生成する."""
+    chaku_sfx = ["1着", "2着", "3着", "4着", "5着", "着外"]
+    cols: set[str] = {
+        "調教師コード",  # 転厩後はscrapingは現在の調教師、mykeibadbはマスタ登録時の情報
+        "調教師名略称",  # 表記ゆれあり
+        "生産者コード",  # 外国馬はscrapingが独自変換、mykeibadbは00000000
+        "生産者名",  # 表記ゆれあり（法人格有無の差異）
+        "馬主名",  # 表記ゆれあり（法人格有無の差異・スペース挿入の差異）
+        "東西所属コード",  # 地方馬は地方ページからコード取得不可のためscrapingはNaN
+        "父父馬名",  # 外国馬はmykeibadbに日本語馬名なし（空文字列）
+        "父母馬名",  # 外国馬はmykeibadbに日本語馬名なし（空文字列）
+    }
+    # 着回数系: scrapingはHTML表示件数（直近50走程度）から算出、mykeibadbは全件
+    for prefix in ["総合", "中央合計", "障害"]:
+        for suf in chaku_sfx:
+            cols.add(f"{prefix}{suf}")
+    # 方向別着回数も同様にHTML表示件数の差分が発生
+    for direction in ["右", "左"]:
+        for shiba_da in ["芝", "ダ"]:
+            for suf in chaku_sfx:
+                cols.add(f"{shiba_da}{direction}{suf}")
+    # 障害馬場状態別着回数（scrapingは障害の詳細馬場状態が取得困難）
+    for jotai in ["良", "稍", "重", "不"]:
+        for suf in ["1着", "2着", "3着", "4着", "5着", "着外"]:
+            cols.add(f"障{jotai}{suf}")
+    return cols
+
+
+KNOWN_DIFF_HORSE_MASTER: set[str] = _build_horse_master_known_diff()
+
+
+def _build_horse_master_scraping_columns() -> list[str]:
+    """競走馬情報のscraping○カラムリストを生成する."""
+    chaku_sfx = ["1着", "2着", "3着", "4着", "5着", "着外"]
+    cols: list[str] = [
+        "血統登録番号",
+        "生年月日",
+        "馬名",
+        "馬名半角ｶﾅ",
+        "性別コード",
+        "父馬名",
+        "母馬名",
+        "父父馬名",
+        "父母馬名",
+        "母父馬名",
+        "母母馬名",
+        "東西所属コード",
+        "調教師コード",
+        "調教師名略称",
+        "生産者コード",
+        "生産者名",
+        "産地名",
+        "馬主コード",
+        "馬主名",
+    ]
+    for prefix in ["総合", "中央合計", "障害"]:
+        for suf in chaku_sfx:
+            cols.append(f"{prefix}{suf}")
+    # 方向別（直線・右回り・左回り）: 競馬場から算出
+    # 芝直: 新潟芝1000mのみ算出可能 / ダ直: 中央に存在しないため常に0
+    for prefix in ["芝直", "芝右", "芝左", "ダ直", "ダ右", "ダ左"]:
+        for suf in chaku_sfx:
+            cols.append(f"{prefix}{suf}")
+    # 馬場状態別
+    for prefix in ["芝良", "芝稍", "芝重", "芝不", "ダ良", "ダ稍", "ダ重", "ダ不",
+                   "障良", "障稍", "障重", "障不"]:
+        for suf in chaku_sfx:
+            cols.append(f"{prefix}{suf}")
+    # 距離別
+    for prefix in ["芝16下", "芝22下", "芝22超", "ダ16下", "ダ22下", "ダ22超"]:
+        for suf in chaku_sfx:
+            cols.append(f"{prefix}{suf}")
+    return cols
+
+
+HORSE_MASTER_SCRAPING_COLUMNS: list[str] = _build_horse_master_scraping_columns()
