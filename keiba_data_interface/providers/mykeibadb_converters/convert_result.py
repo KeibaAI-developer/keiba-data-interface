@@ -10,6 +10,7 @@ import pandas as pd
 
 from keiba_data_interface.providers.mykeibadb_converters.convert_entry import convert_base
 from keiba_data_interface.utils.converters import convert_time_msss_to_display
+from keiba_data_interface.utils.dataframe import recalculate_ninkijun
 
 
 def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
@@ -38,14 +39,7 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
     if niigata_straight_rank is not None and "4コーナー順位" in df.columns:
         df["4コーナー順位"] = niigata_straight_rank.astype("Int64")
 
-    # 単勝人気順: 単勝オッズから再計算（同一オッズは同順位、NaNオッズの馬はNaN）
-    if "単勝オッズ" in df.columns and "単勝人気順" in df.columns:
-        valid_mask = df["単勝オッズ"].notna()
-        if valid_mask.any():
-            df.loc[valid_mask, "単勝人気順"] = (
-                df.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
-            )
-        df.loc[~valid_mask, "単勝人気順"] = pd.NA
+    df = recalculate_ninkijun(df)
 
     return df
 

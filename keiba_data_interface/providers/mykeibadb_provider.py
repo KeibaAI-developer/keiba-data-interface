@@ -28,6 +28,7 @@ class MykeibaDBProvider:
     Attributes:
         _race_getter (RaceGetter): JRA-VANデータ取得用のRaceGetterインスタンス
         _odds_getter (OddsGetter): JRA-VANオッズ取得用のOddsGetterインスタンス
+        _master_getter (MasterGetter): JRA-VANマスタ取得用のMasterGetterインスタンス
     """
 
     def __init__(self) -> None:

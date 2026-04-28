@@ -341,11 +341,11 @@ SCHEDULE_TYPES: dict[str, str] = _generate_schedule_types()
 def _generate_horse_master_types() -> dict[str, str]:
     """競走馬情報テーブルの型定義辞書を生成する."""
     from keiba_data_interface.schema.columns import (
-        _BABA_BETSU_PREFIXES,
-        _BABA_JOTAI_PREFIXES,
-        _CHAKU_SUFFIXES,
-        _KETTO_NAMES,
-        _KYORI_BETSU_PREFIXES,
+        BABA_BETSU_PREFIXES,
+        BABA_JOTAI_PREFIXES,
+        CHAKU_SUFFIXES,
+        KETTO_NAMES,
+        KYORI_BETSU_PREFIXES,
     )
 
     types: dict[str, str] = {
@@ -368,7 +368,7 @@ def _generate_horse_master_types() -> dict[str, str]:
         "品種コード": "object",
         "毛色コード": "object",
     }
-    for name in _KETTO_NAMES:
+    for name in KETTO_NAMES:
         types[f"{name}繁殖登録番号"] = "object"
         types[f"{name}馬名"] = "object"
     types.update(
@@ -391,16 +391,16 @@ def _generate_horse_master_types() -> dict[str, str]:
         }
     )
     for prefix in ["総合", "中央合計"]:
-        for suf in _CHAKU_SUFFIXES:
+        for suf in CHAKU_SUFFIXES:
             types[f"{prefix}{suf}"] = "Int64"
-    for prefix in _BABA_BETSU_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in BABA_BETSU_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             types[f"{prefix}{suf}"] = "Int64"
-    for prefix in _BABA_JOTAI_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in BABA_JOTAI_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             types[f"{prefix}{suf}"] = "Int64"
-    for prefix in _KYORI_BETSU_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in KYORI_BETSU_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             types[f"{prefix}{suf}"] = "Int64"
     types.update(
         {

@@ -5,23 +5,20 @@ HorsePageScraperの出力を統一スキーマに変換する。
 
 import pandas as pd
 
-from keiba_data_interface.providers.scraping_converters.common import TOZAI_SHOZOKU_TO_CODE
+from keiba_data_interface.providers.scraping_converters.common import (
+    SEIBETSU_TO_CODE,
+    TOZAI_SHOZOKU_TO_CODE,
+)
 from keiba_data_interface.schema.columns import (
-    _BABA_BETSU_PREFIXES,
-    _BABA_JOTAI_PREFIXES,
-    _CHAKU_SUFFIXES,
-    _KYORI_BETSU_PREFIXES,
+    BABA_BETSU_PREFIXES,
+    BABA_JOTAI_PREFIXES,
+    CHAKU_SUFFIXES,
     HORSE_MASTER_COLUMNS,
+    KYORI_BETSU_PREFIXES,
 )
 from keiba_data_interface.schema.types import HORSE_MASTER_TYPES
 from keiba_data_interface.utils.converters import to_half_kana
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-
-_SEIBETSU_TO_CODE: dict[str, str] = {
-    "牡": "1",
-    "牝": "2",
-    "セ": "3",
-}
 
 _CHAKU_COUNT_KEYS = ["1着", "2着", "3着", "4着", "5着", "着外"]
 
@@ -98,7 +95,7 @@ def convert_horse_master(
         bamei = info.get("馬名", "")
         data["馬名半角ｶﾅ"] = to_half_kana(str(bamei)) if pd.notna(bamei) else pd.NA
         seibetsu = str(info.get("性別", "")).strip()
-        data["性別コード"] = _SEIBETSU_TO_CODE.get(seibetsu, pd.NA)
+        data["性別コード"] = SEIBETSU_TO_CODE.get(seibetsu, pd.NA)
         data["生年月日"] = str(info.get("生年月日", pd.NA))
         shozoku = str(info.get("所属", "")).strip()
         if shozoku:
@@ -250,19 +247,19 @@ def _build_chaku_values(
 
     # 総合（全レース）
     sogo = _count_chaku(past_perf)
-    for suf in _CHAKU_SUFFIXES:
+    for suf in CHAKU_SUFFIXES:
         result[f"総合{suf}"] = sogo[suf]
 
     # 中央合計（JRAのみ）
     chuo_mask = past_perf.apply(_is_chuo, axis=1)
     chuo = _count_chaku(past_perf, chuo_mask)
-    for suf in _CHAKU_SUFFIXES:
+    for suf in CHAKU_SUFFIXES:
         result[f"中央合計{suf}"] = chuo[suf]
 
     # 障害着回数
     shogai_mask = past_perf.apply(lambda r: _get_shiba_da(r) == "障", axis=1) & chuo_mask
     shogai = _count_chaku(past_perf, shogai_mask)
-    for suf in _CHAKU_SUFFIXES:
+    for suf in CHAKU_SUFFIXES:
         result[f"障害{suf}"] = shogai[suf]
 
     # 方向別（芝右/芝左/ダ右/ダ左）: 競馬場から算出
@@ -309,19 +306,19 @@ def _build_chaku_values(
 
 def _init_chaku_cols(data: dict[str, object]) -> None:
     """着回数カラムを0で初期化する."""
-    for suf in _CHAKU_SUFFIXES:
+    for suf in CHAKU_SUFFIXES:
         data[f"総合{suf}"] = 0
         data[f"中央合計{suf}"] = 0
         data[f"障害{suf}"] = 0
-    for prefix in _BABA_JOTAI_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in BABA_JOTAI_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             data[f"{prefix}{suf}"] = 0
-    for prefix in _KYORI_BETSU_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in KYORI_BETSU_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             data[f"{prefix}{suf}"] = 0
     # 方向別（芝直/芝右/芝左/ダ直/ダ右/ダ左）は0で初期化
-    for prefix in _BABA_BETSU_PREFIXES:
+    for prefix in BABA_BETSU_PREFIXES:
         if prefix == "障害":
             continue
-        for suf in _CHAKU_SUFFIXES:
+        for suf in CHAKU_SUFFIXES:
             data[f"{prefix}{suf}"] = 0

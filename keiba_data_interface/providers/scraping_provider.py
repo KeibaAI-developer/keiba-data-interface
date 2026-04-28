@@ -80,6 +80,7 @@ class ScrapingProvider:
             pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム, 馬番順）
         """
         race_id = race_code_to_race_id(race_code)
+        # JRAにオッズページがない場合（レース翌日以降など）はnetkeibaにフォールバックする
         try:
             raw = _run_async(scrape_odds_from_jra(race_id))
         except PageNotFoundError:
