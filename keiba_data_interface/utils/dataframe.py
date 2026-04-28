@@ -33,22 +33,24 @@ def recalculate_ninkijun(df: pd.DataFrame) -> pd.DataFrame:
 
     同一オッズの馬には同じ人気順を付与する。
     単勝オッズがNaNの馬は単勝人気順もNaNにする。
+    入力DataFrameは変更しない。
 
     Args:
         df (pd.DataFrame): 単勝オッズカラムを含むDataFrame
 
     Returns:
-        pd.DataFrame: 単勝人気順が再計算されたDataFrame
+        pd.DataFrame: 単勝人気順が再計算された新しいDataFrame
     """
-    if "単勝オッズ" not in df.columns or "単勝人気順" not in df.columns:
-        return df
-    valid_mask = df["単勝オッズ"].notna()
+    result = df.copy()
+    if "単勝オッズ" not in result.columns or "単勝人気順" not in result.columns:
+        return result
+    valid_mask = result["単勝オッズ"].notna()
     if valid_mask.any():
-        df.loc[valid_mask, "単勝人気順"] = (
-            df.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
+        result.loc[valid_mask, "単勝人気順"] = (
+            result.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
         )
-    df.loc[~valid_mask, "単勝人気順"] = pd.NA
-    return df
+    result.loc[~valid_mask, "単勝人気順"] = pd.NA
+    return result
 
 
 def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
