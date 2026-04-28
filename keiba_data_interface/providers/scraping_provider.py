@@ -226,6 +226,9 @@ class ScrapingProvider:
                 all_rows.append(converted)
             current += timedelta(days=1)
         if not all_rows:
+            self._logger.info(
+                "開催スケジュールの取得が完了: start_date=%s, end_date=%s", start_date, end_date
+            )
             return apply_types(ensure_columns(pd.DataFrame(), SCHEDULE_COLUMNS), SCHEDULE_TYPES)
         result = pd.concat(all_rows, ignore_index=True)
         self._logger.info(
