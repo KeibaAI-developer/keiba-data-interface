@@ -229,6 +229,36 @@ def test_kohan_3f_converted(
     assert result.iloc[1]["後3ハロン"] == 34.8
 
 
+def test_kohan_4f_converted(
+    provider: MykeibaDBProvider,
+    mock_race_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """後4ハロンが0.1秒単位から秒単位に変換される."""
+    mock_race_getter.get_umagoto_race_joho.return_value = create_umagoto_race_joho_df()
+
+    result = provider.get_result(race_code)
+
+    assert result.iloc[0]["後4ハロン"] == 47.9
+    assert result.iloc[1]["後4ハロン"] == 48.1
+
+
+def test_kohan_4f_zero_to_nan(
+    provider: MykeibaDBProvider,
+    mock_race_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """後4ハロンが0（データなし）の場合はNaNに変換される."""
+    raw = create_umagoto_race_joho_df()
+    raw.at[0, "kohan_4f"] = 0
+    mock_race_getter.get_umagoto_race_joho.return_value = raw
+
+    result = provider.get_result(race_code)
+
+    assert pd.isna(result.iloc[0]["後4ハロン"])
+    assert result.iloc[1]["後4ハロン"] == 48.1
+
+
 def test_result_specific_columns(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
