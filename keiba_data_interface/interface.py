@@ -5,6 +5,7 @@ Provider名を指定することで、データソースを切り替えてデー
 """
 
 import importlib
+import logging
 
 import pandas as pd
 
@@ -23,16 +24,22 @@ class DataInterface:
     データソースを選択し、統一されたインターフェースでデータを取得する。
     """
 
-    def __init__(self, provider: str) -> None:
+    def __init__(self, provider: str, logger: logging.Logger | None = None) -> None:
         """コンストラクタ.
 
         Args:
             provider: データソース名（'scraping' または 'mykeibadb'）
+            logger: ロガーインスタンス
 
         Raises:
             KeibaDataInterfaceError: 不正なprovider名が指定された場合
         """
-        self._provider: DataProvider = _create_provider(provider)
+        self._logger = logger or logging.getLogger(__name__)
+        provider_logger = self._logger.getChild(provider)
+        self._provider: DataProvider = _create_provider(
+            provider, provider_logger
+        )
+        self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -43,7 +50,10 @@ class DataInterface:
         Returns:
             レース基本情報のDataFrame（1行）
         """
-        return self._provider.get_race_basic_info(race_code)
+        self._logger.debug("レース基本情報を取得: race_code=%s", race_code)
+        result = self._provider.get_race_basic_info(race_code)
+        self._logger.debug("レース基本情報の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
@@ -54,7 +64,10 @@ class DataInterface:
         Returns:
             出馬表のDataFrame（出走頭数行）
         """
-        return self._provider.get_entry(race_code)
+        self._logger.debug("出馬表を取得: race_code=%s", race_code)
+        result = self._provider.get_entry(race_code)
+        self._logger.debug("出馬表の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
@@ -65,7 +78,10 @@ class DataInterface:
         Returns:
             単複オッズのDataFrame
         """
-        return self._provider.get_win_show_odds(race_code)
+        self._logger.debug("単複オッズを取得: race_code=%s", race_code)
+        result = self._provider.get_win_show_odds(race_code)
+        self._logger.debug("単複オッズの取得が完了: race_code=%s", race_code)
+        return result
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
@@ -76,7 +92,10 @@ class DataInterface:
         Returns:
             レース結果のDataFrame（出走頭数行）
         """
-        return self._provider.get_result(race_code)
+        self._logger.debug("レース結果を取得: race_code=%s", race_code)
+        result = self._provider.get_result(race_code)
+        self._logger.debug("レース結果の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
@@ -87,7 +106,10 @@ class DataInterface:
         Returns:
             レース結果情報のDataFrame（1行）
         """
-        return self._provider.get_race_result_info(race_code)
+        self._logger.debug("レース結果情報を取得: race_code=%s", race_code)
+        result = self._provider.get_race_result_info(race_code)
+        self._logger.debug("レース結果情報の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_payoff(self, race_code: str) -> pd.DataFrame:
         """払戻情報を取得する.
@@ -98,7 +120,10 @@ class DataInterface:
         Returns:
             払戻情報のDataFrame（1行）
         """
-        return self._provider.get_payoff(race_code)
+        self._logger.debug("払戻情報を取得: race_code=%s", race_code)
+        result = self._provider.get_payoff(race_code)
+        self._logger.debug("払戻情報の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_past_performances(self, horse_id: str) -> pd.DataFrame:
         """過去成績（馬柱）を取得する.
@@ -109,7 +134,10 @@ class DataInterface:
         Returns:
             過去成績のDataFrame
         """
-        return self._provider.get_past_performances(horse_id)
+        self._logger.debug("過去成績を取得: horse_id=%s", horse_id)
+        result = self._provider.get_past_performances(horse_id)
+        self._logger.debug("過去成績の取得が完了: horse_id=%s", horse_id)
+        return result
 
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する.
@@ -120,7 +148,10 @@ class DataInterface:
         Returns:
             競走馬情報のDataFrame（1行）
         """
-        return self._provider.get_horse_master(horse_id)
+        self._logger.debug("競走馬情報を取得: horse_id=%s", horse_id)
+        result = self._provider.get_horse_master(horse_id)
+        self._logger.debug("競走馬情報の取得が完了: horse_id=%s", horse_id)
+        return result
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
@@ -132,14 +163,18 @@ class DataInterface:
         Returns:
             開催スケジュールのDataFrame
         """
-        return self._provider.get_schedule(start_date, end_date)
+        self._logger.debug("開催スケジュールを取得: start_date=%s, end_date=%s", start_date, end_date)
+        result = self._provider.get_schedule(start_date, end_date)
+        self._logger.debug("開催スケジュールの取得が完了: start_date=%s, end_date=%s", start_date, end_date)
+        return result
 
 
-def _create_provider(provider: str) -> DataProvider:
+def _create_provider(provider: str, logger: logging.Logger) -> DataProvider:
     """Provider名に対応するProviderインスタンスを生成する.
 
     Args:
         provider: データソース名
+        logger: ロガーインスタンス
 
     Returns:
         DataProviderインスタンス
@@ -149,8 +184,9 @@ def _create_provider(provider: str) -> DataProvider:
     """
     if provider not in _PROVIDER_MAP:
         valid = ", ".join(_PROVIDER_MAP)
+        logger.error("不正なprovider名です: '%s' （有効な値: %s）", provider, valid)
         raise KeibaDataInterfaceError(f"不正なprovider名です: '{provider}' （有効な値: {valid}）")
     module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
     module = importlib.import_module(module_path)
     provider_class = getattr(module, class_name)
-    return provider_class()
+    return provider_class(logger=logger)

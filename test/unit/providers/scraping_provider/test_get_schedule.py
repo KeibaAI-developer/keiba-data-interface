@@ -69,8 +69,8 @@ def test_multiple_days(
 
     # 2日分のスクレイパが作成される
     assert mock_schedule_scraper_cls.call_count == 2
-    mock_schedule_scraper_cls.assert_any_call(2025, 1, 5)
-    mock_schedule_scraper_cls.assert_any_call(2025, 1, 6)
+    mock_schedule_scraper_cls.assert_any_call(2025, 1, 5, logger=provider_full._logger)
+    mock_schedule_scraper_cls.assert_any_call(2025, 1, 6, logger=provider_full._logger)
 
 
 def test_empty_schedule(

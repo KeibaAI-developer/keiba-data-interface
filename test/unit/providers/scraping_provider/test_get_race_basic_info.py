@@ -63,7 +63,7 @@ def test_race_id_converted_to_12_digits(
 
     provider.get_race_basic_info(race_code)
 
-    mock_scraper_cls.assert_called_once_with("202506021211")
+    mock_scraper_cls.assert_called_once_with("202506021211", logger=provider._logger)
 
 
 def test_date_split_to_year_and_monthday(
