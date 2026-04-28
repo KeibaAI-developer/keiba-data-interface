@@ -39,9 +39,9 @@ class MykeibaDBProvider:
             logger: ロガーインスタンス
         """
         self._logger = logger or logging.getLogger(__name__)
-        self._race_getter = RaceGetter()
-        self._odds_getter = OddsGetter()
-        self._master_getter = MasterGetter()
+        self._race_getter = RaceGetter(logger=self._logger)
+        self._odds_getter = OddsGetter(logger=self._logger)
+        self._master_getter = MasterGetter(logger=self._logger)
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
