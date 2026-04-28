@@ -226,3 +226,20 @@ def test_tozai_shozoku_code(
         assert pd.isna(result.iloc[0]["東西所属コード"])
     else:
         assert result.iloc[0]["東西所属コード"] == expected_code
+
+
+def test_seisansha_code_kaigai_zero(
+    provider_full: ScrapingProvider,
+    mock_past_scraper: MagicMock,
+) -> None:
+    """所属が海外の場合、生産者コードは'00000000'になる."""
+    from .conftest import create_scraping_horse_basic_info
+
+    mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
+    mock_past_scraper.get_horse_basic_info.return_value = create_scraping_horse_basic_info(
+        shozoku="海外"
+    )
+
+    result = provider_full.get_horse_master("2021190001")
+
+    assert result.iloc[0]["生産者コード"] == "00000000"

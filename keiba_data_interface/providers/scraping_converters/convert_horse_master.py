@@ -108,7 +108,9 @@ def convert_horse_master(
         data["調教師コード"] = info.get("調教師ID", pd.NA)
         data["調教師名略称"] = info.get("調教師", pd.NA)
         seisansha_id = info.get("生産者ID", pd.NA)
-        if pd.notna(seisansha_id) and seisansha_id != "":
+        if shozoku == "海外":
+            data["生産者コード"] = "00000000"
+        elif pd.notna(seisansha_id) and seisansha_id != "":
             data["生産者コード"] = str(seisansha_id) + "00"
         else:
             data["生産者コード"] = pd.NA
