@@ -60,7 +60,7 @@ class ScrapingProvider:
         """
         race_id = race_code_to_race_id(race_code)
         self._logger.debug("EntryPageScraperでレース情報をスクレイピング: race_id=%s", race_id)
-        scraper = EntryPageScraper(race_id)
+        scraper = EntryPageScraper(race_id, logger=self._logger)
         raw = scraper.get_race_info()
         result = convert_race_basic_info(raw, race_code)
         self._logger.info("レース基本情報の取得が完了: race_code=%s", race_code)
@@ -77,7 +77,7 @@ class ScrapingProvider:
         """
         race_id = race_code_to_race_id(race_code)
         self._logger.debug("EntryPageScraperで出馬表をスクレイピング: race_id=%s", race_id)
-        scraper = EntryPageScraper(race_id)
+        scraper = EntryPageScraper(race_id, logger=self._logger)
         raw = scraper.get_entry()
         result = convert_entry(raw, race_code)
         self._logger.info("出馬表の取得が完了: race_code=%s", race_code)
@@ -98,10 +98,10 @@ class ScrapingProvider:
         # JRAにオッズページがない場合（レース翌日以降など）はnetkeibaにフォールバックする
         try:
             self._logger.debug("JRAから単複オッズをスクレイピング: race_id=%s", race_id)
-            raw = _run_async(scrape_odds_from_jra(race_id))
+            raw = _run_async(scrape_odds_from_jra(race_id, logger=self._logger))
         except PageNotFoundError:
             self._logger.debug("JRAでオッズページが見つからないためnetkeibaから取得: race_id=%s", race_id)
-            raw = scrape_odds_from_netkeiba(race_id)
+            raw = scrape_odds_from_netkeiba(race_id, logger=self._logger)
         df = convert_odds(raw, race_code)
         df = df.sort_values("馬番").reset_index(drop=True)
         self._logger.info("単複オッズの取得が完了: race_code=%s", race_code)
@@ -120,12 +120,12 @@ class ScrapingProvider:
 
         # 賞金情報を取得して着順→獲得本賞金マッピングを構築
         self._logger.debug("EntryPageScraperで賞金情報をスクレイピング: race_id=%s", race_id)
-        scraper_entry = EntryPageScraper(race_id)
+        scraper_entry = EntryPageScraper(race_id, logger=self._logger)
         raw_race_info = scraper_entry.get_race_info()
         prize_map = build_prize_map(raw_race_info)
 
         self._logger.debug("ResultPageScraperでレース結果をスクレイピング: race_id=%s", race_id)
-        scraper = ResultPageScraper(race_id)
+        scraper = ResultPageScraper(race_id, logger=self._logger)
         raw = scraper.get_result()
         result = convert_result(raw, race_code, prize_map)
         self._logger.info("レース結果の取得が完了: race_code=%s", race_code)
@@ -142,7 +142,7 @@ class ScrapingProvider:
         """
         race_id = race_code_to_race_id(race_code)
         self._logger.debug("ResultPageScraperでラップ・コーナー情報をスクレイピング: race_id=%s", race_id)
-        scraper = ResultPageScraper(race_id)
+        scraper = ResultPageScraper(race_id, logger=self._logger)
         raw_lap = scraper.get_lap_time()
         raw_corner = scraper.get_corner()
         result = convert_race_result_info(raw_lap, raw_corner, race_code)
@@ -160,7 +160,7 @@ class ScrapingProvider:
         """
         race_id = race_code_to_race_id(race_code)
         self._logger.debug("ResultPageScraperで払戻情報をスクレイピング: race_id=%s", race_id)
-        scraper = ResultPageScraper(race_id)
+        scraper = ResultPageScraper(race_id, logger=self._logger)
         result = convert_payoff(scraper, race_code)
         self._logger.info("払戻情報の取得が完了: race_code=%s", race_code)
         return result
@@ -175,7 +175,7 @@ class ScrapingProvider:
             pd.DataFrame: 過去成績（出走回数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
         self._logger.debug("HorsePageScraperで過去成績をスクレイピング: horse_id=%s", horse_id)
-        scraper = HorsePageScraper(horse_id)
+        scraper = HorsePageScraper(horse_id, logger=self._logger)
         raw = scraper.get_past_performances()
         horse_basic_info = scraper.get_horse_basic_info()
         result = convert_past_performances(raw, horse_id, horse_basic_info)
@@ -192,7 +192,7 @@ class ScrapingProvider:
             pd.DataFrame: 競走馬マスタ情報（1行、HORSE_MASTER_COLUMNSのカラム）
         """
         self._logger.debug("HorsePageScraperで競走馬情報をスクレイピング: horse_id=%s", horse_id)
-        scraper = HorsePageScraper(horse_id)
+        scraper = HorsePageScraper(horse_id, logger=self._logger)
         past_perf = scraper.get_past_performances()
         horse_basic_info = scraper.get_horse_basic_info()
         result = convert_horse_master(past_perf, horse_id, horse_basic_info)
@@ -217,7 +217,7 @@ class ScrapingProvider:
             self._logger.debug(
                 "RaceScheduleScraperで開催スケジュールをスクレイピング: %s", current.isoformat()
             )
-            scraper = RaceScheduleScraper(current.year, current.month, current.day)
+            scraper = RaceScheduleScraper(current.year, current.month, current.day, logger=self._logger)
             raw = scraper.get_race_schedule()
             if len(raw) > 0:
                 converted = convert_schedule(raw)
