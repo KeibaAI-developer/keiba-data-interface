@@ -217,7 +217,9 @@ class ScrapingProvider:
             self._logger.debug(
                 "RaceScheduleScraperで開催スケジュールをスクレイピング: %s", current.isoformat()
             )
-            scraper = RaceScheduleScraper(current.year, current.month, current.day, logger=self._logger)
+            scraper = RaceScheduleScraper(
+                current.year, current.month, current.day, logger=self._logger
+            )
             raw = scraper.get_race_schedule()
             if len(raw) > 0:
                 converted = convert_schedule(raw)
