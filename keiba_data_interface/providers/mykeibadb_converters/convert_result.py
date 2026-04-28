@@ -23,7 +23,7 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
     「走破タイム - 後3ハロン」の昇順ランクで算出する。
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame

@@ -144,7 +144,7 @@ def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
     """HARAIMODOSHIの出力を統一スキーマに変換する.
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_haraimodoshi()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_haraimodoshi()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（PAYOFF_COLUMNSのカラム）

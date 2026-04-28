@@ -49,7 +49,7 @@ def convert_schedule(raw: pd.DataFrame) -> pd.DataFrame:
     """KAISAI_SCHEDULEの出力を統一スキーマに変換する.
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_kaisai_schedule()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_kaisai_schedule()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（SCHEDULE_COLUMNSのカラム）

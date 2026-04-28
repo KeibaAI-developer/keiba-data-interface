@@ -18,7 +18,7 @@ def convert_past_performances(raw: pd.DataFrame) -> pd.DataFrame:
     単勝人気順の再計算は適用しない。新馬の場合は0行のDataFrameを返す。
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_RACE_INFO_COLUMNSのカラム）

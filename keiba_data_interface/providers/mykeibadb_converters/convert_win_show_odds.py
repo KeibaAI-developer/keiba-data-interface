@@ -42,8 +42,8 @@ def convert_win_show_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -
     片方が空の場合はもう片方のみから組み立てる。
 
     Args:
-        raw_tansho (pd.DataFrame): OddsGetter.get_odds1_tansho()の出力（convert_codes=True）
-        raw_fukusho (pd.DataFrame): OddsGetter.get_odds1_fukusho()の出力（convert_codes=True）
+        raw_tansho (pd.DataFrame): OddsGetter.get_odds1_tansho()の出力（convert_codes=False）
+        raw_fukusho (pd.DataFrame): OddsGetter.get_odds1_fukusho()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（ODDS_COLUMNSのカラム）
