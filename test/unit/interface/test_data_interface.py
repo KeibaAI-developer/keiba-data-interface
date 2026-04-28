@@ -37,13 +37,13 @@ def test_create_mykeibadb_provider() -> None:
         assert isinstance(interface._provider, MykeibaDBProvider)
 
 
-def test_get_race_info_delegates(
+def test_get_race_basic_info_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:
-    """get_race_infoがProviderに委譲される."""
+    """get_race_basic_infoがProviderに委譲される."""
     interface, mock_provider = interface_with_mock
-    result = interface.get_race_info("2025050206021211")
-    mock_provider.get_race_info.assert_called_once_with("2025050206021211")
+    result = interface.get_race_basic_info("2025050206021211")
+    mock_provider.get_race_basic_info.assert_called_once_with("2025050206021211")
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [1]}))
 
 

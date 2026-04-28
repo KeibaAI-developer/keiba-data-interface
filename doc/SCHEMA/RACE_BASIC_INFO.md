@@ -2,7 +2,7 @@
 
 出走前に得られるレースの基本情報。1行のDataFrame。
 
-関数: `DataInterface.get_race_info()`
+関数: `DataInterface.get_race_basic_info()`
 
 対応元:
 - mykeibadb: `RACE_SHOSAI`（`RECORD_SHUBETSU_ID`〜`DIRT_BABAJOTAI_CODE`）

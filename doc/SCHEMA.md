@@ -31,7 +31,7 @@ keiba-data-interfaceは、keiba-scraping（netkeiba）とmykeibadb-python（JRA-
 
 | テーブル名 | 関数 | 行数 |
 |:----------|:-----|:-----|
-| [レース基本情報](./SCHEMA/RACE_INFO.md) | `get_race_info()` | 1行 |
+| [レース基本情報](./SCHEMA/RACE_BASIC_INFO.md) | `get_race_basic_info()` | 1行 |
 | [レース結果情報](./SCHEMA/RACE_RESULT_INFO.md) | `get_race_result_info()` | 1行 |
 | [馬毎レース情報](./SCHEMA/RACE_INFO_BY_HORSE.md) | `get_entry()` / `get_result()` / `get_past_performances()` | 出走頭数/過去レース分の行数 |
 | [競走馬マスタ](./SCHEMA/HORSE_MASTER.md) | `get_horse_master()` | 1行 |

@@ -16,7 +16,7 @@ class DataProvider(Protocol):
     各データソース（scraping, mykeibadb）はこのProtocolを実装する。
     """
 
-    def get_race_info(self, race_code: str) -> pd.DataFrame:
+    def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
         Args:

@@ -40,7 +40,7 @@ class DataInterface:
         """
         self._provider: DataProvider = self._create_provider(provider)
 
-    def get_race_info(self, race_code: str) -> pd.DataFrame:
+    def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
         Args:
@@ -49,7 +49,7 @@ class DataInterface:
         Returns:
             レース基本情報のDataFrame（1行）
         """
-        return self._provider.get_race_info(race_code)
+        return self._provider.get_race_basic_info(race_code)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
