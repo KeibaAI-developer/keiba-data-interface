@@ -13,7 +13,6 @@ from keiba_data_interface.utils.race_code import (
     extract_race_code_parts,
     keibajo_code_to_name,
     keibajo_name_to_code,
-    race_code_to_kaisai_code,
     race_code_to_race_id,
 )
 
@@ -28,7 +27,6 @@ __all__ = [
     "extract_race_code_parts",
     "keibajo_code_to_name",
     "keibajo_name_to_code",
-    "race_code_to_kaisai_code",
     "race_code_to_race_id",
     "split_zogen",
 ]
