@@ -38,7 +38,7 @@ def convert_race_result_info(raw: pd.DataFrame) -> pd.DataFrame:
     ハロンタイム（0.1秒→秒変換）、コーナー通過順を統一スキーマに変換する。
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame

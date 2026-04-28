@@ -19,7 +19,7 @@ from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 from keiba_data_interface.utils.race_code import extract_race_code_parts, keibajo_name_to_code
 
 
-def convert_race_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
+def convert_race_basic_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     """scraping出力を統一スキーマに変換する.
 
     Args:

@@ -328,7 +328,7 @@ SCHEDULE_COLUMNS: list[str] = _generate_schedule_columns()
 
 
 # 競走馬情報テーブルのカラム名リスト（228カラム）
-_KETTO_NAMES: list[str] = [
+KETTO_NAMES: list[str] = [
     "父",
     "母",
     "父父",
@@ -345,9 +345,9 @@ _KETTO_NAMES: list[str] = [
     "母母母",
 ]
 
-_CHAKU_SUFFIXES: list[str] = ["1着", "2着", "3着", "4着", "5着", "着外"]
+CHAKU_SUFFIXES: list[str] = ["1着", "2着", "3着", "4着", "5着", "着外"]
 
-_BABA_BETSU_PREFIXES: list[str] = [
+BABA_BETSU_PREFIXES: list[str] = [
     "芝直",
     "芝右",
     "芝左",
@@ -357,7 +357,7 @@ _BABA_BETSU_PREFIXES: list[str] = [
     "障害",
 ]
 
-_BABA_JOTAI_PREFIXES: list[str] = [
+BABA_JOTAI_PREFIXES: list[str] = [
     "芝良",
     "芝稍",
     "芝重",
@@ -372,7 +372,7 @@ _BABA_JOTAI_PREFIXES: list[str] = [
     "障不",
 ]
 
-_KYORI_BETSU_PREFIXES: list[str] = [
+KYORI_BETSU_PREFIXES: list[str] = [
     "芝16下",
     "芝22下",
     "芝22超",
@@ -404,7 +404,7 @@ def _generate_horse_master_columns() -> list[str]:
         "品種コード",
         "毛色コード",
     ]
-    for name in _KETTO_NAMES:
+    for name in KETTO_NAMES:
         cols.extend([f"{name}繁殖登録番号", f"{name}馬名"])
     cols.extend(
         [
@@ -426,16 +426,16 @@ def _generate_horse_master_columns() -> list[str]:
         ]
     )
     for prefix in ["総合", "中央合計"]:
-        for suf in _CHAKU_SUFFIXES:
+        for suf in CHAKU_SUFFIXES:
             cols.append(f"{prefix}{suf}")
-    for prefix in _BABA_BETSU_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in BABA_BETSU_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             cols.append(f"{prefix}{suf}")
-    for prefix in _BABA_JOTAI_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in BABA_JOTAI_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             cols.append(f"{prefix}{suf}")
-    for prefix in _KYORI_BETSU_PREFIXES:
-        for suf in _CHAKU_SUFFIXES:
+    for prefix in KYORI_BETSU_PREFIXES:
+        for suf in CHAKU_SUFFIXES:
             cols.append(f"{prefix}{suf}")
     cols.extend(
         [

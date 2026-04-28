@@ -21,12 +21,6 @@ class DataInterface:
     """競馬データ統一インターフェース.
 
     データソースを選択し、統一されたインターフェースでデータを取得する。
-
-    Args:
-        provider: データソース名（'scraping' または 'mykeibadb'）
-
-    Raises:
-        KeibaDataInterfaceError: 不正なprovider名が指定された場合
     """
 
     def __init__(self, provider: str) -> None:
@@ -38,7 +32,7 @@ class DataInterface:
         Raises:
             KeibaDataInterfaceError: 不正なprovider名が指定された場合
         """
-        self._provider: DataProvider = self._create_provider(provider)
+        self._provider: DataProvider = _create_provider(provider)
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -110,7 +104,7 @@ class DataInterface:
         """過去成績（馬柱）を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id: 馬ID（血統登録番号）
 
         Returns:
             過去成績のDataFrame
@@ -121,7 +115,7 @@ class DataInterface:
         """競走馬情報を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id: 馬ID（血統登録番号）
 
         Returns:
             競走馬情報のDataFrame（1行）
@@ -140,24 +134,23 @@ class DataInterface:
         """
         return self._provider.get_schedule(start_date, end_date)
 
-    def _create_provider(self, provider: str) -> DataProvider:
-        """Provider名に対応するProviderインスタンスを生成する.
 
-        Args:
-            provider: データソース名
+def _create_provider(provider: str) -> DataProvider:
+    """Provider名に対応するProviderインスタンスを生成する.
 
-        Returns:
-            DataProviderインスタンス
+    Args:
+        provider: データソース名
 
-        Raises:
-            KeibaDataInterfaceError: 不正なprovider名が指定された場合
-        """
-        if provider not in _PROVIDER_MAP:
-            valid = ", ".join(_PROVIDER_MAP)
-            raise KeibaDataInterfaceError(
-                f"不正なprovider名です: '{provider}' （有効な値: {valid}）"
-            )
-        module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
-        module = importlib.import_module(module_path)
-        provider_class = getattr(module, class_name)
-        return provider_class()
+    Returns:
+        DataProviderインスタンス
+
+    Raises:
+        KeibaDataInterfaceError: 不正なprovider名が指定された場合
+    """
+    if provider not in _PROVIDER_MAP:
+        valid = ", ".join(_PROVIDER_MAP)
+        raise KeibaDataInterfaceError(f"不正なprovider名です: '{provider}' （有効な値: {valid}）")
+    module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    provider_class = getattr(module, class_name)
+    return provider_class()

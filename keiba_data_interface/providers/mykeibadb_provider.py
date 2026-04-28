@@ -14,7 +14,7 @@ from keiba_data_interface.providers.mykeibadb_converters import (
     convert_horse_master,
     convert_past_performances,
     convert_payoff,
-    convert_race_info,
+    convert_race_basic_info,
     convert_race_result_info,
     convert_result,
     convert_schedule,
@@ -28,6 +28,7 @@ class MykeibaDBProvider:
     Attributes:
         _race_getter (RaceGetter): JRA-VANデータ取得用のRaceGetterインスタンス
         _odds_getter (OddsGetter): JRA-VANオッズ取得用のOddsGetterインスタンス
+        _master_getter (MasterGetter): JRA-VANマスタ取得用のMasterGetterインスタンス
     """
 
     def __init__(self) -> None:
@@ -48,7 +49,7 @@ class MykeibaDBProvider:
             pd.DataFrame: レース基本情報（1行、RACE_INFO_COLUMNSのカラム）
         """
         raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=False)
-        return convert_race_info(raw)
+        return convert_race_basic_info(raw)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.

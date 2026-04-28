@@ -129,11 +129,11 @@ RACE_INFO_RENAME: dict[str, str] = {
 }
 
 
-def convert_race_info(raw: pd.DataFrame) -> pd.DataFrame:
+def convert_race_basic_info(raw: pd.DataFrame) -> pd.DataFrame:
     """RACE_SHOSAIの出力を統一スキーマに変換する.
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame

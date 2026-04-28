@@ -15,7 +15,7 @@ from keiba_data_interface.providers.scraping_converters.common import (
 )
 from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
-from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
+from keiba_data_interface.utils.dataframe import apply_types, ensure_columns, recalculate_ninkijun
 from keiba_data_interface.utils.race_code import extract_race_code_parts
 
 
@@ -142,24 +142,8 @@ def convert_result(
     result = pd.DataFrame(rows)
     result = ensure_columns(result, HORSE_RACE_INFO_COLUMNS)
     result = apply_types(result, HORSE_RACE_INFO_TYPES)
-    result = _recalculate_ninkijun(result)
+    result = recalculate_ninkijun(result)
     return result
-
-
-def _recalculate_ninkijun(df: pd.DataFrame) -> pd.DataFrame:
-    """単勝オッズから単勝人気順を再計算する.
-
-    同一オッズの馬には同じ人気順を付与する。
-    単勝オッズがNaN（出走取消等）の馬は単勝人気順もNaNにする。
-    """
-    if "単勝オッズ" not in df.columns or "単勝人気順" not in df.columns:
-        return df
-    valid_mask = df["単勝オッズ"].notna()
-    if valid_mask.any():
-        odds = df.loc[valid_mask, "単勝オッズ"]
-        df.loc[valid_mask, "単勝人気順"] = odds.rank(method="min", ascending=True).astype("Int64")
-    df.loc[~valid_mask, "単勝人気順"] = pd.NA
-    return df
 
 
 def _parse_chakujun(value: Any) -> int | None:

@@ -23,7 +23,7 @@ from keiba_data_interface.providers.scraping_converters import (
     convert_odds,
     convert_past_performances,
     convert_payoff,
-    convert_race_info,
+    convert_race_basic_info,
     convert_race_result_info,
     convert_result,
     convert_schedule,
@@ -52,7 +52,7 @@ class ScrapingProvider:
         race_id = race_code_to_race_id(race_code)
         scraper = EntryPageScraper(race_id)
         raw = scraper.get_race_info()
-        return convert_race_info(raw, race_code)
+        return convert_race_basic_info(raw, race_code)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
@@ -80,6 +80,7 @@ class ScrapingProvider:
             pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム, 馬番順）
         """
         race_id = race_code_to_race_id(race_code)
+        # JRAにオッズページがない場合（レース翌日以降など）はnetkeibaにフォールバックする
         try:
             raw = _run_async(scrape_odds_from_jra(race_id))
         except PageNotFoundError:

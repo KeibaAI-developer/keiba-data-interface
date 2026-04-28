@@ -28,6 +28,31 @@ def ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return result[columns].copy()
 
 
+def recalculate_ninkijun(df: pd.DataFrame) -> pd.DataFrame:
+    """単勝オッズから単勝人気順を再計算する.
+
+    同一オッズの馬には同じ人気順を付与する。
+    単勝オッズがNaNの馬は単勝人気順もNaNにする。
+    入力DataFrameは変更しない。
+
+    Args:
+        df (pd.DataFrame): 単勝オッズカラムを含むDataFrame
+
+    Returns:
+        pd.DataFrame: 単勝人気順が再計算された新しいDataFrame
+    """
+    result = df.copy()
+    if "単勝オッズ" not in result.columns or "単勝人気順" not in result.columns:
+        return result
+    valid_mask = result["単勝オッズ"].notna()
+    if valid_mask.any():
+        result.loc[valid_mask, "単勝人気順"] = (
+            result.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
+        )
+    result.loc[~valid_mask, "単勝人気順"] = pd.NA
+    return result
+
+
 def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
     """型定義辞書に基づいてDataFrameの型を変換する.
 
@@ -48,7 +73,7 @@ def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
             is_numeric = pd.api.types.is_numeric_dtype(target_dtype)
             if is_numeric and result[col].dtype == object:
                 result[col] = result[col].map(
-                    lambda v: pd.NA if isinstance(v, str) and len(v) > 0 and v.strip() == "" else v
+                    lambda v: pd.NA if isinstance(v, str) and v.strip() == "" else v
                 )
             result[col] = result[col].astype(target_dtype)
     return result

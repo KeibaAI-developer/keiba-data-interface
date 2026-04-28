@@ -68,7 +68,7 @@ class DataProvider(Protocol):
         """過去成績（馬柱）を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id: 馬ID（血統登録番号）
         """
         ...
 
@@ -76,7 +76,7 @@ class DataProvider(Protocol):
         """競走馬情報を取得する.
 
         Args:
-            horse_id: 馬ID
+            horse_id: 馬ID（血統登録番号）
         """
         ...
 

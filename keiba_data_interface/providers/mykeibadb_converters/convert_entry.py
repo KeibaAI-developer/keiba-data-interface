@@ -156,7 +156,7 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
     異常区分コードは元の値をそのまま保持する。
 
     Args:
-        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=True）
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（convert_codes=False）
 
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame
