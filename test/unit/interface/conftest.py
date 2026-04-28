@@ -13,7 +13,7 @@ class _MockProvider:
 
     def __init__(self) -> None:
         """コンストラクタ."""
-        self.get_race_info = MagicMock(return_value=pd.DataFrame({"col": [1]}))
+        self.get_race_basic_info = MagicMock(return_value=pd.DataFrame({"col": [1]}))
         self.get_entry = MagicMock(return_value=pd.DataFrame({"col": [2]}))
         self.get_win_show_odds = MagicMock(return_value=pd.DataFrame({"col": [3]}))
         self.get_result = MagicMock(return_value=pd.DataFrame({"col": [4]}))

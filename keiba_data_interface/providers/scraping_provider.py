@@ -37,7 +37,7 @@ from keiba_data_interface.utils.race_code import race_code_to_race_id
 class ScrapingProvider:
     """keiba-scrapingを使用したデータ取得Provider."""
 
-    def get_race_info(self, race_code: str) -> pd.DataFrame:
+    def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
         16桁レースコードを12桁に変換してEntryPageScraperに渡し、

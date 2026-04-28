@@ -36,7 +36,7 @@ class MykeibaDBProvider:
         self._odds_getter = OddsGetter()
         self._master_getter = MasterGetter()
 
-    def get_race_info(self, race_code: str) -> pd.DataFrame:
+    def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
         RaceGetter.get_race_shosai()でレース詳細を取得し、統一スキーマに変換する。

@@ -47,7 +47,7 @@ from keiba_data_interface.providers.scraping_provider import ScrapingProvider  #
 
 # メソッドごとのscraping○カラム
 SCRAPING_COLUMNS_BY_METHOD: dict[str, list[str]] = {
-    "get_race_info": RACE_INFO_SCRAPING_COLUMNS,
+    "get_race_basic_info": RACE_INFO_SCRAPING_COLUMNS,
     "get_entry": [c for c in HORSE_RACE_INFO_SCRAPING_COLUMNS if c not in ENTRY_ONLY_EXCLUDE],
     "get_result": HORSE_RACE_INFO_SCRAPING_COLUMNS,
     "get_race_result_info": RACE_RESULT_INFO_SCRAPING_COLUMNS,
@@ -63,7 +63,7 @@ SCRAPING_COLUMNS_BY_METHOD: dict[str, list[str]] = {
 
 # メソッドごとの既知差異カラム
 KNOWN_DIFF_BY_METHOD: dict[str, set[str]] = {
-    "get_race_info": KNOWN_DIFF_RACE_INFO,
+    "get_race_basic_info": KNOWN_DIFF_RACE_INFO,
     "get_entry": KNOWN_DIFF_HORSE_RACE,
     "get_result": KNOWN_DIFF_HORSE_RACE,
     "get_race_result_info": KNOWN_DIFF_RACE_RESULT_INFO,
@@ -160,9 +160,9 @@ def _get_scraping_race_outputs(
     ):
         provider = ScrapingProvider()
         try:
-            outputs["get_race_info"] = provider.get_race_info(race_code)
+            outputs["get_race_basic_info"] = provider.get_race_basic_info(race_code)
         except Exception as e:
-            outputs["get_race_info_error"] = str(e)
+            outputs["get_race_basic_info_error"] = str(e)
 
         if has_entry_pkl:
             try:
@@ -230,9 +230,9 @@ def _get_mykeibadb_race_outputs(
     ):
         provider = MykeibaDBProvider()
         try:
-            outputs["get_race_info"] = provider.get_race_info(race_code)
+            outputs["get_race_basic_info"] = provider.get_race_basic_info(race_code)
         except Exception as e:
-            outputs["get_race_info_error"] = str(e)
+            outputs["get_race_basic_info_error"] = str(e)
         try:
             outputs["get_entry"] = provider.get_entry(race_code)
         except Exception as e:
@@ -624,7 +624,7 @@ def analyze_races(test_cases: dict[str, Any]) -> list[DiffRecord]:
 
         # 各メソッドの比較
         methods_config = [
-            ("get_race_info", None),
+            ("get_race_basic_info", None),
             ("get_entry", "馬番"),
             ("get_result", "馬番"),
             ("get_race_result_info", None),

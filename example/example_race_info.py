@@ -49,7 +49,7 @@ def main() -> None:
     results: dict[str, pd.DataFrame] = {}
     for provider in ("scraping", "mykeibadb"):
         di = DataInterface(provider)
-        df = di.get_race_info(race_code)
+        df = di.get_race_basic_info(race_code)
         results[provider] = df
         print(f"\n【レース基本情報 ({provider})】")
         for col in df.columns:

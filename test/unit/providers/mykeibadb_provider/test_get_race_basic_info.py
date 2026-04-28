@@ -1,4 +1,4 @@
-"""MykeibaDBProvider.get_race_info関数のテスト."""
+"""MykeibaDBProvider.get_race_basic_info関数のテスト."""
 
 from unittest.mock import MagicMock
 
@@ -20,7 +20,7 @@ def test_output_columns_match_schema(
     """出力DataFrameのカラム構成がRACE_INFO_COLUMNSと一致する."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     assert list(result.columns) == RACE_INFO_COLUMNS
 
@@ -33,7 +33,7 @@ def test_output_is_single_row(
     """出力DataFrameが1行である."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     assert len(result) == 1
 
@@ -46,7 +46,7 @@ def test_race_getter_called_with_correct_args(
     """RaceGetter.get_race_shosai()が正しい引数で呼ばれる."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    provider.get_race_info(race_code)
+    provider.get_race_basic_info(race_code)
 
     mock_race_getter.get_race_shosai.assert_called_once_with(
         race_code=race_code, convert_codes=False
@@ -61,7 +61,7 @@ def test_race_code_preserved(
     """レースコードがそのまま格納される."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     assert result.iloc[0]["レースコード"] == race_code
 
@@ -74,7 +74,7 @@ def test_hasso_jikoku_converted(
     """発走時刻が"HHMM"から"HH:MM"に変換される."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df(hasso_jikoku="1540")
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     assert result.iloc[0]["発走時刻"] == "15:40"
 
@@ -97,7 +97,7 @@ def test_hasso_jikoku_various_times(
     """さまざまな発走時刻が正しく変換される."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df(hasso_jikoku=hasso_jikoku)
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     assert result.iloc[0]["発走時刻"] == expected
 
@@ -110,7 +110,7 @@ def test_code_converted_columns_renamed(
     """コード変換済みカラムが正しくリネームされる."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     row = result.iloc[0]
     assert row["競馬場コード"] == "06"
@@ -136,7 +136,7 @@ def test_direct_rename_columns(
     """直接リネームされるカラムが正しく変換される."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     row = result.iloc[0]
     assert row["開催年"] == "2025"
@@ -159,7 +159,7 @@ def test_prize_columns(
     """賞金カラムがそのまま百円単位で格納される."""
     mock_race_getter.get_race_shosai.return_value = create_race_shosai_df()
 
-    result = provider.get_race_info(race_code)
+    result = provider.get_race_basic_info(race_code)
 
     row = result.iloc[0]
     assert row["本賞金1着"] == 50000000

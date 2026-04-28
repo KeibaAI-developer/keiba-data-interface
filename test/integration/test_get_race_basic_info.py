@@ -1,4 +1,4 @@
-"""get_race_info: 両Providerの出力一致テスト."""
+"""get_race_basic_info: 両Providerの出力一致テスト."""
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
@@ -15,32 +15,32 @@ from .conftest import RaceFixtures
 
 
 # 正常系
-def test_get_race_info_columns_match(
+def test_get_race_basic_info_columns_match(
     scraping_provider_with_mocks: tuple[ScrapingProvider, RaceFixtures],
     mykeibadb_provider_with_mocks: tuple[MykeibaDBProvider, RaceFixtures],
 ) -> None:
-    """get_race_info: 両Providerの出力DataFrameが同一カラム構成を持つ."""
+    """get_race_basic_info: 両Providerの出力DataFrameが同一カラム構成を持つ."""
     s_provider, fixtures = scraping_provider_with_mocks
     m_provider, _ = mykeibadb_provider_with_mocks
     rc = fixtures.race_code
 
-    s_df = s_provider.get_race_info(rc)
-    m_df = m_provider.get_race_info(rc)
+    s_df = s_provider.get_race_basic_info(rc)
+    m_df = m_provider.get_race_basic_info(rc)
 
     assert_columns_match(s_df, m_df, RACE_INFO_COLUMNS, "レース基本情報")
 
 
-def test_get_race_info_common_values_match(
+def test_get_race_basic_info_common_values_match(
     scraping_provider_with_mocks: tuple[ScrapingProvider, RaceFixtures],
     mykeibadb_provider_with_mocks: tuple[MykeibaDBProvider, RaceFixtures],
 ) -> None:
-    """get_race_info: 共通カラムの型と値が一致する."""
+    """get_race_basic_info: 共通カラムの型と値が一致する."""
     s_provider, fixtures = scraping_provider_with_mocks
     m_provider, _ = mykeibadb_provider_with_mocks
     rc = fixtures.race_code
 
-    s_df = s_provider.get_race_info(rc)
-    m_df = m_provider.get_race_info(rc)
+    s_df = s_provider.get_race_basic_info(rc)
+    m_df = m_provider.get_race_basic_info(rc)
 
     assert_common_values_match(
         s_df,
@@ -51,13 +51,13 @@ def test_get_race_info_common_values_match(
     )
 
 
-def test_get_race_info_scraping_nan_columns(
+def test_get_race_basic_info_scraping_nan_columns(
     scraping_provider_with_mocks: tuple[ScrapingProvider, RaceFixtures],
 ) -> None:
-    """get_race_info: scraping×のカラムがNaNである."""
+    """get_race_basic_info: scraping×のカラムがNaNである."""
     s_provider, fixtures = scraping_provider_with_mocks
     rc = fixtures.race_code
 
-    s_df = s_provider.get_race_info(rc)
+    s_df = s_provider.get_race_basic_info(rc)
     nan_cols = get_scraping_only_columns(RACE_INFO_COLUMNS, RACE_INFO_SCRAPING_COLUMNS)
     assert_scraping_nan_columns(s_df, nan_cols, "レース基本情報")
