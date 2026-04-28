@@ -297,5 +297,8 @@ def mykeibadb_provider_with_mocks(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=mocks["odds_getter"],
         ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
+        ),
     ):
         yield MykeibaDBProvider(), race_fixtures

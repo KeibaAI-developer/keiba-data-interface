@@ -49,6 +49,9 @@ def test_get_schedule_columns_match(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=MagicMock(),
         ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
+        ),
     ):
         m_provider = MykeibaDBProvider()
         m_df = m_provider.get_schedule(target_date, target_date)
@@ -87,6 +90,9 @@ def test_get_schedule_common_values_match(
         patch(
             "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
             return_value=MagicMock(),
+        ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
         ),
     ):
         m_provider = MykeibaDBProvider()
