@@ -22,11 +22,7 @@ from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 
 _CHAKU_COUNT_KEYS = ["1着", "2着", "3着", "4着", "5着", "着外"]
 
-_BABA_TYPE_MAP: dict[str, str] = {
-    "芝": "芝",
-    "ダ": "ダ",
-    "障": "障",
-}
+_VALID_BABA_TYPES: set[str] = {"芝", "ダ", "障"}
 
 _BABA_JOTAI_MAP: dict[tuple[str, str], str] = {
     ("芝", "良"): "芝良",
@@ -163,9 +159,7 @@ def _is_chuo(row: pd.Series) -> bool:
 def _get_shiba_da(row: pd.Series) -> str | None:
     """芝ダ区分を返す（芝/ダ/障のいずれか）."""
     val = str(row.get("芝ダ", "")).strip()
-    if val in _BABA_TYPE_MAP:
-        return _BABA_TYPE_MAP[val]
-    return None
+    return val if val in _VALID_BABA_TYPES else None
 
 
 def _get_direction_prefix(shiba_da: str | None, row: pd.Series) -> str | None:
