@@ -1,6 +1,7 @@
 """ScrapingProvider: keiba-scrapingを使用したデータ取得Provider."""
 
 import asyncio
+import logging
 from collections.abc import Coroutine
 from datetime import date, timedelta
 from typing import TypeVar
@@ -37,6 +38,14 @@ from keiba_data_interface.utils.race_code import race_code_to_race_id
 class ScrapingProvider:
     """keiba-scrapingを使用したデータ取得Provider."""
 
+    def __init__(self, logger: logging.Logger | None = None) -> None:
+        """コンストラクタ.
+
+        Args:
+            logger: ロガーインスタンス
+        """
+        self._logger = logger or logging.getLogger(__name__)
+
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
@@ -50,9 +59,12 @@ class ScrapingProvider:
             pd.DataFrame: レース基本情報（1行、RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
+        self._logger.debug("EntryPageScraperでレース情報をスクレイピング: race_id=%s", race_id)
         scraper = EntryPageScraper(race_id)
         raw = scraper.get_race_info()
-        return convert_race_basic_info(raw, race_code)
+        result = convert_race_basic_info(raw, race_code)
+        self._logger.info("レース基本情報の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
@@ -64,9 +76,12 @@ class ScrapingProvider:
             pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
+        self._logger.debug("EntryPageScraperで出馬表をスクレイピング: race_id=%s", race_id)
         scraper = EntryPageScraper(race_id)
         raw = scraper.get_entry()
-        return convert_entry(raw, race_code)
+        result = convert_entry(raw, race_code)
+        self._logger.info("出馬表の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
@@ -82,11 +97,14 @@ class ScrapingProvider:
         race_id = race_code_to_race_id(race_code)
         # JRAにオッズページがない場合（レース翌日以降など）はnetkeibaにフォールバックする
         try:
+            self._logger.debug("JRAから単複オッズをスクレイピング: race_id=%s", race_id)
             raw = _run_async(scrape_odds_from_jra(race_id))
         except PageNotFoundError:
+            self._logger.debug("JRAでオッズページが見つからないためnetkeibaから取得: race_id=%s", race_id)
             raw = scrape_odds_from_netkeiba(race_id)
         df = convert_odds(raw, race_code)
         df = df.sort_values("馬番").reset_index(drop=True)
+        self._logger.info("単複オッズの取得が完了: race_code=%s", race_code)
         return df
 
     def get_result(self, race_code: str) -> pd.DataFrame:
@@ -101,13 +119,17 @@ class ScrapingProvider:
         race_id = race_code_to_race_id(race_code)
 
         # 賞金情報を取得して着順→獲得本賞金マッピングを構築
+        self._logger.debug("EntryPageScraperで賞金情報をスクレイピング: race_id=%s", race_id)
         scraper_entry = EntryPageScraper(race_id)
         raw_race_info = scraper_entry.get_race_info()
         prize_map = build_prize_map(raw_race_info)
 
+        self._logger.debug("ResultPageScraperでレース結果をスクレイピング: race_id=%s", race_id)
         scraper = ResultPageScraper(race_id)
         raw = scraper.get_result()
-        return convert_result(raw, race_code, prize_map)
+        result = convert_result(raw, race_code, prize_map)
+        self._logger.info("レース結果の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
@@ -119,10 +141,13 @@ class ScrapingProvider:
             pd.DataFrame: レース結果情報（1行、RACE_RESULT_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
+        self._logger.debug("ResultPageScraperでラップ・コーナー情報をスクレイピング: race_id=%s", race_id)
         scraper = ResultPageScraper(race_id)
         raw_lap = scraper.get_lap_time()
         raw_corner = scraper.get_corner()
-        return convert_race_result_info(raw_lap, raw_corner, race_code)
+        result = convert_race_result_info(raw_lap, raw_corner, race_code)
+        self._logger.info("レース結果情報の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_payoff(self, race_code: str) -> pd.DataFrame:
         """払戻情報を取得する.
@@ -134,8 +159,11 @@ class ScrapingProvider:
             pd.DataFrame: 払戻情報（1行、PAYOFF_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
+        self._logger.debug("ResultPageScraperで払戻情報をスクレイピング: race_id=%s", race_id)
         scraper = ResultPageScraper(race_id)
-        return convert_payoff(scraper, race_code)
+        result = convert_payoff(scraper, race_code)
+        self._logger.info("払戻情報の取得が完了: race_code=%s", race_code)
+        return result
 
     def get_past_performances(self, horse_id: str) -> pd.DataFrame:
         """過去成績（馬柱）を取得する.
@@ -146,10 +174,13 @@ class ScrapingProvider:
         Returns:
             pd.DataFrame: 過去成績（出走回数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
+        self._logger.debug("HorsePageScraperで過去成績をスクレイピング: horse_id=%s", horse_id)
         scraper = HorsePageScraper(horse_id)
         raw = scraper.get_past_performances()
         horse_basic_info = scraper.get_horse_basic_info()
-        return convert_past_performances(raw, horse_id, horse_basic_info)
+        result = convert_past_performances(raw, horse_id, horse_basic_info)
+        self._logger.info("過去成績の取得が完了: horse_id=%s", horse_id)
+        return result
 
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬マスタを取得する.
@@ -160,10 +191,13 @@ class ScrapingProvider:
         Returns:
             pd.DataFrame: 競走馬マスタ情報（1行、HORSE_MASTER_COLUMNSのカラム）
         """
+        self._logger.debug("HorsePageScraperで競走馬情報をスクレイピング: horse_id=%s", horse_id)
         scraper = HorsePageScraper(horse_id)
         past_perf = scraper.get_past_performances()
         horse_basic_info = scraper.get_horse_basic_info()
-        return convert_horse_master(past_perf, horse_id, horse_basic_info)
+        result = convert_horse_master(past_perf, horse_id, horse_basic_info)
+        self._logger.info("競走馬情報の取得が完了: horse_id=%s", horse_id)
+        return result
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
@@ -180,6 +214,9 @@ class ScrapingProvider:
         all_rows: list[pd.DataFrame] = []
         current = start
         while current <= end:
+            self._logger.debug(
+                "RaceScheduleScraperで開催スケジュールをスクレイピング: %s", current.isoformat()
+            )
             scraper = RaceScheduleScraper(current.year, current.month, current.day)
             raw = scraper.get_race_schedule()
             if len(raw) > 0:
@@ -189,6 +226,9 @@ class ScrapingProvider:
         if not all_rows:
             return apply_types(ensure_columns(pd.DataFrame(), SCHEDULE_COLUMNS), SCHEDULE_TYPES)
         result = pd.concat(all_rows, ignore_index=True)
+        self._logger.info(
+            "開催スケジュールの取得が完了: start_date=%s, end_date=%s", start_date, end_date
+        )
         return result
 
 
