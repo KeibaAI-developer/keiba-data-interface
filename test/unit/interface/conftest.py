@@ -33,6 +33,6 @@ def mock_provider() -> _MockProvider:
 @pytest.fixture()
 def interface_with_mock(mock_provider: _MockProvider) -> tuple[DataInterface, _MockProvider]:
     """MockProviderを使用するDataInterfaceとMockProviderのタプルを返すfixture."""
-    with patch.object(DataInterface, "_create_provider", return_value=mock_provider):
+    with patch("keiba_data_interface.interface._create_provider", return_value=mock_provider):
         interface = DataInterface(provider="scraping")
     return interface, mock_provider
