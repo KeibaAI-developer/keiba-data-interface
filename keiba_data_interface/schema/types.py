@@ -369,7 +369,7 @@ def _generate_horse_master_types() -> dict[str, str]:
         "毛色コード": "object",
     }
     for name in _KETTO_NAMES:
-        types[f"{name}血統登録番号"] = "object"
+        types[f"{name}繁殖登録番号"] = "object"
         types[f"{name}馬名"] = "object"
     types.update(
         {
