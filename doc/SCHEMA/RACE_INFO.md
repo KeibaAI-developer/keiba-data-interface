@@ -5,7 +5,7 @@
 関数: `DataInterface.get_race_info()`
 
 対応元:
-- mykeibadb: `RACE_SHOSAI`（`RECORD_SHUBETSU_ID``〜DIRT_BABAJOTAI_CODE`）
+- mykeibadb: `RACE_SHOSAI`（`RECORD_SHUBETSU_ID`〜`DIRT_BABAJOTAI_CODE`）
 - scraping: `EntryPageScraper.get_race_info()`
 
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
