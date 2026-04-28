@@ -90,6 +90,7 @@ _VALUE_CONVERT_RENAME: dict[str, str] = {
 _TENTH_SENTINELS: dict[str, int] = {
     "tansho_odds": 0,  # 0=オッズ未設定（取消等）
     "kohan_3f": 999,  # 999=計測不能（競走中止等）
+    "kohan_4f": 0,  # 0=データなし
 }
 
 
