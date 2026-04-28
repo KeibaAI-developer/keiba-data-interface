@@ -35,7 +35,10 @@ class DataInterface:
             KeibaDataInterfaceError: 不正なprovider名が指定された場合
         """
         self._logger = logger or logging.getLogger(__name__)
-        self._provider: DataProvider = _create_provider(provider, self._logger)
+        provider_logger = self._logger.getChild(provider)
+        self._provider: DataProvider = _create_provider(
+            provider, provider_logger
+        )
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
