@@ -3,12 +3,12 @@
 import pytest
 
 from keiba_data_interface.schema.columns import (
-    RACE_INFO_BY_HORSE_COLUMNS,
-    WIN_SHOW_ODDS_COLUMNS,
     PAYOFF_COLUMNS,
     RACE_BASIC_INFO_COLUMNS,
+    RACE_INFO_BY_HORSE_COLUMNS,
     RACE_RESULT_INFO_COLUMNS,
     SCHEDULE_COLUMNS,
+    WIN_SHOW_ODDS_COLUMNS,
 )
 from keiba_data_interface.schema.types import (
     HORSE_RACE_INFO_TYPES,
