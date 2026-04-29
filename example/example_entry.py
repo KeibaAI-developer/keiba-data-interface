@@ -35,7 +35,7 @@ def _show_diff(df1: pd.DataFrame, df2: pd.DataFrame) -> None:
         print(f"  行数が異なります（scraping: {len(df1)}, mykeibadb: {len(df2)}）")
         return
     any_diff = False
-    for idx in range(3):
+    for idx in range(min(3, len(df1))):
         umaban = df1["馬番"].iloc[idx]
         row_diffs: list[str] = []
         for col in df1.columns:
@@ -76,8 +76,11 @@ def main() -> None:
         results[provider] = df
         print(f"\n【出馬表 ({provider})】")
         print(f"  出走頭数: {len(df)}頭")
-        print("  （馬番1のデータ）")
-        _show_row(df.iloc[0])
+        if df.empty:
+            print("  データなし")
+        else:
+            print("  （馬番1のデータ）")
+            _show_row(df.iloc[0])
 
     print("\n【差分】")
     _show_diff(results["scraping"], results["mykeibadb"])
