@@ -4,6 +4,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 指定した馬IDの競走馬情報を取得して表示・比較する。
 """
 
+import argparse
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -46,7 +48,10 @@ def main() -> None:
 
     馬IDを指定してDataInterfaceで競走馬情報を取得し、表示・比較する。
     """
-    horse_id = "2022105081"
+    parser = argparse.ArgumentParser(description="競走馬情報取得のサンプルスクリプト")
+    parser.add_argument("--horse-id", default="2022105081", help="馬ID")
+    args = parser.parse_args()
+    horse_id = args.horse_id
 
     print(f"馬ID: {horse_id}")
     print("=" * 80)

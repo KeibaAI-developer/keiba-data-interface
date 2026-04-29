@@ -4,6 +4,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 指定した馬IDの過去成績を取得して表示・比較する。
 """
 
+import argparse
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -26,7 +28,7 @@ def _show_diff(df1: pd.DataFrame, df2: pd.DataFrame) -> None:
     s = df1.reset_index(drop=True)
     m = df2.reset_index(drop=True)
     any_diff = False
-    for idx in range(3):
+    for idx in range(min(3, len(s))):
         row_diffs: list[str] = []
         for col in s.columns:
             s_val = s[col].iloc[idx]
@@ -51,8 +53,10 @@ def main() -> None:
 
     馬IDを指定してDataInterfaceで過去成績を取得し、表示・比較する。
     """
-    # 馬ID
-    horse_id = "2022105081"
+    parser = argparse.ArgumentParser(description="過去成績（馬柱）取得のサンプルスクリプト")
+    parser.add_argument("--horse-id", default="2022105081", help="馬ID")
+    args = parser.parse_args()
+    horse_id = args.horse_id
 
     print(f"馬ID: {horse_id}")
     print("=" * 80)

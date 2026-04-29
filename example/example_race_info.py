@@ -4,6 +4,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 指定したレースコードのレース基本情報を取得して表示・比較する。
 """
 
+import argparse
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -40,8 +42,14 @@ def main() -> None:
 
     レースコードを指定してDataInterfaceでレース基本情報を取得し、表示・比較する。
     """
-    # 16桁レースコード（年4+月日4+競馬場2+回2+日目2+R2）
-    race_code = "2025060105021211"
+    parser = argparse.ArgumentParser(description="レース基本情報取得のサンプルスクリプト")
+    parser.add_argument(
+        "--race-code",
+        default="2025060105021211",
+        help="16桁レースコード（年4+月日4+競馬場2+回2+日目2+R2）",
+    )
+    args = parser.parse_args()
+    race_code = args.race_code
 
     print(f"レースコード: {race_code}")
     print("=" * 80)
@@ -52,11 +60,12 @@ def main() -> None:
         df = di.get_race_basic_info(race_code)
         results[provider] = df
         print(f"\n【レース基本情報 ({provider})】")
-        for col in df.columns:
-            value = df.at[0, col]
-            # if pd.notna(value):
-            #     print(f"  {col}: {value}")
-            print(f"  {col}: {value}")
+        if df.empty:
+            print("  データなし")
+        else:
+            for col in df.columns:
+                value = df.at[0, col]
+                print(f"  {col}: {value}")
     print("\n【差分】")
     _show_diff(results["scraping"], results["mykeibadb"])
 

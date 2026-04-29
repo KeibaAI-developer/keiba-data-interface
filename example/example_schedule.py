@@ -4,6 +4,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 指定した期間の開催スケジュールを取得して表示・比較する。
 """
 
+import argparse
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -40,9 +42,12 @@ def main() -> None:
 
     日付範囲を指定してDataInterfaceで開催スケジュールを取得し、表示・比較する。
     """
-    # 開始日・終了日（YYYY-MM-DD形式）
-    start_date = "2025-04-06"
-    end_date = "2025-04-06"
+    parser = argparse.ArgumentParser(description="開催スケジュール取得のサンプルスクリプト")
+    parser.add_argument("--start-date", default="2025-04-06", help="開始日（YYYY-MM-DD形式）")
+    parser.add_argument("--end-date", default="2025-04-06", help="終了日（YYYY-MM-DD形式）")
+    args = parser.parse_args()
+    start_date = args.start_date
+    end_date = args.end_date
 
     print(f"対象期間: {start_date} 〜 {end_date}")
     print("=" * 80)
