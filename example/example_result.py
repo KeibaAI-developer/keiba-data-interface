@@ -37,7 +37,7 @@ def _show_diff(df1: pd.DataFrame, df2: pd.DataFrame) -> None:
     s = df1.sort_values("確定着順").reset_index(drop=True)
     m = df2.sort_values("確定着順").reset_index(drop=True)
     any_diff = False
-    for idx in range(3):
+    for idx in range(min(3, len(s))):
         row_diffs: list[str] = []
         for col in s.columns:
             s_val = s[col].iloc[idx]
@@ -77,8 +77,11 @@ def main() -> None:
         results[provider] = df
         print(f"\n【レース結果 ({provider})】")
         print(f"  出走頭数: {len(df)}頭")
-        print("  （1着の馬のデータ）")
-        _show_row(df.iloc[0])
+        if df.empty:
+            print("  データなし")
+        else:
+            print("  （1着の馬のデータ）")
+            _show_row(df.iloc[0])
 
     print("\n【差分】")
     _show_diff(results["scraping"], results["mykeibadb"])
