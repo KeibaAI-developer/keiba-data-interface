@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from keiba_data_interface.schema.columns import ODDS_COLUMNS
+from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
 from keiba_data_interface.schema.types import ODDS_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 from keiba_data_interface.utils.race_code import extract_race_code_parts
@@ -46,6 +46,6 @@ def convert_odds(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         rows.append(converted)
 
     result = pd.DataFrame(rows)
-    result = ensure_columns(result, ODDS_COLUMNS)
+    result = ensure_columns(result, WIN_SHOW_ODDS_COLUMNS)
     result = apply_types(result, ODDS_TYPES)
     return result

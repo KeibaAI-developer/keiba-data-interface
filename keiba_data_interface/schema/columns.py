@@ -272,7 +272,7 @@ PAYOFF_COLUMNS: list[str] = _generate_payoff_columns()
 
 
 # 単複オッズ情報テーブルのカラム名リスト（13カラム）
-ODDS_COLUMNS: list[str] = [
+WIN_SHOW_ODDS_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",
