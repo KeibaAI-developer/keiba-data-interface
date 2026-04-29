@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
-from keiba_data_interface.schema.columns import ODDS_COLUMNS
+from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
 
 from .conftest import create_odds1_fukusho_df, create_odds1_tansho_df
 
@@ -22,7 +22,7 @@ def test_output_columns_match_schema(
 
     result = provider.get_win_show_odds(race_code)
 
-    assert list(result.columns) == ODDS_COLUMNS
+    assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
 
 
 def test_output_row_count(
@@ -176,7 +176,7 @@ def test_both_empty_returns_empty_schema(
     result = provider.get_win_show_odds(race_code)
 
     assert len(result) == 0
-    assert list(result.columns) == ODDS_COLUMNS
+    assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
 
 
 def test_tansho_empty_returns_fukusho_only(
@@ -191,7 +191,7 @@ def test_tansho_empty_returns_fukusho_only(
     result = provider.get_win_show_odds(race_code)
 
     assert len(result) == 2
-    assert list(result.columns) == ODDS_COLUMNS
+    assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
     assert result.iloc[0]["馬番"] == 1
     assert result.iloc[0]["複勝最低オッズ"] == 1.5
     assert pd.isna(result.iloc[0]["単勝オッズ"])
@@ -209,7 +209,7 @@ def test_fukusho_empty_returns_tansho_only(
     result = provider.get_win_show_odds(race_code)
 
     assert len(result) == 2
-    assert list(result.columns) == ODDS_COLUMNS
+    assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
     assert result.iloc[0]["馬番"] == 1
     assert result.iloc[0]["単勝オッズ"] == 3.8
     assert pd.isna(result.iloc[0]["複勝最低オッズ"])

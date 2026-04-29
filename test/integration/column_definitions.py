@@ -3,7 +3,7 @@
 SCHEMA.mdに基づくscraping○カラムと、既知のデータソース差異カラムを定義する。
 """
 
-from keiba_data_interface.schema.columns import ODDS_COLUMNS
+from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
 
 # ============================================================================
 # 既知のデータソース差異（値一致比較から除外するカラム）
@@ -250,7 +250,7 @@ def _build_payoff_scraping_columns() -> list[str]:
 PAYOFF_SCRAPING_COLUMNS: list[str] = _build_payoff_scraping_columns()
 
 # 単複オッズ情報
-ODDS_SCRAPING_COLUMNS: list[str] = ODDS_COLUMNS
+ODDS_SCRAPING_COLUMNS: list[str] = WIN_SHOW_ODDS_COLUMNS
 
 # 開催スケジュール情報
 SCHEDULE_SCRAPING_COLUMNS: list[str] = [
@@ -335,8 +335,20 @@ def _build_horse_master_scraping_columns() -> list[str]:
         for suf in chaku_sfx:
             cols.append(f"{prefix}{suf}")
     # 馬場状態別
-    for prefix in ["芝良", "芝稍", "芝重", "芝不", "ダ良", "ダ稍", "ダ重", "ダ不",
-                   "障良", "障稍", "障重", "障不"]:
+    for prefix in [
+        "芝良",
+        "芝稍",
+        "芝重",
+        "芝不",
+        "ダ良",
+        "ダ稍",
+        "ダ重",
+        "ダ不",
+        "障良",
+        "障稍",
+        "障重",
+        "障不",
+    ]:
         for suf in chaku_sfx:
             cols.append(f"{prefix}{suf}")
     # 距離別

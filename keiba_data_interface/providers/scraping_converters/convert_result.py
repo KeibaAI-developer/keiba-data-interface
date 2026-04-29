@@ -13,7 +13,7 @@ from keiba_data_interface.providers.scraping_converters.common import (
     set_ijo_kubun,
     set_zogen,
 )
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns, recalculate_ninkijun
 from keiba_data_interface.utils.race_code import extract_race_code_parts
@@ -140,7 +140,7 @@ def convert_result(
         rows.append(converted)
 
     result = pd.DataFrame(rows)
-    result = ensure_columns(result, HORSE_RACE_INFO_COLUMNS)
+    result = ensure_columns(result, RACE_INFO_BY_HORSE_COLUMNS)
     result = apply_types(result, HORSE_RACE_INFO_TYPES)
     result = recalculate_ninkijun(result)
     return result

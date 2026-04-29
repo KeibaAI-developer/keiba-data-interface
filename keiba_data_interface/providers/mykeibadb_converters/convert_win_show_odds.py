@@ -7,7 +7,7 @@ from typing import Any
 
 import pandas as pd
 
-from keiba_data_interface.schema.columns import ODDS_COLUMNS
+from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
 from keiba_data_interface.schema.types import ODDS_TYPES
 from keiba_data_interface.utils.converters import convert_tenth_to_unit
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
@@ -48,7 +48,7 @@ def convert_win_show_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（ODDS_COLUMNSのカラム）
     """
-    empty_result = apply_types(ensure_columns(pd.DataFrame(), ODDS_COLUMNS), ODDS_TYPES)
+    empty_result = apply_types(ensure_columns(pd.DataFrame(), WIN_SHOW_ODDS_COLUMNS), ODDS_TYPES)
 
     tansho_empty = len(raw_tansho) == 0
     fukusho_empty = len(raw_fukusho) == 0
@@ -69,17 +69,19 @@ def convert_win_show_odds(raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame) -
         df_f["複勝最高オッズ"] = raw_fukusho["odds_saikou"].apply(_convert_odds_value)
 
     # マージ（馬番で結合）
-    keep_cols_t = [c for c in ODDS_COLUMNS if c in df_t.columns and c not in _FUKUSHO_ONLY_COLS]
+    keep_cols_t = [
+        c for c in WIN_SHOW_ODDS_COLUMNS if c in df_t.columns and c not in _FUKUSHO_ONLY_COLS
+    ]
     keep_cols_f = ["馬番", "複勝最低オッズ", "複勝最高オッズ", "複勝人気"]
     keep_cols_f = [c for c in keep_cols_f if c in df_f.columns]
 
     if tansho_empty:
-        result = ensure_columns(df_f[keep_cols_f], ODDS_COLUMNS)
+        result = ensure_columns(df_f[keep_cols_f], WIN_SHOW_ODDS_COLUMNS)
     elif fukusho_empty:
-        result = ensure_columns(df_t[keep_cols_t], ODDS_COLUMNS)
+        result = ensure_columns(df_t[keep_cols_t], WIN_SHOW_ODDS_COLUMNS)
     else:
         result = df_t[keep_cols_t].merge(df_f[keep_cols_f], on="馬番", how="outer")
-        result = ensure_columns(result, ODDS_COLUMNS)
+        result = ensure_columns(result, WIN_SHOW_ODDS_COLUMNS)
 
     for col in ("単勝人気", "複勝人気"):
         if col in result.columns:

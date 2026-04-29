@@ -5,7 +5,7 @@ UMAGOTO_RACE_JOHOテーブルの出力を統一スキーマに変換する。
 
 import pandas as pd
 
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_tenth_to_unit
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
@@ -193,7 +193,7 @@ def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
             lambda v: str(int(v)) if pd.notna(v) and str(v).strip() else "0"
         )
 
-    df = ensure_columns(df, HORSE_RACE_INFO_COLUMNS)
+    df = ensure_columns(df, RACE_INFO_BY_HORSE_COLUMNS)
     df = apply_types(df, HORSE_RACE_INFO_TYPES)
 
     # 確定着順: 0 = 着順未設定（出走取消/競走除外等）→ NaN

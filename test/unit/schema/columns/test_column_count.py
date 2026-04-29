@@ -5,20 +5,20 @@ from collections import Counter
 import pytest
 
 from keiba_data_interface.schema.columns import (
-    HORSE_RACE_INFO_COLUMNS,
-    ODDS_COLUMNS,
     PAYOFF_COLUMNS,
-    RACE_INFO_COLUMNS,
+    RACE_BASIC_INFO_COLUMNS,
+    RACE_INFO_BY_HORSE_COLUMNS,
     RACE_RESULT_INFO_COLUMNS,
     SCHEDULE_COLUMNS,
+    WIN_SHOW_ODDS_COLUMNS,
 )
 
 _TABLE_PARAMS = [
-    (RACE_INFO_COLUMNS, 70, "レース基本情報"),
+    (RACE_BASIC_INFO_COLUMNS, 70, "レース基本情報"),
     (RACE_RESULT_INFO_COLUMNS, 65, "レース結果情報"),
-    (HORSE_RACE_INFO_COLUMNS, 67, "馬毎レース情報"),
+    (RACE_INFO_BY_HORSE_COLUMNS, 67, "馬毎レース情報"),
     (PAYOFF_COLUMNS, 222, "払戻情報"),
-    (ODDS_COLUMNS, 13, "単複オッズ情報"),
+    (WIN_SHOW_ODDS_COLUMNS, 13, "単複オッズ情報"),
     (SCHEDULE_COLUMNS, 43, "開催スケジュール情報"),
 ]
 

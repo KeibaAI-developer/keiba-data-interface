@@ -2,7 +2,7 @@
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import ODDS_COLUMNS
+from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
 
 from .assertion_helpers import assert_columns_match, assert_common_values_match
 from .column_definitions import KNOWN_DIFF_ODDS, ODDS_SCRAPING_COLUMNS
@@ -22,7 +22,7 @@ def test_get_win_show_odds_columns_match(
     s_df = s_provider.get_win_show_odds(rc)
     m_df = m_provider.get_win_show_odds(rc)
 
-    assert_columns_match(s_df, m_df, ODDS_COLUMNS, "単複オッズ")
+    assert_columns_match(s_df, m_df, WIN_SHOW_ODDS_COLUMNS, "単複オッズ")
 
 
 def test_get_win_show_odds_common_values_match(

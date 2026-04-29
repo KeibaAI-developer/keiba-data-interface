@@ -4,7 +4,7 @@ doc/SCHEMA.mdに基づく6テーブル分のカラム名リストを定義する
 """
 
 # レース基本情報テーブルのカラム名リスト（70カラム）
-RACE_INFO_COLUMNS: list[str] = [
+RACE_BASIC_INFO_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",
@@ -105,7 +105,7 @@ RACE_RESULT_INFO_COLUMNS: list[str] = [
 
 
 # 馬毎レース情報テーブルのカラム名リスト（67カラム）
-HORSE_RACE_INFO_COLUMNS: list[str] = [
+RACE_INFO_BY_HORSE_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",
@@ -272,7 +272,7 @@ PAYOFF_COLUMNS: list[str] = _generate_payoff_columns()
 
 
 # 単複オッズ情報テーブルのカラム名リスト（13カラム）
-ODDS_COLUMNS: list[str] = [
+WIN_SHOW_ODDS_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",

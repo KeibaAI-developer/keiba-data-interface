@@ -11,7 +11,7 @@ from keiba_data_interface.providers.scraping_converters.common import (
     set_ijo_kubun,
     set_zogen,
 )
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
@@ -33,7 +33,7 @@ def convert_past_performances(
     """
     if len(raw) == 0:
         return apply_types(
-            ensure_columns(pd.DataFrame(), HORSE_RACE_INFO_COLUMNS),
+            ensure_columns(pd.DataFrame(), RACE_INFO_BY_HORSE_COLUMNS),
             HORSE_RACE_INFO_TYPES,
         )
 
@@ -203,6 +203,6 @@ def convert_past_performances(
         rows.append(converted)
 
     result = pd.DataFrame(rows)
-    result = ensure_columns(result, HORSE_RACE_INFO_COLUMNS)
+    result = ensure_columns(result, RACE_INFO_BY_HORSE_COLUMNS)
     result = apply_types(result, HORSE_RACE_INFO_TYPES)
     return result

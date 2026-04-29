@@ -12,7 +12,7 @@ from keiba_data_interface.providers.scraping_converters.common import (
     TENKO_TO_CODE,
     YOBI_TO_CODE,
 )
-from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
@@ -117,6 +117,6 @@ def convert_race_basic_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
             converted["ダート馬場状態コード"] = baba_code
 
     result = pd.DataFrame([converted])
-    result = ensure_columns(result, RACE_INFO_COLUMNS)
+    result = ensure_columns(result, RACE_BASIC_INFO_COLUMNS)
     result = apply_types(result, RACE_INFO_TYPES)
     return result

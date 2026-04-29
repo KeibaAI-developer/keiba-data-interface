@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 
 from .conftest import create_umagoto_race_joho_df
 
@@ -20,7 +20,7 @@ def test_output_columns_match_schema(
 
     result = provider.get_past_performances("1234567890")
 
-    assert list(result.columns) == HORSE_RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_INFO_BY_HORSE_COLUMNS
 
 
 def test_output_row_count(
@@ -73,4 +73,4 @@ def test_empty_dataframe_returns_empty(
     result = provider.get_past_performances("9999999999")
 
     assert len(result) == 0
-    assert list(result.columns) == HORSE_RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_INFO_BY_HORSE_COLUMNS
