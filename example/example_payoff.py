@@ -56,11 +56,12 @@ def main() -> None:
         df = di.get_payoff(race_code)
         results[provider] = df
         print(f"\n【払戻情報 ({provider})】")
-        for col in df.columns:
-            value = df.at[0, col]
-            # if pd.notna(value):
-            #     print(f"  {col}: {value}")
-            print(f"  {col}: {value}")
+        if df.empty:
+            print("  データなし")
+        else:
+            for col in df.columns:
+                value = df.at[0, col]
+                print(f"  {col}: {value}")
 
     print("\n【差分】")
     _show_diff(results["scraping"], results["mykeibadb"])
