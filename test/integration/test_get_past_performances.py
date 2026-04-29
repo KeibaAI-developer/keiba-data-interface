@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 
 from .assertion_helpers import (
     assert_columns_match,
@@ -63,7 +63,7 @@ def test_get_past_performances_columns_match(
         m_provider = MykeibaDBProvider()
         m_df = m_provider.get_past_performances(horse_fixtures.horse_id)
 
-    assert_columns_match(s_df, m_df, HORSE_RACE_INFO_COLUMNS, "過去成績")
+    assert_columns_match(s_df, m_df, RACE_INFO_BY_HORSE_COLUMNS, "過去成績")
 
 
 def test_get_past_performances_common_values_match(
@@ -138,7 +138,7 @@ def test_get_past_performances_scraping_nan_columns(
         s_df = s_provider.get_past_performances(horse_fixtures.horse_id)
 
     nan_cols = get_scraping_only_columns(
-        HORSE_RACE_INFO_COLUMNS,
+        RACE_INFO_BY_HORSE_COLUMNS,
         HORSE_RACE_INFO_SCRAPING_COLUMNS + PAST_PERF_ADDITIONAL_SCRAPING_COLUMNS,
     )
     assert_scraping_nan_columns(s_df, nan_cols, "過去成績")

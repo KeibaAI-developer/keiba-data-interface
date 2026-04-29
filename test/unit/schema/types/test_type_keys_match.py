@@ -3,7 +3,7 @@
 import pytest
 
 from keiba_data_interface.schema.columns import (
-    HORSE_RACE_INFO_COLUMNS,
+    RACE_INFO_BY_HORSE_COLUMNS,
     WIN_SHOW_ODDS_COLUMNS,
     PAYOFF_COLUMNS,
     RACE_BASIC_INFO_COLUMNS,
@@ -26,7 +26,7 @@ from keiba_data_interface.schema.types import (
     [
         (RACE_BASIC_INFO_COLUMNS, RACE_INFO_TYPES, "レース基本情報"),
         (RACE_RESULT_INFO_COLUMNS, RACE_RESULT_INFO_TYPES, "レース結果情報"),
-        (HORSE_RACE_INFO_COLUMNS, HORSE_RACE_INFO_TYPES, "馬毎レース情報"),
+        (RACE_INFO_BY_HORSE_COLUMNS, HORSE_RACE_INFO_TYPES, "馬毎レース情報"),
         (PAYOFF_COLUMNS, PAYOFF_TYPES, "払戻情報"),
         (WIN_SHOW_ODDS_COLUMNS, ODDS_TYPES, "単複オッズ情報"),
         (SCHEDULE_COLUMNS, SCHEDULE_TYPES, "開催スケジュール情報"),
@@ -53,7 +53,7 @@ def test_type_keys_match_columns(
     [
         (RACE_BASIC_INFO_COLUMNS, RACE_INFO_TYPES, "レース基本情報"),
         (RACE_RESULT_INFO_COLUMNS, RACE_RESULT_INFO_TYPES, "レース結果情報"),
-        (HORSE_RACE_INFO_COLUMNS, HORSE_RACE_INFO_TYPES, "馬毎レース情報"),
+        (RACE_INFO_BY_HORSE_COLUMNS, HORSE_RACE_INFO_TYPES, "馬毎レース情報"),
         (PAYOFF_COLUMNS, PAYOFF_TYPES, "払戻情報"),
         (WIN_SHOW_ODDS_COLUMNS, ODDS_TYPES, "単複オッズ情報"),
         (SCHEDULE_COLUMNS, SCHEDULE_TYPES, "開催スケジュール情報"),

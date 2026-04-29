@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 
 
 # 正常系
@@ -21,7 +21,7 @@ def test_output_columns_match_schema(
 
     result = provider_full.get_result(race_code)
 
-    assert list(result.columns) == HORSE_RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_INFO_BY_HORSE_COLUMNS
 
 
 def test_output_row_count(

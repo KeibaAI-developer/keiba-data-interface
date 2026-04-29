@@ -105,7 +105,7 @@ RACE_RESULT_INFO_COLUMNS: list[str] = [
 
 
 # 馬毎レース情報テーブルのカラム名リスト（67カラム）
-HORSE_RACE_INFO_COLUMNS: list[str] = [
+RACE_INFO_BY_HORSE_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",

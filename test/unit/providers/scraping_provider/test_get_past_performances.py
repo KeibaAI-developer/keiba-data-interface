@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import HORSE_RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 
 
 # 正常系
@@ -21,7 +21,7 @@ def test_output_columns_match_schema(
 
     result = provider_full.get_past_performances("2021105001")
 
-    assert list(result.columns) == HORSE_RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_INFO_BY_HORSE_COLUMNS
 
 
 def test_empty_past_performances(
@@ -34,7 +34,7 @@ def test_empty_past_performances(
     result = provider_full.get_past_performances("2021105001")
 
     assert len(result) == 0
-    assert list(result.columns) == HORSE_RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_INFO_BY_HORSE_COLUMNS
 
 
 def test_date_split(
@@ -266,4 +266,4 @@ def test_empty_horse_basic_info_does_not_raise(
 
     result = provider_full.get_past_performances("2021105001")
 
-    assert list(result.columns) == HORSE_RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_INFO_BY_HORSE_COLUMNS
