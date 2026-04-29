@@ -8,7 +8,7 @@ from keiba_data_interface.schema.columns import (
     HORSE_RACE_INFO_COLUMNS,
     ODDS_COLUMNS,
     PAYOFF_COLUMNS,
-    RACE_INFO_COLUMNS,
+    RACE_BASIC_INFO_COLUMNS,
     RACE_RESULT_INFO_COLUMNS,
     SCHEDULE_COLUMNS,
 )
@@ -23,7 +23,7 @@ from keiba_data_interface.schema.types import (
 )
 
 __all__ = [
-    "RACE_INFO_COLUMNS",
+    "RACE_BASIC_INFO_COLUMNS",
     "RACE_RESULT_INFO_COLUMNS",
     "HORSE_RACE_INFO_COLUMNS",
     "HORSE_MASTER_COLUMNS",

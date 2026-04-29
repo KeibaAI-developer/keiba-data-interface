@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
-from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 
 from .conftest import create_race_shosai_df
 
@@ -22,7 +22,7 @@ def test_output_columns_match_schema(
 
     result = provider.get_race_basic_info(race_code)
 
-    assert list(result.columns) == RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_BASIC_INFO_COLUMNS
 
 
 def test_output_is_single_row(

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 
 
 # 正常系
@@ -20,7 +20,7 @@ def test_output_columns_match_schema(
 
     result = provider.get_race_basic_info(race_code)
 
-    assert list(result.columns) == RACE_INFO_COLUMNS
+    assert list(result.columns) == RACE_BASIC_INFO_COLUMNS
 
 
 def test_output_is_single_row(

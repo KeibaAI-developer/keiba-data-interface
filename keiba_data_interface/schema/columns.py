@@ -4,7 +4,7 @@ doc/SCHEMA.mdに基づく6テーブル分のカラム名リストを定義する
 """
 
 # レース基本情報テーブルのカラム名リスト（70カラム）
-RACE_INFO_COLUMNS: list[str] = [
+RACE_BASIC_INFO_COLUMNS: list[str] = [
     "レースコード",
     "開催年",
     "開催月日",

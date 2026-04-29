@@ -2,7 +2,7 @@
 
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 
 from .assertion_helpers import (
     assert_columns_match,
@@ -27,7 +27,7 @@ def test_get_race_basic_info_columns_match(
     s_df = s_provider.get_race_basic_info(rc)
     m_df = m_provider.get_race_basic_info(rc)
 
-    assert_columns_match(s_df, m_df, RACE_INFO_COLUMNS, "レース基本情報")
+    assert_columns_match(s_df, m_df, RACE_BASIC_INFO_COLUMNS, "レース基本情報")
 
 
 def test_get_race_basic_info_common_values_match(
@@ -59,5 +59,5 @@ def test_get_race_basic_info_scraping_nan_columns(
     rc = fixtures.race_code
 
     s_df = s_provider.get_race_basic_info(rc)
-    nan_cols = get_scraping_only_columns(RACE_INFO_COLUMNS, RACE_INFO_SCRAPING_COLUMNS)
+    nan_cols = get_scraping_only_columns(RACE_BASIC_INFO_COLUMNS, RACE_INFO_SCRAPING_COLUMNS)
     assert_scraping_nan_columns(s_df, nan_cols, "レース基本情報")

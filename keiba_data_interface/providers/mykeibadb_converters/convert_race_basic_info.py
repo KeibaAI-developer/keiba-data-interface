@@ -5,7 +5,7 @@ RACE_SHOSAIテーブルの出力を統一スキーマに変換する。
 
 import pandas as pd
 
-from keiba_data_interface.schema.columns import RACE_INFO_COLUMNS
+from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_hhmm_to_display
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
@@ -216,6 +216,6 @@ def convert_race_basic_info(raw: pd.DataFrame) -> pd.DataFrame:
 
     df = df.rename(columns=RACE_INFO_RENAME)
 
-    df = ensure_columns(df, RACE_INFO_COLUMNS)
+    df = ensure_columns(df, RACE_BASIC_INFO_COLUMNS)
     df = apply_types(df, RACE_INFO_TYPES)
     return df
