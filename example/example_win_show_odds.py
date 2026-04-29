@@ -80,9 +80,12 @@ def main() -> None:
         results[provider] = df
         print(f"\n【単複オッズ ({provider})】")
         print(f"  頭数: {len(df)}")
-        print("  （馬番1のデータ）")
-        df_sorted = df.sort_values("馬番").reset_index(drop=True)
-        _show_row(df_sorted.iloc[0])
+        if df.empty:
+            print("  データなし")
+        else:
+            print("  （馬番1のデータ）")
+            df_sorted = df.sort_values("馬番").reset_index(drop=True)
+            _show_row(df_sorted.iloc[0])
 
     print("\n【差分】")
     show_diff(results["scraping"], results["mykeibadb"])
