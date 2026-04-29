@@ -4,6 +4,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 指定したレースコードのレース結果（馬毎）を取得して表示・比較する。
 """
 
+import argparse
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -60,8 +62,10 @@ def main() -> None:
 
     レースコードを指定してDataInterfaceでレース結果を取得し、表示・比較する。
     """
-    # 16桁レースコード
-    race_code = "2023112605050812"
+    parser = argparse.ArgumentParser(description="レース結果取得のサンプルスクリプト")
+    parser.add_argument("--race-code", default="2023112605050812", help="16桁レースコード")
+    args = parser.parse_args()
+    race_code = args.race_code
 
     print(f"レースコード: {race_code}")
     print("=" * 80)

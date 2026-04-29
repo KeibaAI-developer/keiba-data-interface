@@ -4,6 +4,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 指定したレースコードの単複オッズを取得して表示・比較する。
 """
 
+import argparse
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -59,8 +61,10 @@ def main() -> None:
 
     レースコードを指定してDataInterfaceで単複オッズを取得し、表示・比較する。
     """
-    # 16桁レースコード
-    race_code = "2023112605050812"
+    parser = argparse.ArgumentParser(description="単複オッズ取得のサンプルスクリプト")
+    parser.add_argument("--race-code", default="2023112605050812", help="16桁レースコード")
+    args = parser.parse_args()
+    race_code = args.race_code
 
     pd.set_option("display.max_rows", None)
     pd.set_option("display.max_columns", None)
