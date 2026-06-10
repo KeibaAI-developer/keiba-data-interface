@@ -48,6 +48,11 @@ def main() -> None:
         default="2025060105021211",
         help="16桁レースコード（年4+月日4+競馬場2+回2+日目2+R2）",
     )
+    parser.add_argument(
+        "--calc-course-days",
+        action="store_true",
+        help="芝コース日数情報（芝コース日目・初日・経過日数・週目）を計算して付与する",
+    )
     args = parser.parse_args()
     race_code = args.race_code
 
@@ -57,7 +62,7 @@ def main() -> None:
     results: dict[str, pd.DataFrame] = {}
     for provider in ("scraping", "mykeibadb"):
         di = DataInterface(provider)
-        df = di.get_race_basic_info(race_code)
+        df = di.get_race_basic_info(race_code, calc_course_days=args.calc_course_days)
         results[provider] = df
         print(f"\n【レース基本情報 ({provider})】")
         if df.empty:

@@ -9,6 +9,7 @@ import logging
 
 import pandas as pd
 
+from keiba_data_interface import course_days
 from keiba_data_interface.exceptions import KeibaDataInterfaceError
 from keiba_data_interface.protocols import DataProvider
 
@@ -39,16 +40,22 @@ class DataInterface:
         self._provider: DataProvider = _create_provider(provider, provider_logger)
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
 
-    def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
+    def get_race_basic_info(self, race_code: str, calc_course_days: bool = False) -> pd.DataFrame:
         """レース基本情報を取得する.
 
         Args:
             race_code: 16桁レースコード
+            calc_course_days: Trueの場合、芝コース日数情報（芝コース日目・芝コース初日・
+                芝コース経過日数・芝コース週目）を計算して付与する。計算には過去レースの
+                遡及取得が発生するため取得時間が増加する（特にscraping providerでは
+                複数ページのスクレイピングを伴う）
 
         Returns:
             レース基本情報のDataFrame（1行）
         """
         result = self._provider.get_race_basic_info(race_code)
+        if calc_course_days:
+            result = course_days.calc_course_days(result, self._provider, self._logger)
         return result
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
