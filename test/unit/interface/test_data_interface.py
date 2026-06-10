@@ -10,6 +10,7 @@ from keiba_data_interface.interface import DataInterface
 from keiba_data_interface.protocols import DataProvider
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
+from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 
 from .conftest import _MockProvider
 
@@ -45,6 +46,56 @@ def test_get_race_basic_info_delegates(
     result = interface.get_race_basic_info("2025050206021211")
     mock_provider.get_race_basic_info.assert_called_once_with("2025050206021211")
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [1]}))
+
+
+def test_get_race_basic_info_with_calc_course_days(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """calc_course_days=Trueで芝コース日数の計算結果が返される."""
+    interface, mock_provider = interface_with_mock
+    expected = pd.DataFrame({"col": [10]})
+    with patch(
+        "keiba_data_interface.course_days.calc_course_days", return_value=expected
+    ) as mock_calc:
+        result = interface.get_race_basic_info("2025050206021211", calc_course_days=True)
+    mock_provider.get_race_basic_info.assert_called_once_with("2025050206021211")
+    mock_calc.assert_called_once()
+    pd.testing.assert_frame_equal(result, expected)
+
+
+def test_get_race_basic_info_without_calc_course_days(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """デフォルトでは芝コース日数の計算が行われない."""
+    interface, _ = interface_with_mock
+    with patch("keiba_data_interface.course_days.calc_course_days") as mock_calc:
+        interface.get_race_basic_info("2025050206021211")
+    mock_calc.assert_not_called()
+
+
+def test_get_race_basic_info_calc_course_days_end_to_end(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """calc_course_days=Trueで芝コース日数4カラムが計算値で埋まる."""
+    interface, mock_provider = interface_with_mock
+    values: list[object] = [pd.NA] * len(RACE_BASIC_INFO_COLUMNS)
+    race_basic_info = pd.DataFrame([values], columns=RACE_BASIC_INFO_COLUMNS)
+    race_basic_info["レースコード"] = "2025060805020111"
+    race_basic_info["開催年"] = "2025"
+    race_basic_info["開催月日"] = "0608"
+    race_basic_info["競馬場コード"] = "05"
+    race_basic_info["芝ダ"] = "芝"
+    race_basic_info["コース区分"] = "A"
+    mock_provider.get_race_basic_info.return_value = race_basic_info
+    schedule_columns = ["開催年", "開催月日", "競馬場コード", "開催回", "開催日目"]
+    mock_provider.get_schedule.return_value = pd.DataFrame(columns=schedule_columns)
+
+    result = interface.get_race_basic_info("2025060805020111", calc_course_days=True)
+
+    assert result["芝コース日目"].iloc[0] == 1
+    assert result["芝コース初日"].iloc[0] == "20250608"
+    assert result["芝コース経過日数"].iloc[0] == 1
+    assert result["芝コース週目"].iloc[0] == 1
 
 
 def test_get_entry_delegates(
