@@ -81,6 +81,10 @@ RACE_INFO_TYPES: dict[str, str] = {
     "天候コード": "object",
     "芝馬場状態コード": "object",
     "ダート馬場状態コード": "object",
+    "芝コース日目": "Int64",
+    "芝コース初日": "object",
+    "芝コース経過日数": "Int64",
+    "芝コース週目": "Int64",
 }
 
 
