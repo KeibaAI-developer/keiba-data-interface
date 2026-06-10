@@ -14,7 +14,7 @@ from keiba_data_interface.schema.columns import (
 )
 
 _TABLE_PARAMS = [
-    (RACE_BASIC_INFO_COLUMNS, 70, "レース基本情報"),
+    (RACE_BASIC_INFO_COLUMNS, 74, "レース基本情報"),
     (RACE_RESULT_INFO_COLUMNS, 65, "レース結果情報"),
     (RACE_INFO_BY_HORSE_COLUMNS, 67, "馬毎レース情報"),
     (PAYOFF_COLUMNS, 222, "払戻情報"),
