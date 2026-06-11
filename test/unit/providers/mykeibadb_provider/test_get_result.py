@@ -277,6 +277,23 @@ def test_result_specific_columns(
     assert row["獲得本賞金"] == 50000000
 
 
+def test_tied_rank_sorted_by_umaban(
+    provider: MykeibaDBProvider,
+    mock_race_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """同着（確定着順が同じ）の馬は馬番昇順に並ぶ."""
+    raw = create_umagoto_race_joho_df()
+    # 馬番降順・同着の入力でも出力は馬番昇順になる
+    raw["umaban"] = [3, 1]
+    raw["kakutei_chakujun"] = [1, 1]
+    mock_race_getter.get_umagoto_race_joho.return_value = raw
+
+    result = provider.get_result(race_code)
+
+    assert result["馬番"].tolist() == [1, 3]
+
+
 def test_kakutei_chakujun_zero_to_nan(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
