@@ -109,12 +109,14 @@ class MykeibaDBProvider:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: レース結果（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム, 確定着順順）
+            pd.DataFrame: レース結果（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム,
+                確定着順順・同着は馬番昇順）
         """
         self._logger.debug("RaceGetterでレース結果を取得: race_code=%s", race_code)
         raw = self._race_getter.get_umagoto_race_joho(race_code=race_code, convert_codes=False)
         df = convert_result(raw)
-        df = df.sort_values("確定着順").reset_index(drop=True)
+        # DBの行順は不定のため、同着時も順序が決定的になるよう馬番を第2キーにする
+        df = df.sort_values(["確定着順", "馬番"]).reset_index(drop=True)
         self._logger.debug("レース結果の取得が完了: race_code=%s", race_code)
         return df
 
