@@ -70,6 +70,70 @@ _BABA_JOTAI_ROMAJI_TO_NAME: dict[str, str] = {
 }
 
 
+def convert_chakudosu(
+    raw_keibajo: pd.DataFrame,
+    raw_kyori: pd.DataFrame,
+    raw_baba: pd.DataFrame,
+) -> pd.DataFrame:
+    """SHUSSOBETSU 3テーブルの出力を統一スキーマに変換する.
+
+    3テーブルを血統登録番号で外部結合する。一部のテーブルにのみ存在する馬も
+    行として保持する（欠損した着回数カラムはNaN）。
+
+    Args:
+        raw_keibajo (pd.DataFrame): ShussobetsuGetter.get_shussobetsu_keibajo()の出力
+            （convert_codes=False）
+        raw_kyori (pd.DataFrame): ShussobetsuGetter.get_shussobetsu_kyori()の出力
+            （convert_codes=False）
+        raw_baba (pd.DataFrame): ShussobetsuGetter.get_shussobetsu_baba()の出力
+            （convert_codes=False）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（CHAKUDOSU_COLUMNSのカラム、
+            出走頭数分の行）
+    """
+    parts = [
+        _extract_part(raw, col_map)
+        for raw, col_map in (
+            (raw_keibajo, _KEIBAJO_COLUMN_MAP),
+            (raw_kyori, _KYORI_COLUMN_MAP),
+            (raw_baba, _BABA_COLUMN_MAP),
+        )
+        if not raw.empty
+    ]
+    if not parts:
+        return apply_types(ensure_columns(pd.DataFrame(), CHAKUDOSU_COLUMNS), CHAKUDOSU_TYPES)
+
+    key_cols = list(_KEY_COLUMN_MAP.values())
+    base = (
+        pd.concat([part[key_cols] for part in parts])
+        .drop_duplicates("血統登録番号")
+        .set_index("血統登録番号")
+    )
+    merged = base
+    for part in parts:
+        value_cols = [col for col in part.columns if col not in key_cols]
+        merged = merged.join(part.set_index("血統登録番号")[value_cols], how="left")
+    df = merged.reset_index()
+    return apply_types(ensure_columns(df, CHAKUDOSU_COLUMNS), CHAKUDOSU_TYPES)
+
+
+def _extract_part(raw: pd.DataFrame, col_map: dict[str, str]) -> pd.DataFrame:
+    """rawデータからキーカラムと着回数カラムを抽出して日本語カラム名に変換する.
+
+    Args:
+        raw (pd.DataFrame): SHUSSOBETSUテーブルの出力（convert_codes=False）
+        col_map (dict[str, str]): 着回数カラム名マップ
+
+    Returns:
+        pd.DataFrame: 日本語カラム名に変換されたDataFrame
+    """
+    rename_map = {**_KEY_COLUMN_MAP, **col_map}
+    df = raw.rename(columns=rename_map)
+    keep = [col for col in rename_map.values() if col in df.columns]
+    return df[keep]
+
+
 def _build_keibajo_column_map() -> dict[str, str]:
     """SHUSSOBETSU_KEIBAJOの着回数カラム名マップを生成する."""
     col_map: dict[str, str] = {}
@@ -122,67 +186,3 @@ def _build_baba_column_map() -> dict[str, str]:
 _KEIBAJO_COLUMN_MAP: dict[str, str] = _build_keibajo_column_map()
 _KYORI_COLUMN_MAP: dict[str, str] = _build_kyori_column_map()
 _BABA_COLUMN_MAP: dict[str, str] = _build_baba_column_map()
-
-
-def _extract_part(raw: pd.DataFrame, col_map: dict[str, str]) -> pd.DataFrame:
-    """rawデータからキーカラムと着回数カラムを抽出して日本語カラム名に変換する.
-
-    Args:
-        raw (pd.DataFrame): SHUSSOBETSUテーブルの出力（convert_codes=False）
-        col_map (dict[str, str]): 着回数カラム名マップ
-
-    Returns:
-        pd.DataFrame: 日本語カラム名に変換されたDataFrame
-    """
-    rename_map = {**_KEY_COLUMN_MAP, **col_map}
-    df = raw.rename(columns=rename_map)
-    keep = [col for col in rename_map.values() if col in df.columns]
-    return df[keep]
-
-
-def convert_chakudosu(
-    raw_keibajo: pd.DataFrame,
-    raw_kyori: pd.DataFrame,
-    raw_baba: pd.DataFrame,
-) -> pd.DataFrame:
-    """SHUSSOBETSU 3テーブルの出力を統一スキーマに変換する.
-
-    3テーブルを血統登録番号で外部結合する。一部のテーブルにのみ存在する馬も
-    行として保持する（欠損した着回数カラムはNaN）。
-
-    Args:
-        raw_keibajo (pd.DataFrame): ShussobetsuGetter.get_shussobetsu_keibajo()の出力
-            （convert_codes=False）
-        raw_kyori (pd.DataFrame): ShussobetsuGetter.get_shussobetsu_kyori()の出力
-            （convert_codes=False）
-        raw_baba (pd.DataFrame): ShussobetsuGetter.get_shussobetsu_baba()の出力
-            （convert_codes=False）
-
-    Returns:
-        pd.DataFrame: 統一スキーマに変換されたDataFrame（CHAKUDOSU_COLUMNSのカラム、
-            出走頭数分の行）
-    """
-    parts = [
-        _extract_part(raw, col_map)
-        for raw, col_map in (
-            (raw_keibajo, _KEIBAJO_COLUMN_MAP),
-            (raw_kyori, _KYORI_COLUMN_MAP),
-            (raw_baba, _BABA_COLUMN_MAP),
-        )
-        if not raw.empty
-    ]
-    if not parts:
-        return apply_types(ensure_columns(pd.DataFrame(), CHAKUDOSU_COLUMNS), CHAKUDOSU_TYPES)
-
-    key_cols = list(_KEY_COLUMN_MAP.values())
-    base = (
-        pd.concat([part[key_cols] for part in parts])
-        .drop_duplicates("血統登録番号")
-        .set_index("血統登録番号")
-    )
-    merged = base
-    for part in parts:
-        value_cols = [col for col in part.columns if col not in key_cols]
-        merged = merged.join(part.set_index("血統登録番号")[value_cols], how="left")
-    df = merged.reset_index()
-    return apply_types(ensure_columns(df, CHAKUDOSU_COLUMNS), CHAKUDOSU_TYPES)
