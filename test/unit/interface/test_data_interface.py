@@ -33,6 +33,7 @@ def test_create_mykeibadb_provider() -> None:
         patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.OddsGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.MasterGetter"),
+        patch("keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter"),
     ):
         interface = DataInterface(provider="mykeibadb")
         assert isinstance(interface._provider, MykeibaDBProvider)
@@ -168,6 +169,16 @@ def test_get_horse_master_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [8]}))
 
 
+def test_get_chakudosu_delegates(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """get_chakudosuがProviderに委譲される."""
+    interface, mock_provider = interface_with_mock
+    result = interface.get_chakudosu("2025050206021211")
+    mock_provider.get_chakudosu.assert_called_once_with("2025050206021211")
+    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [9]}))
+
+
 def test_get_schedule_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:
@@ -175,7 +186,7 @@ def test_get_schedule_delegates(
     interface, mock_provider = interface_with_mock
     result = interface.get_schedule("2025-01-01", "2025-01-31")
     mock_provider.get_schedule.assert_called_once_with("2025-01-01", "2025-01-31")
-    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [9]}))
+    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [10]}))
 
 
 # 準正常系

@@ -454,3 +454,60 @@ def _generate_horse_master_columns() -> list[str]:
 
 
 HORSE_MASTER_COLUMNS: list[str] = _generate_horse_master_columns()
+
+
+# 出走別着度数テーブルのカラム名リスト（405カラム）
+KEIBAJO_NAMES: list[str] = [
+    "札幌",
+    "函館",
+    "福島",
+    "新潟",
+    "東京",
+    "中山",
+    "中京",
+    "京都",
+    "阪神",
+    "小倉",
+]
+
+KEIBAJO_BETSU_PREFIXES: list[str] = [
+    f"{keibajo}{surface}" for keibajo in KEIBAJO_NAMES for surface in ("芝", "ダ", "障")
+]
+
+CHAKUDOSU_KYORI_KUBUN: list[str] = [
+    "1200以下",
+    "1201-1400",
+    "1401-1600",
+    "1601-1800",
+    "1801-2000",
+    "2001-2200",
+    "2201-2400",
+    "2401-2800",
+    "2801以上",
+]
+
+CHAKUDOSU_KYORI_PREFIXES: list[str] = [
+    f"{surface}{kubun}" for surface in ("芝", "ダ") for kubun in CHAKUDOSU_KYORI_KUBUN
+]
+
+
+def _generate_chakudosu_columns() -> list[str]:
+    """出走別着度数テーブルのカラム名リストを生成する."""
+    cols: list[str] = [
+        "レースコード",
+        "血統登録番号",
+        "馬名",
+    ]
+    prefixes = (
+        KEIBAJO_BETSU_PREFIXES
+        + CHAKUDOSU_KYORI_PREFIXES
+        + BABA_BETSU_PREFIXES
+        + BABA_JOTAI_PREFIXES
+    )
+    for prefix in prefixes:
+        for suf in CHAKU_SUFFIXES:
+            cols.append(f"{prefix}{suf}")
+    return cols
+
+
+CHAKUDOSU_COLUMNS: list[str] = _generate_chakudosu_columns()

@@ -3,6 +3,7 @@
 import pytest
 
 from keiba_data_interface.schema.columns import (
+    CHAKUDOSU_COLUMNS,
     PAYOFF_COLUMNS,
     RACE_BASIC_INFO_COLUMNS,
     RACE_INFO_BY_HORSE_COLUMNS,
@@ -11,6 +12,7 @@ from keiba_data_interface.schema.columns import (
     WIN_SHOW_ODDS_COLUMNS,
 )
 from keiba_data_interface.schema.types import (
+    CHAKUDOSU_TYPES,
     HORSE_RACE_INFO_TYPES,
     ODDS_TYPES,
     PAYOFF_TYPES,
@@ -30,6 +32,7 @@ from keiba_data_interface.schema.types import (
         (PAYOFF_COLUMNS, PAYOFF_TYPES, "払戻情報"),
         (WIN_SHOW_ODDS_COLUMNS, ODDS_TYPES, "単複オッズ情報"),
         (SCHEDULE_COLUMNS, SCHEDULE_TYPES, "開催スケジュール情報"),
+        (CHAKUDOSU_COLUMNS, CHAKUDOSU_TYPES, "出走別着度数"),
     ],
 )
 def test_type_keys_match_columns(
@@ -57,6 +60,7 @@ def test_type_keys_match_columns(
         (PAYOFF_COLUMNS, PAYOFF_TYPES, "払戻情報"),
         (WIN_SHOW_ODDS_COLUMNS, ODDS_TYPES, "単複オッズ情報"),
         (SCHEDULE_COLUMNS, SCHEDULE_TYPES, "開催スケジュール情報"),
+        (CHAKUDOSU_COLUMNS, CHAKUDOSU_TYPES, "出走別着度数"),
     ],
 )
 def test_type_values_are_valid_pandas_types(

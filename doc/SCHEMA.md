@@ -38,3 +38,4 @@ keiba-data-interfaceは、keiba-scraping（netkeiba）とmykeibadb-python（JRA-
 | [払戻情報](./SCHEMA/PAYOFF.md) | `get_payoff()` | 1行 |
 | [単複オッズ情報](./SCHEMA/WIN_SHOW_ODDS.md) | `get_win_show_odds()` | 出走頭数分の行数 |
 | [開催スケジュール情報](./SCHEMA/SCHEDULE.md) | `get_schedule()` | 開催場数の行数 |
+| [出走別着度数](./SCHEMA/CHAKUDOSU.md) | `get_chakudosu()` | 出走頭数分の行数 |

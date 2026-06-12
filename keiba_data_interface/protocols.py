@@ -80,6 +80,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_chakudosu(self, race_code: str) -> pd.DataFrame:
+        """出走別着度数を取得する.
+
+        Args:
+            race_code: 16桁レースコード
+        """
+        ...
+
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
 

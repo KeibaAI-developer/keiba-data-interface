@@ -17,3 +17,9 @@ class RaceCodeError(KeibaDataInterfaceError):
     """レースコード関連の例外."""
 
     pass
+
+
+class DataNotFoundError(KeibaDataInterfaceError):
+    """要求されたデータがプロバイダーから取得できない場合の例外."""
+
+    pass

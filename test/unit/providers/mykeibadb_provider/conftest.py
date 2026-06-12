@@ -79,10 +79,33 @@ def mock_master_getter_cls(mock_master_getter: MagicMock) -> Generator[MagicMock
 
 
 @pytest.fixture()
+def mock_shussobetsu_getter() -> MagicMock:
+    """ShussobetsuGetterインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_shussobetsu_getter_cls(
+    mock_shussobetsu_getter: MagicMock,
+) -> Generator[MagicMock, None, None]:
+    """ShussobetsuGetterをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: ShussobetsuGetterクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter",
+        return_value=mock_shussobetsu_getter,
+    ) as mock_cls:
+        yield mock_cls
+
+
+@pytest.fixture()
 def provider(
     mock_race_getter_cls: MagicMock,
     mock_odds_getter_cls: MagicMock,
     mock_master_getter_cls: MagicMock,
+    mock_shussobetsu_getter_cls: MagicMock,
 ) -> MykeibaDBProvider:
     """テスト用MykeibaDBProviderインスタンス."""
     return MykeibaDBProvider()
@@ -741,6 +764,186 @@ def create_kyosoba_master2_df() -> pd.DataFrame:
             }
         ]
     )
+
+
+def _create_shussobetsu_base(ketto_toroku_bango: str, bamei: str) -> dict[str, object]:
+    """SHUSSOBETSUテーブル共通のキーカラムデータを生成する.
+
+    Args:
+        ketto_toroku_bango (str): 血統登録番号
+        bamei (str): 馬名
+
+    Returns:
+        dict[str, object]: キーカラムのデータ辞書
+    """
+    return {
+        "insert_timestamp": "2026-01-22 05:26:36",
+        "update_timestamp": "0000-00-00 00:00:00",
+        "record_shubetsu_id": "CK",
+        "data_kubun": "1",
+        "data_sakusei_nengappi": "20250502",
+        "race_code": RACE_CODE,
+        "kaisai_nen": "2025",
+        "kaisai_gappi": "0502",
+        "keibajo_code": "06",
+        "kaisai_kaiji": "05",
+        "kaisai_nichiji": "08",
+        "race_bango": "11",
+        "ketto_toroku_bango": ketto_toroku_bango,
+        "bamei": bamei,
+    }
+
+
+def create_shussobetsu_keibajo_df() -> pd.DataFrame:
+    """mykeibadb SHUSSOBETSU_KEIBAJO出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=False時のSHUSSOBETSU_KEIBAJO出力形式（2頭分）
+    """
+    keibajo_list = [
+        "sapporo",
+        "hakodate",
+        "fukushima",
+        "niigata",
+        "tokyo",
+        "nakayama",
+        "chukyo",
+        "kyoto",
+        "hanshin",
+        "kokura",
+    ]
+    chaku_list = ["1chaku", "2chaku", "3chaku", "4chaku", "5chaku", "chakugai"]
+    zero_counts = {
+        f"{keibajo}_{surface}_{chaku}": 0
+        for keibajo in keibajo_list
+        for surface in ("shiba", "dirt", "shogai")
+        for chaku in chaku_list
+    }
+    horse1 = {
+        **_create_shussobetsu_base("2021105001", "テスト馬1"),
+        **zero_counts,
+        "nakayama_shiba_1chaku": 2,
+        "nakayama_shiba_4chaku": 1,
+        "tokyo_shiba_2chaku": 1,
+        "tokyo_shiba_chakugai": 1,
+    }
+    horse2 = {
+        **_create_shussobetsu_base("2021105002", "テスト馬2"),
+        **zero_counts,
+        "kyoto_dirt_1chaku": 1,
+        "kyoto_dirt_3chaku": 2,
+    }
+    return pd.DataFrame([horse1, horse2])
+
+
+def create_shussobetsu_kyori_df() -> pd.DataFrame:
+    """mykeibadb SHUSSOBETSU_KYORI出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=False時のSHUSSOBETSU_KYORI出力形式（2頭分）
+    """
+    kyori_list = [
+        "1200_ika",
+        "1201_1400",
+        "1401_1600",
+        "1601_1800",
+        "1801_2000",
+        "2001_2200",
+        "2201_2400",
+        "2401_2800",
+        "2801_ijo",
+    ]
+    chaku_list = ["1chaku", "2chaku", "3chaku", "4chaku", "5chaku", "chakugai"]
+    zero_counts = {
+        f"{surface}_{kyori}_{chaku}": 0
+        for surface in ("shiba", "dirt")
+        for kyori in kyori_list
+        for chaku in chaku_list
+    }
+    horse1 = {
+        **_create_shussobetsu_base("2021105001", "テスト馬1"),
+        **zero_counts,
+        "shiba_1801_2000_1chaku": 2,
+        "shiba_2201_2400_2chaku": 1,
+    }
+    horse2 = {
+        **_create_shussobetsu_base("2021105002", "テスト馬2"),
+        **zero_counts,
+        "dirt_1601_1800_1chaku": 1,
+        "dirt_1801_2000_3chaku": 2,
+    }
+    return pd.DataFrame([horse1, horse2])
+
+
+def create_shussobetsu_baba_df() -> pd.DataFrame:
+    """mykeibadb SHUSSOBETSU_BABA出力の典型データを生成する.
+
+    Returns:
+        pd.DataFrame: convert_codes=False時のSHUSSOBETSU_BABA出力形式（2頭分）
+    """
+    chaku_list = ["1chaku", "2chaku", "3chaku", "4chaku", "5chaku", "chakugai"]
+    baba_prefixes = [
+        "shiba_choku",
+        "shiba_migi",
+        "shiba_hidari",
+        "dirt_choku",
+        "dirt_migi",
+        "dirt_hidari",
+        "shogai",
+        "shiba_ryo",
+        "shiba_yayaomo",
+        "shiba_omo",
+        "shiba_furyo",
+        "dirt_ryo",
+        "dirt_yayaomo",
+        "dirt_omo",
+        "dirt_furyo",
+        "shogai_ryo",
+        "shogai_yayaomo",
+        "shogai_omo",
+        "shogai_furyo",
+    ]
+    zero_counts = {
+        f"{prefix}_{chaku}": 0 for prefix in baba_prefixes for chaku in chaku_list
+    }
+    sogo_columns = {
+        "heichi_honshokin_ruikei": 9281000,
+        "shogai_honshokin_ruikei": 0,
+        "heichi_fukashokin_ruikei": 336990,
+        "shogai_fukashokin_ruikei": 0,
+        "heichi_shutokushokin_ruikei": 4600000,
+        "shogai_shutokushokin_ruikei": 0,
+        "sogo_1chaku": 2,
+        "sogo_2chaku": 1,
+        "sogo_3chaku": 0,
+        "sogo_4chaku": 1,
+        "sogo_5chaku": 0,
+        "sogo_chakugai": 1,
+        "chuo_gokei_1chaku": 2,
+        "chuo_gokei_2chaku": 1,
+        "chuo_gokei_3chaku": 0,
+        "chuo_gokei_4chaku": 1,
+        "chuo_gokei_5chaku": 0,
+        "chuo_gokei_chakugai": 1,
+    }
+    horse1 = {
+        **_create_shussobetsu_base("2021105001", "テスト馬1"),
+        **sogo_columns,
+        **zero_counts,
+        "shiba_migi_1chaku": 2,
+        "shiba_hidari_2chaku": 1,
+        "shiba_ryo_1chaku": 2,
+        "shiba_yayaomo_4chaku": 1,
+    }
+    horse2 = {
+        **_create_shussobetsu_base("2021105002", "テスト馬2"),
+        **sogo_columns,
+        **zero_counts,
+        "dirt_migi_1chaku": 1,
+        "dirt_ryo_1chaku": 1,
+        "dirt_ryo_3chaku": 2,
+    }
+    return pd.DataFrame([horse1, horse2])
 
 
 def create_kaisai_schedule_df() -> pd.DataFrame:

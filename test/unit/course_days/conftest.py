@@ -141,6 +141,14 @@ class MockProvider:
         """
         raise NotImplementedError
 
+    def get_chakudosu(self, race_code: str) -> pd.DataFrame:
+        """テストでは使用しない
+
+        Raises:
+            NotImplementedError: 常に発生する
+        """
+        raise NotImplementedError
+
 
 def build_race_basic_info(
     race_date: date,

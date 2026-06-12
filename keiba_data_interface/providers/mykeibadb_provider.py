@@ -8,9 +8,10 @@ import logging
 from datetime import date
 
 import pandas as pd
-from mykeibadb import MasterGetter, OddsGetter, RaceGetter
+from mykeibadb import MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
 
 from keiba_data_interface.providers.mykeibadb_converters import (
+    convert_chakudosu,
     convert_entry,
     convert_horse_master,
     convert_past_performances,
@@ -30,6 +31,8 @@ class MykeibaDBProvider:
         _race_getter (RaceGetter): JRA-VANデータ取得用のRaceGetterインスタンス
         _odds_getter (OddsGetter): JRA-VANオッズ取得用のOddsGetterインスタンス
         _master_getter (MasterGetter): JRA-VANマスタ取得用のMasterGetterインスタンス
+        _shussobetsu_getter (ShussobetsuGetter): JRA-VAN出走別データ取得用の
+            ShussobetsuGetterインスタンス
     """
 
     def __init__(self, logger: logging.Logger | None = None) -> None:
@@ -42,6 +45,7 @@ class MykeibaDBProvider:
         self._race_getter = RaceGetter(logger=self._logger)
         self._odds_getter = OddsGetter(logger=self._logger)
         self._master_getter = MasterGetter(logger=self._logger)
+        self._shussobetsu_getter = ShussobetsuGetter(logger=self._logger)
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -195,6 +199,34 @@ class MykeibaDBProvider:
         result = convert_horse_master(raw)
         self._logger.debug("競走馬情報の取得が完了: horse_id=%s", horse_id)
         return result
+
+    def get_chakudosu(self, race_code: str) -> pd.DataFrame:
+        """出走別着度数を取得する.
+
+        ShussobetsuGetterで競馬場別・距離別・馬場別の3テーブルを取得し、
+        血統登録番号で結合して統一スキーマに変換する。
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Returns:
+            pd.DataFrame: 出走別着度数（出走頭数行、CHAKUDOSU_COLUMNSのカラム、
+                血統登録番号昇順）
+        """
+        self._logger.debug("ShussobetsuGetterで出走別着度数を取得: race_code=%s", race_code)
+        raw_keibajo = self._shussobetsu_getter.get_shussobetsu_keibajo(
+            race_code=race_code, convert_codes=False
+        )
+        raw_kyori = self._shussobetsu_getter.get_shussobetsu_kyori(
+            race_code=race_code, convert_codes=False
+        )
+        raw_baba = self._shussobetsu_getter.get_shussobetsu_baba(
+            race_code=race_code, convert_codes=False
+        )
+        df = convert_chakudosu(raw_keibajo, raw_kyori, raw_baba)
+        df = df.sort_values("血統登録番号").reset_index(drop=True)
+        self._logger.debug("出走別着度数の取得が完了: race_code=%s", race_code)
+        return df
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
