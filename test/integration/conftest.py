@@ -300,5 +300,8 @@ def mykeibadb_provider_with_mocks(
         patch(
             "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
         ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter",
+        ),
     ):
         yield MykeibaDBProvider(), race_fixtures

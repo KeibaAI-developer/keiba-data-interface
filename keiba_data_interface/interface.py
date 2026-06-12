@@ -142,6 +142,24 @@ class DataInterface:
         result = self._provider.get_horse_master(horse_id)
         return result
 
+    def get_chakudosu(self, race_code: str) -> pd.DataFrame:
+        """出走別着度数を取得する.
+
+        指定レース出走時点の各馬の累積着回数（競馬場別・距離別・馬場別・馬場状態別）を
+        出走頭数分の行で返す。
+
+        Args:
+            race_code: 16桁レースコード
+
+        Returns:
+            出走別着度数のDataFrame（出走頭数行、血統登録番号昇順）
+
+        Raises:
+            DataNotFoundError: scrapingプロバイダーの場合（netkeibaから取得不可）
+        """
+        result = self._provider.get_chakudosu(race_code)
+        return result
+
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.
 

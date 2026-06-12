@@ -17,6 +17,7 @@ from scraping import (
 )
 from scraping.exceptions import PageNotFoundError
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
     convert_entry,
@@ -202,6 +203,21 @@ class ScrapingProvider:
         result = convert_horse_master(past_perf, horse_id, horse_basic_info)
         self._logger.debug("競走馬情報の取得が完了: horse_id=%s", horse_id)
         return result
+
+    def get_chakudosu(self, race_code: str) -> pd.DataFrame:
+        """出走別着度数を取得する.
+
+        netkeibaには出走別着度数に相当するデータが存在しないため取得できない。
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Raises:
+            DataNotFoundError: 常に送出される
+        """
+        raise DataNotFoundError(
+            f"scrapingプロバイダーでは出走別着度数を取得できません: race_code={race_code}"
+        )
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.

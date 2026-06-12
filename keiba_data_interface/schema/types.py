@@ -419,3 +419,22 @@ def _generate_horse_master_types() -> dict[str, str]:
 
 
 HORSE_MASTER_TYPES: dict[str, str] = _generate_horse_master_types()
+
+
+# 出走別着度数テーブルの型定義辞書
+def _generate_chakudosu_types() -> dict[str, str]:
+    """出走別着度数テーブルの型定義辞書を生成する."""
+    from keiba_data_interface.schema.columns import CHAKUDOSU_COLUMNS
+
+    types: dict[str, str] = {
+        "レースコード": "object",
+        "血統登録番号": "object",
+        "馬名": "object",
+    }
+    for col in CHAKUDOSU_COLUMNS:
+        if col not in types:
+            types[col] = "Int64"
+    return types
+
+
+CHAKUDOSU_TYPES: dict[str, str] = _generate_chakudosu_types()

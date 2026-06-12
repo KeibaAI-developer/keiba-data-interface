@@ -1,5 +1,6 @@
 """mykeibadb出力を統一スキーマに変換するコンバータモジュール."""
 
+from keiba_data_interface.providers.mykeibadb_converters.convert_chakudosu import convert_chakudosu
 from keiba_data_interface.providers.mykeibadb_converters.convert_entry import convert_entry
 from keiba_data_interface.providers.mykeibadb_converters.convert_horse_master import (
     convert_horse_master,
@@ -21,6 +22,7 @@ from keiba_data_interface.providers.mykeibadb_converters.convert_win_show_odds i
 )
 
 __all__ = [
+    "convert_chakudosu",
     "convert_entry",
     "convert_horse_master",
     "convert_past_performances",

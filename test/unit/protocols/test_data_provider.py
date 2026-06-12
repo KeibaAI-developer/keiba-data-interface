@@ -28,6 +28,7 @@ def test_mykeibadb_provider_satisfies_protocol() -> None:
         patch("keiba_data_interface.providers.mykeibadb_provider.RaceGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.OddsGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.MasterGetter"),
+        patch("keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter"),
     ):
         provider = MykeibaDBProvider()
         assert isinstance(provider, DataProvider)
@@ -72,6 +73,10 @@ class _FullProvider:
 
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する."""
+        return pd.DataFrame()
+
+    def get_chakudosu(self, race_code: str) -> pd.DataFrame:
+        """出走別着度数を取得する."""
         return pd.DataFrame()
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
