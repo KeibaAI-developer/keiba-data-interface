@@ -6,7 +6,7 @@ from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 
 
-# 異常系
+# 準正常系
 def test_raises_data_not_found_error() -> None:
     """get_chakudosuがDataNotFoundErrorを送出する."""
     provider = ScrapingProvider()
