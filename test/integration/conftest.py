@@ -42,6 +42,21 @@ def _load_fixture_optional(path: Path) -> pd.DataFrame:
     return pd.read_pickle(pkl_path)
 
 
+def _load_past_performances_map_optional(path: Path) -> dict[str, pd.DataFrame]:
+    """血統登録番号→raw馬柱のフィクスチャをpickle形式で読み込む.
+
+    Args:
+        path (Path): フィクスチャファイルのパス（拡張子なし or .pkl）
+
+    Returns:
+        dict[str, pd.DataFrame]: 血統登録番号→raw馬柱。ファイルが存在しない場合は空の辞書
+    """
+    pkl_path = path.with_suffix(".pkl")
+    if not pkl_path.exists():
+        return {}
+    return pd.read_pickle(pkl_path)
+
+
 def _load_test_cases() -> dict[str, list[dict[str, str]]]:
     """テストケース情報を読み込む."""
     with open(FIXTURES_DIR / "test_cases.json", encoding="utf-8") as f:
@@ -54,6 +69,18 @@ TEST_CASES = _load_test_cases()
 # テスト用レースのレースコード一覧
 RACE_CODES: list[str] = [r["race_code"] for r in TEST_CASES["races"]]
 
+# 出走別着度数の統合テスト対象レース（境界条件をカバーするもの）
+CHAKUDOSU_RACE_CODES: list[str] = [
+    "2025051105020607",  # 4歳以上2勝クラス（出走頭数5頭）
+    "2025080304020407",  # アイビスSD2025（新潟芝1000m=直）
+    "2024122106050710",  # 中山大障害2024（障害）
+    "2020032907010811",  # 高松宮記念2020（降着1頭）
+    "2012050605020611",  # NHKマイルC2012（失格1頭, 競走中止1頭）
+    "2023090301020809",  # すずらん賞2023（地方から移籍初戦）
+    "2023112605050812",  # ジャパンC2023（外国馬1頭, 地方馬2頭）
+    "2023043008010411",  # 天皇賞(春)2023（競走中止2頭）
+]
+
 
 class RaceFixtures:
     """1レース分のフィクスチャデータを保持するクラス.
@@ -63,6 +90,7 @@ class RaceFixtures:
         race_name (str): レース名
         scraping (dict[str, pd.DataFrame]): scraping側のrawデータ
         mykeibadb (dict[str, pd.DataFrame]): mykeibadb側のrawデータ
+        past_performances_map (dict[str, pd.DataFrame]): 着度数用、血統登録番号→raw馬柱
     """
 
     def __init__(self, race_code: str, race_name: str) -> None:
@@ -101,7 +129,17 @@ class RaceFixtures:
             "haraimodoshi": _load_fixture(race_dir / "mykeibadb_haraimodoshi"),
             "odds1_tansho": _load_fixture(race_dir / "mykeibadb_odds1_tansho"),
             "odds1_fukusho": _load_fixture(race_dir / "mykeibadb_odds1_fukusho"),
+            "shussobetsu_keibajo": _load_fixture_optional(
+                race_dir / "mykeibadb_shussobetsu_keibajo"
+            ),
+            "shussobetsu_kyori": _load_fixture_optional(race_dir / "mykeibadb_shussobetsu_kyori"),
+            "shussobetsu_baba": _load_fixture_optional(race_dir / "mykeibadb_shussobetsu_baba"),
         }
+
+        # 着度数用: 血統登録番号→raw馬柱
+        self.past_performances_map: dict[str, pd.DataFrame] = (
+            _load_past_performances_map_optional(race_dir / "scraping_past_performances")
+        )
 
 
 class HorseFixtures:
@@ -198,6 +236,16 @@ def _create_scraping_provider(
     mock_result_scraper.get_trifecta_payoff.return_value = fixtures.scraping["payoff_trifecta"]
     mocks["result_scraper"] = mock_result_scraper
 
+    # HorsePageScraper（着度数用、血統登録番号ごとにraw馬柱を返す）
+    def _horse_page_scraper_factory(horse_id: str, **_: object) -> MagicMock:
+        mock_horse_page_scraper = MagicMock()
+        mock_horse_page_scraper.get_past_performances.return_value = (
+            fixtures.past_performances_map.get(horse_id, pd.DataFrame())
+        )
+        return mock_horse_page_scraper
+
+    mocks["horse_page_scraper"] = MagicMock(side_effect=_horse_page_scraper_factory)
+
     return ScrapingProvider(), mocks
 
 
@@ -221,7 +269,22 @@ def _create_mykeibadb_mocks(
     mock_odds_getter.get_odds1_tansho.return_value = fixtures.mykeibadb["odds1_tansho"]
     mock_odds_getter.get_odds1_fukusho.return_value = fixtures.mykeibadb["odds1_fukusho"]
 
-    return {"race_getter": mock_race_getter, "odds_getter": mock_odds_getter}
+    mock_shussobetsu_getter = MagicMock()
+    mock_shussobetsu_getter.get_shussobetsu_keibajo.return_value = fixtures.mykeibadb[
+        "shussobetsu_keibajo"
+    ]
+    mock_shussobetsu_getter.get_shussobetsu_kyori.return_value = fixtures.mykeibadb[
+        "shussobetsu_kyori"
+    ]
+    mock_shussobetsu_getter.get_shussobetsu_baba.return_value = fixtures.mykeibadb[
+        "shussobetsu_baba"
+    ]
+
+    return {
+        "race_getter": mock_race_getter,
+        "odds_getter": mock_odds_getter,
+        "shussobetsu_getter": mock_shussobetsu_getter,
+    }
 
 
 @pytest.fixture(params=RACE_CODES)
@@ -302,6 +365,73 @@ def mykeibadb_provider_with_mocks(
         ),
         patch(
             "keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter",
+            return_value=mocks["shussobetsu_getter"],
         ),
     ):
         yield MykeibaDBProvider(), race_fixtures
+
+
+@pytest.fixture(params=CHAKUDOSU_RACE_CODES)
+def chakudosu_race_fixtures(request: pytest.FixtureRequest) -> RaceFixtures:
+    """着度数統合テスト用レースフィクスチャ.
+
+    CHAKUDOSU_RACE_CODESから選択された各レースに対してパラメータ化される。
+    """
+    race_code: str = request.param
+    race_info = next(r for r in TEST_CASES["races"] if r["race_code"] == race_code)
+    return RaceFixtures(race_code, race_info["name"])
+
+
+@pytest.fixture()
+def chakudosu_scraping_provider_with_mocks(
+    chakudosu_race_fixtures: RaceFixtures,
+) -> Generator[tuple[ScrapingProvider, RaceFixtures], None, None]:
+    """着度数統合テスト用、モック済みScrapingProviderを返すfixture.
+
+    Yields:
+        tuple[ScrapingProvider, RaceFixtures]: ScrapingProviderとフィクスチャのペア
+    """
+    provider, mocks = _create_scraping_provider(chakudosu_race_fixtures)
+
+    with (
+        patch(
+            "keiba_data_interface.providers.scraping_provider.EntryPageScraper",
+            return_value=mocks["entry_scraper"],
+        ),
+        patch(
+            "keiba_data_interface.providers.scraping_provider.HorsePageScraper",
+            new=mocks["horse_page_scraper"],
+        ),
+    ):
+        yield provider, chakudosu_race_fixtures
+
+
+@pytest.fixture()
+def chakudosu_mykeibadb_provider_with_mocks(
+    chakudosu_race_fixtures: RaceFixtures,
+) -> Generator[tuple[MykeibaDBProvider, RaceFixtures], None, None]:
+    """着度数統合テスト用、モック済みMykeibaDBProviderを返すfixture.
+
+    Yields:
+        tuple[MykeibaDBProvider, RaceFixtures]: MykeibaDBProviderとフィクスチャのペア
+    """
+    mocks = _create_mykeibadb_mocks(chakudosu_race_fixtures)
+
+    with (
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.RaceGetter",
+            return_value=mocks["race_getter"],
+        ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.OddsGetter",
+            return_value=mocks["odds_getter"],
+        ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.MasterGetter",
+        ),
+        patch(
+            "keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter",
+            return_value=mocks["shussobetsu_getter"],
+        ),
+    ):
+        yield MykeibaDBProvider(), chakudosu_race_fixtures

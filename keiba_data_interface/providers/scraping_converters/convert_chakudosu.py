@@ -61,14 +61,11 @@ def convert_chakudosu(
         }
         past = past_performances_map.get(ketto_toroku_bango, pd.DataFrame())
         target = _filter_target_rows(past, race_date)
-        if target.empty:
-            row.update(dict.fromkeys(_COUNT_COLUMNS, pd.NA))
-        else:
-            counts = dict.fromkeys(_COUNT_COLUMNS, 0)
-            for _, performance in target.iterrows():
-                for col in _columns_for_performance(performance):
-                    counts[col] += 1
-            row.update(counts)
+        counts = dict.fromkeys(_COUNT_COLUMNS, 0)
+        for _, performance in target.iterrows():
+            for col in _columns_for_performance(performance):
+                counts[col] += 1
+        row.update(counts)
         rows.append(row)
 
     df = pd.DataFrame(rows)

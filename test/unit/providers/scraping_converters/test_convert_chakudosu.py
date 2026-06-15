@@ -52,8 +52,8 @@ def test_output_columns_match_schema() -> None:
     assert list(result.columns) == CHAKUDOSU_COLUMNS
 
 
-def test_new_horse_all_nan() -> None:
-    """中央出走歴のない馬は着回数カラムがすべてNaNになる."""
+def test_new_horse_all_zero() -> None:
+    """中央出走歴のない馬は着回数カラムがすべて0になる."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {})
@@ -62,8 +62,8 @@ def test_new_horse_all_nan() -> None:
     assert row["レースコード"] == RACE_CODE
     assert row["血統登録番号"] == "2021105001"
     assert row["馬名"] == "テスト馬1"
-    assert pd.isna(row["中山ダ1着"])
-    assert pd.isna(row["芝1200以下着外"])
+    assert row["中山ダ1着"] == 0
+    assert row["芝1200以下着外"] == 0
 
 
 def test_keibajo_kyori_baba_columns_mapped() -> None:
@@ -176,7 +176,7 @@ def test_chiho_kaigai_excluded(shusai: str) -> None:
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
     row = result.iloc[0]
-    assert pd.isna(row["ダ1601-18001着"])
+    assert row["ダ1601-18001着"] == 0
 
 
 def test_date_filter_excludes_same_or_after_race_date() -> None:
@@ -255,10 +255,10 @@ def test_sorted_by_ketto_toroku_bango() -> None:
 
 # 準正常系
 def test_empty_past_performances_treated_as_new_horse() -> None:
-    """馬柱が空DataFrameの場合は新馬扱い（全カラムNaN）になる."""
+    """馬柱が空DataFrameの場合は新馬扱い（全カラム0）になる."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": pd.DataFrame()})
 
     row = result.iloc[0]
-    assert pd.isna(row["中山ダ1着"])
+    assert row["中山ダ1着"] == 0

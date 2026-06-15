@@ -89,16 +89,16 @@ def test_past_performances_aggregated(
 
 
 # 準正常系
-def test_new_horse_columns_are_nan(
+def test_new_horse_columns_are_zero(
     provider_full: ScrapingProvider,
     mock_scraper: MagicMock,
     mock_past_scraper: MagicMock,
 ) -> None:
-    """中央出走歴のない馬は着回数カラムがすべてNaNになる."""
+    """中央出走歴のない馬は着回数カラムがすべて0になる."""
     mock_scraper.get_entry.return_value = create_scraping_entry()
     mock_past_scraper.get_past_performances.return_value = pd.DataFrame()
 
     result = provider_full.get_chakudosu(RACE_CODE)
 
     row = result.iloc[0]
-    assert pd.isna(row["中山芝1着"])
+    assert row["中山芝1着"] == 0

@@ -31,11 +31,12 @@ import json
 import traceback
 from datetime import date
 from pathlib import Path
+from test.integration.conftest import CHAKUDOSU_RACE_CODES
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import yaml
-from mykeibadb import MasterGetter, OddsGetter, RaceGetter
+from mykeibadb import MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
 from scraping import EntryPageScraper, HorsePageScraper, RaceScheduleScraper, ResultPageScraper
 from scraping.odds import scrape_odds_from_netkeiba
 
@@ -370,6 +371,54 @@ def extract_schedule_fixtures(target_date: date) -> dict[str, object] | None:
     return {"date": target_date.isoformat()}
 
 
+def extract_chakudosu_fixtures(race_code: str) -> None:
+    """出走別着度数の統合テスト用フィクスチャを抽出する.
+
+    mykeibadb側: ShussobetsuGetterの3テーブル（keibajo/kyori/baba）。
+    scraping側: 既存のscraping_entry.pklに登録された出走全馬について
+    HorsePageScraper.get_past_performances()（netkeibaへの実アクセス）。
+    """
+    print(f"\n=== chakudosu fixtures ({race_code}) ===")
+    race_dir = FIXTURES_DIR / "races" / race_code
+    entry_path = race_dir / "scraping_entry.pkl"
+    if not entry_path.exists():
+        print("  スキップ: scraping_entry.pklが存在しません")
+        return
+
+    print("[MykeibaDB]")
+    try:
+        sg = ShussobetsuGetter()
+        _save_df(
+            sg.get_shussobetsu_keibajo(race_code=race_code, convert_codes=False),
+            race_dir / "mykeibadb_shussobetsu_keibajo.pkl",
+        )
+        _save_df(
+            sg.get_shussobetsu_kyori(race_code=race_code, convert_codes=False),
+            race_dir / "mykeibadb_shussobetsu_kyori.pkl",
+        )
+        _save_df(
+            sg.get_shussobetsu_baba(race_code=race_code, convert_codes=False),
+            race_dir / "mykeibadb_shussobetsu_baba.pkl",
+        )
+    except Exception as e:
+        print(f"  MykeibaDBエラー: {e}")
+        traceback.print_exc()
+
+    print("[Scraping]")
+    try:
+        entry_df = pd.read_pickle(entry_path)
+        past_performances_map: dict[str, pd.DataFrame] = {}
+        for horse_id in entry_df["馬ID"]:
+            scraper = HorsePageScraper(str(horse_id))
+            past_performances_map[str(horse_id)] = scraper.get_past_performances()
+        path = race_dir / "scraping_past_performances.pkl"
+        pd.to_pickle(past_performances_map, path)
+        print(f"  保存: {path.relative_to(FIXTURES_DIR)} ({len(past_performances_map)}頭)")
+    except Exception as e:
+        print(f"  Scrapingエラー: {e}")
+        traceback.print_exc()
+
+
 def main() -> None:
     """フィクスチャデータを一括抽出する."""
     # テストケース読み込み
@@ -429,6 +478,11 @@ def main() -> None:
     print(f"  レース: {len(race_results)}件")
     print(f"  馬: {len(horse_results)}件")
     print(f"  スケジュール: {len(schedule_results)}件")
+
+    # 出走別着度数フィクスチャ抽出
+    for race_code in CHAKUDOSU_RACE_CODES:
+        extract_chakudosu_fixtures(race_code)
+
     print("\n完了!")
 
 

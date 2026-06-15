@@ -302,6 +302,23 @@ def _build_horse_master_known_diff() -> set[str]:
 KNOWN_DIFF_HORSE_MASTER: set[str] = _build_horse_master_known_diff()
 
 
+def _build_chakudosu_known_diff() -> set[str]:
+    """出走別着度数の既知差分カラムセットを生成する.
+
+    障害レースの馬場状態は、scraping（raw馬柱）とmykeibadb（SHUSSOBETSU_BABA）で
+    値が一致しない場合がある（KNOWN_DIFF_HORSE_MASTERの障害馬場状態と同じ root cause）。
+    """
+    chaku_sfx = ["1着", "2着", "3着", "4着", "5着", "着外"]
+    cols: set[str] = set()
+    for jotai in ["良", "稍", "重", "不"]:
+        for suf in chaku_sfx:
+            cols.add(f"障{jotai}{suf}")
+    return cols
+
+
+KNOWN_DIFF_CHAKUDOSU: set[str] = _build_chakudosu_known_diff()
+
+
 def _build_horse_master_scraping_columns() -> list[str]:
     """競走馬情報のscraping○カラムリストを生成する."""
     chaku_sfx = ["1着", "2着", "3着", "4着", "5着", "着外"]
