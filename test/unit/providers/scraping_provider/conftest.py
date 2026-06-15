@@ -315,7 +315,7 @@ def create_scraping_past_performances() -> pd.DataFrame:
                 "増減": 2,
                 "勝ち馬(2着馬)": "ライバル馬",
                 "賞金": 1000,
-                "主催": "JRA",
+                "主催": "中央",
                 "間隔日数": 28,
             },
         ]
