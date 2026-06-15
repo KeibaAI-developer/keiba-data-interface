@@ -178,7 +178,12 @@ def _get_course_kubun_of_day(
         race_code = f"{year}{monthday}{keibajo_code}{kai:02d}{nichime:02d}{race_num:02d}"
         try:
             race_row = provider.get_race_basic_info(race_code).iloc[0]
-        except ValueError:
+        except ValueError as exc:
+            logger.debug(
+                "レース基本情報を取得できなかったため読み飛ばします: race_code=%s, %s",
+                race_code,
+                exc,
+            )
             continue
         if race_row["芝ダ"] == "芝" and not pd.isna(race_row["コース区分"]):
             return str(race_row["コース区分"])
