@@ -77,7 +77,9 @@ def convert_chakudosu(
 def _filter_target_rows(past: pd.DataFrame, race_date: date) -> pd.DataFrame:
     """対象レース出走時点までの集計対象行を抽出する.
 
-    中央のレースかつ対象レースの開催日より前かつ着順が数値の行のみを残す。
+    中央のレースかつ対象レースの開催日より前の行のみを残す。
+    着順が数値の行に加えて、競走中止（着順NaN・異常区分="中止"）の行も
+    着外として集計対象に含める（mykeibadbのSHUSSOBETSU系テーブルの集計仕様に合わせる）。
 
     Args:
         past (pd.DataFrame): HorsePageScraper.get_past_performances() のraw出力
@@ -90,7 +92,9 @@ def _filter_target_rows(past: pd.DataFrame, race_date: date) -> pd.DataFrame:
         return past
     # 着順は取消・除外・中止・失格でNaN、降着は確定着順の数値（pd.to_numeric済み）
     mask = (
-        (past["主催"] == "中央") & (past["日付"] < race_date) & past["着順"].notna()
+        (past["主催"] == "中央")
+        & (past["日付"] < race_date)
+        & (past["着順"].notna() | (past["異常区分"] == "中止"))
     )
     return past[mask]
 
@@ -126,12 +130,16 @@ def _columns_for_performance(performance: pd.Series) -> list[str]:
 def _chaku_suffix(chakujun: float) -> str:
     """着順から着順サフィックスを求める.
 
+    着順がNaN（競走中止）の場合は着外として扱う。
+
     Args:
-        chakujun (float): 着順（数値）
+        chakujun (float): 着順（数値、競走中止の場合はNaN）
 
     Returns:
         str: 着順サフィックス（"1着"〜"5着" または "着外"）
     """
+    if pd.isna(chakujun):
+        return "着外"
     order = int(chakujun)
     if 1 <= order <= 5:
         return f"{order}着"
