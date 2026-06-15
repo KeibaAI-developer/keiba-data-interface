@@ -6,6 +6,8 @@ DataInterfaceを使用して、scraping・mykeibadb両プロバイダーで
 
 import argparse
 
+import time
+
 import pandas as pd
 
 from keiba_data_interface import DataInterface
@@ -61,6 +63,8 @@ def main() -> None:
 
     results: dict[str, pd.DataFrame] = {}
     for provider in ("scraping", "mykeibadb"):
+        print(f"\n【プロバイダー: {provider}】")
+        start_time = time.time()
         di = DataInterface(provider)
         df = di.get_race_basic_info(race_code, calc_course_days=args.calc_course_days)
         results[provider] = df
@@ -71,6 +75,7 @@ def main() -> None:
             for col in df.columns:
                 value = df.at[0, col]
                 print(f"  {col}: {value}")
+        print(f"処理時間: {time.time() - start_time:.2f}秒")
     print("\n【差分】")
     _show_diff(results["scraping"], results["mykeibadb"])
 
