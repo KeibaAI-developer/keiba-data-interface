@@ -91,6 +91,7 @@ def _filter_target_rows(past: pd.DataFrame, race_date: date) -> pd.DataFrame:
     """
     if past.empty:
         return past
+    # 着順は取消・除外・中止・失格でNaN、降着は確定着順の数値（pd.to_numeric済み）
     mask = (
         (past["主催"] == "中央") & (past["日付"] < race_date) & past["着順"].notna()
     )
