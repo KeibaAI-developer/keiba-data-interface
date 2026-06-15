@@ -22,14 +22,15 @@ class RaceDay:
         race_date (date): 開催日
         kai (int): 開催回
         nichime (int): 開催日目
-        races (list[tuple[str, str | None]]): レース番号順の（芝ダ, コース区分）のリスト
+        races (list[tuple[str, str | None] | None]): レース番号順の（芝ダ, コース区分）のリスト。
+            要素がNoneの場合はそのレース番号が開催日に存在しない（欠番）ことを表す
         keibajo_code (str): 競馬場コード
     """
 
     race_date: date
     kai: int
     nichime: int
-    races: list[tuple[str, str | None]]
+    races: list[tuple[str, str | None] | None]
     keibajo_code: str = KEIBAJO_CODE
 
 
@@ -74,14 +75,16 @@ class MockProvider:
             pd.DataFrame: 芝ダ・コース区分を含むレース基本情報のDataFrame（1行）
 
         Raises:
-            LookupError: 開催日データに存在しないレースコードの場合
+            ValueError: 開催日データに存在しないレースコードの場合
         """
         race_date = date(int(race_code[:4]), int(race_code[4:6]), int(race_code[6:8]))
         race_num = int(race_code[14:16])
         day = self.race_days.get(race_date)
-        if day is None or race_num > len(day.races):
-            raise LookupError(f"開催日データに存在しないレースコードです: {race_code}")
-        shiba_da, course_kubun = day.races[race_num - 1]
+        if day is None or race_num > len(day.races) or day.races[race_num - 1] is None:
+            raise ValueError(f"get_race_shosai()が空のDataFrameを返しました: race_code={race_code}")
+        race = day.races[race_num - 1]
+        assert race is not None
+        shiba_da, course_kubun = race
         kubun_value = course_kubun if course_kubun is not None else pd.NA
         return pd.DataFrame({"芝ダ": [shiba_da], "コース区分": [kubun_value]})
 
@@ -179,22 +182,39 @@ def build_race_basic_info(
     return df
 
 
-def turf_day_races(course_kubun: str) -> list[tuple[str, str | None]]:
+def turf_day_races(course_kubun: str) -> list[tuple[str, str | None] | None]:
     """ダート1レース後に芝レースが続く開催日のレース構成を生成する
 
     Args:
         course_kubun (str): 芝レースのコース区分
 
     Returns:
-        list[tuple[str, str | None]]: レース番号順の（芝ダ, コース区分）のリスト
+        list[tuple[str, str | None] | None]: レース番号順の（芝ダ, コース区分）のリスト
     """
     return [("ダ", None), ("芝", course_kubun)]
 
 
-def dirt_only_day_races() -> list[tuple[str, str | None]]:
+def turf_day_races_with_missing_low_numbers(
+    course_kubun: str,
+) -> list[tuple[str, str | None] | None]:
+    """レース番号1・2が欠番で、3レース目に芝レースが続く開催日のレース構成を生成する
+
+    2020-03-31 中山（レース番号03〜12のみ開催）を模したケース。
+
+    Args:
+        course_kubun (str): 芝レースのコース区分
+
+    Returns:
+        list[tuple[str, str | None] | None]: レース番号順の（芝ダ, コース区分）のリスト。
+            レース番号1・2はNone（欠番）
+    """
+    return [None, None, ("芝", course_kubun)] + [("ダ", None)] * 9
+
+
+def dirt_only_day_races() -> list[tuple[str, str | None] | None]:
     """芝レースが存在しない開催日のレース構成（12レース全てダート）を生成する
 
     Returns:
-        list[tuple[str, str | None]]: レース番号順の（芝ダ, コース区分）のリスト
+        list[tuple[str, str | None] | None]: レース番号順の（芝ダ, コース区分）のリスト
     """
     return [("ダ", None)] * 12

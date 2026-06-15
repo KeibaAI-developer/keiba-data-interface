@@ -159,6 +159,7 @@ def _get_course_kubun_of_day(
     レース番号1〜12の順にレース基本情報を取得し、最初に見つかった芝レースの
     コース区分を返す。芝コースのコース区分は競馬場・開催日単位で共通であるため、
     1レース分の情報で判定できる。
+    開催日に存在しないレース番号（ValueError）は読み飛ばす。
 
     Args:
         provider (DataProvider): 過去レース取得に使用するProvider
@@ -175,7 +176,15 @@ def _get_course_kubun_of_day(
     nichime = int(schedule_row["開催日目"])
     for race_num in range(1, _MAX_RACE_NUM + 1):
         race_code = f"{year}{monthday}{keibajo_code}{kai:02d}{nichime:02d}{race_num:02d}"
-        race_row = provider.get_race_basic_info(race_code).iloc[0]
+        try:
+            race_row = provider.get_race_basic_info(race_code).iloc[0]
+        except ValueError as exc:
+            logger.debug(
+                "レース基本情報を取得できなかったため読み飛ばします: race_code=%s, %s",
+                race_code,
+                exc,
+            )
+            continue
         if race_row["芝ダ"] == "芝" and not pd.isna(race_row["コース区分"]):
             return str(race_row["コース区分"])
     logger.debug("芝レースが存在しない開催日です: 開催年=%s, 開催月日=%s", year, monthday)

@@ -14,6 +14,7 @@ from .conftest import (
     build_race_basic_info,
     dirt_only_day_races,
     turf_day_races,
+    turf_day_races_with_missing_low_numbers,
 )
 
 
@@ -95,6 +96,23 @@ def test_calc_course_days_skips_day_without_turf_race() -> None:
         [
             RaceDay(date(2025, 6, 1), 2, 1, turf_day_races("A")),
             RaceDay(date(2025, 6, 7), 2, 2, dirt_only_day_races()),
+        ]
+    )
+    race_basic_info = build_race_basic_info(date(2025, 6, 8), "芝", "A")
+
+    result = calc_course_days(race_basic_info, provider)
+
+    assert result["芝コース日目"].iloc[0] == 2
+    assert result["芝コース初日"].iloc[0] == "20250601"
+    assert result["芝コース経過日数"].iloc[0] == 8
+    assert result["芝コース週目"].iloc[0] == 2
+
+
+def test_calc_course_days_skips_missing_low_race_numbers() -> None:
+    """レース番号1・2が欠番の開催日でも欠番を読み飛ばして芝コース区分を判定する"""
+    provider = MockProvider(
+        [
+            RaceDay(date(2025, 6, 1), 2, 1, turf_day_races_with_missing_low_numbers("A")),
         ]
     )
     race_basic_info = build_race_basic_info(date(2025, 6, 8), "芝", "A")
