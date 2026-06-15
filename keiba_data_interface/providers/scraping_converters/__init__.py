@@ -1,6 +1,7 @@
 """scraping出力を統一スキーマに変換するコンバータモジュール."""
 
 from keiba_data_interface.providers.scraping_converters.common import build_prize_map
+from keiba_data_interface.providers.scraping_converters.convert_chakudosu import convert_chakudosu
 from keiba_data_interface.providers.scraping_converters.convert_entry import convert_entry
 from keiba_data_interface.providers.scraping_converters.convert_horse_master import (
     convert_horse_master,
@@ -21,6 +22,7 @@ from keiba_data_interface.providers.scraping_converters.convert_schedule import 
 
 __all__ = [
     "build_prize_map",
+    "convert_chakudosu",
     "convert_entry",
     "convert_horse_master",
     "convert_odds",
