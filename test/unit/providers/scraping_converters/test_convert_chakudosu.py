@@ -29,6 +29,7 @@ def _performance_row(
     馬場: str,
     着順: float,
     主催: str = "中央",
+    異常区分: str = "",
 ) -> dict[str, object]:
     """raw馬柱の1行分の辞書を生成する."""
     return {
@@ -39,6 +40,7 @@ def _performance_row(
         "距離": 距離,
         "馬場": 馬場,
         "着順": 着順,
+        "異常区分": 異常区分,
     }
 
 
@@ -149,11 +151,13 @@ def test_kourakuchaku_uses_confirmed_numeric_order() -> None:
 
 
 def test_nan_chakujun_excluded() -> None:
-    """着順がNaN（取消・除外・中止・失格）の行は集計対象外."""
+    """着順がNaN（取消・除外・失格）の行は集計対象外."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
     past = _past_performances(
         [
-            _performance_row(date(2025, 4, 1), "東京", "芝", 2000, "良", float("nan")),
+            _performance_row(
+                date(2025, 4, 1), "東京", "芝", 2000, "良", float("nan"), 異常区分="取消"
+            ),
             _performance_row(date(2025, 3, 1), "東京", "芝", 2000, "良", 1.0),
         ]
     )
@@ -163,6 +167,26 @@ def test_nan_chakujun_excluded() -> None:
     row = result.iloc[0]
     assert row["東京芝1着"] == 1
     assert row["東京芝着外"] == 0
+
+
+def test_chushi_counted_as_chakugai() -> None:
+    """競走中止（着順NaN・異常区分="中止"）の行は着外として集計される."""
+    entry_df = _entry_df([("2021105001", "テスト馬1")])
+    past = _past_performances(
+        [
+            _performance_row(
+                date(2025, 4, 1), "東京", "芝", 2000, "良", float("nan"), 異常区分="中止"
+            )
+        ]
+    )
+
+    result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
+
+    row = result.iloc[0]
+    assert row["東京芝着外"] == 1
+    assert row["芝1801-2000着外"] == 1
+    assert row["芝左着外"] == 1
+    assert row["芝良着外"] == 1
 
 
 @pytest.mark.parametrize("shusai", ["地方", "海外"])
