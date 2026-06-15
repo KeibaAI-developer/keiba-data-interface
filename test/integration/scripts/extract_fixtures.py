@@ -31,6 +31,7 @@ import json
 import traceback
 from datetime import date
 from pathlib import Path
+from test.integration.conftest import CHAKUDOSU_RACE_CODES
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -368,19 +369,6 @@ def extract_schedule_fixtures(target_date: date) -> dict[str, object] | None:
         traceback.print_exc()
 
     return {"date": target_date.isoformat()}
-
-
-# 出走別着度数の統合テスト対象レース（既存race_fixturesのうち境界条件をカバーするもの）
-CHAKUDOSU_RACE_CODES: list[str] = [
-    "2025051105020607",  # 4歳以上2勝クラス（出走頭数5頭）
-    "2025080304020407",  # アイビスSD2025（新潟芝1000m=直）
-    "2024122106050710",  # 中山大障害2024（障害）
-    "2020032907010811",  # 高松宮記念2020（降着1頭）
-    "2012050605020611",  # NHKマイルC2012（失格1頭, 競走中止1頭）
-    "2023090301020809",  # すずらん賞2023（地方から移籍初戦）
-    "2023112605050812",  # ジャパンC2023（外国馬1頭, 地方馬2頭）
-    "2023043008010411",  # 天皇賞(春)2023（競走中止2頭）
-]
 
 
 def extract_chakudosu_fixtures(race_code: str) -> None:
