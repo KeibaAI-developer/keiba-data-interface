@@ -1,5 +1,8 @@
 """convert_chakudosu関数のテスト."""
 
+# raw馬柱のカラム名をそのまま引数名に使うため、日本語の引数名を許可する
+# ruff: noqa: N803
+
 from datetime import date
 
 import pandas as pd
