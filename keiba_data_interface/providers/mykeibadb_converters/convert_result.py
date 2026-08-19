@@ -109,6 +109,11 @@ def _is_niigata_straight_1000m(raw: pd.DataFrame) -> bool:
     keibajo_code == "04"（新潟）かつ全コーナー通過順位が"00"（直線コース）の場合にTrueを返す。
     直線1000mではコーナーが存在しないためDBに全て"00"が格納される。
 
+    keiba_domain.is_straight_course(keibajo, turf_dirt, distance) には置き換えない。
+    UMAGOTO_RACE_JOHO（本関数の入力raw）には距離・芝ダのカラムが存在せず
+    （距離・トラックコードはRACE_BASIC_INFO側のカラムであり、この時点でjoinされていない）、
+    rawのコーナー通過順位から判定する必要があるため。
+
     Args:
         raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力
 
