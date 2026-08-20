@@ -8,9 +8,9 @@ on:
 
 jobs:
   ci:
-    uses: KeibaAI-developer/library-workflow/.github/workflows/ci.yml@main
+    uses: KeibaAI-developer/library-workflow/.github/workflows/ci.yml@develop
     with:
       package_name: keiba_data_interface
       repo_name: keiba-data-interface
       run_integration_test: true
-      dependency_library: 'keiba-domain@develop keiba-scraping mykeibadb-python'
+      dependency_library: 'keiba-domain@develop keiba-scraping@develop mykeibadb-python@develop'
