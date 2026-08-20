@@ -13,4 +13,4 @@ jobs:
       package_name: keiba_data_interface
       repo_name: keiba-data-interface
       run_integration_test: true
-      dependency_library: 'keiba-scraping mykeibadb-python keiba-domain@develop'
+      dependency_library: 'keiba-domain@develop keiba-scraping mykeibadb-python'
