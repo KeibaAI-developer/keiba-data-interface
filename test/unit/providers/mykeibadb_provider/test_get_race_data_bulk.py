@@ -15,6 +15,8 @@ from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 
 from .conftest import (
     create_haraimodoshi_df,
+    create_odds1_fukusho_df,
+    create_odds1_tansho_df,
     create_race_shosai_df,
     create_umagoto_race_joho_df,
 )
@@ -153,7 +155,21 @@ def multi_race_getters(
     """
 
     def make_side_effect(full: pd.DataFrame) -> Callable[..., pd.DataFrame]:
+        """race_code引数で絞り込んで返すside_effectを作る.
+
+        Args:
+            full (pd.DataFrame): 全レース分のデータ
+
+        Returns:
+            Callable[..., pd.DataFrame]: getterのside_effectに渡す関数
+        """
+
         def side_effect(*_args: object, **kwargs: object) -> pd.DataFrame:
+            """race_code引数に一致する行だけを返す.
+
+            Returns:
+                pd.DataFrame: 指定されたレースコードの行
+            """
             race_code = kwargs.get("race_code")
             if isinstance(race_code, str):
                 codes: list[str] = [race_code]
@@ -174,8 +190,12 @@ def multi_race_getters(
     mock_race_getter.get_haraimodoshi.side_effect = make_side_effect(
         _make_multi_race(create_haraimodoshi_df, _RACE_CODES)
     )
-    for method in ("get_odds1_tansho", "get_odds1_fukusho"):
-        getattr(mock_odds_getter, method).return_value = pd.DataFrame()
+    mock_odds_getter.get_odds1_tansho.side_effect = make_side_effect(
+        _make_multi_race(create_odds1_tansho_df, _RACE_CODES)
+    )
+    mock_odds_getter.get_odds1_fukusho.side_effect = make_side_effect(
+        _make_multi_race(create_odds1_fukusho_df, _RACE_CODES)
+    )
     return mock_race_getter, mock_odds_getter
 
 
@@ -208,8 +228,9 @@ def _make_multi_race(
         (DataKind.ENTRY, "get_entry"),
         (DataKind.RESULT, "get_result"),
         (DataKind.PAYOFF, "get_payoff"),
+        (DataKind.WIN_SHOW_ODDS, "get_win_show_odds"),
     ],
-    ids=["race_basic_info", "race_result_info", "entry", "result", "payoff"],
+    ids=["race_basic_info", "race_result_info", "entry", "result", "payoff", "win_show_odds"],
 )
 def test_bulk_result_matches_single_fetch(
     provider: MykeibaDBProvider,
@@ -219,7 +240,8 @@ def test_bulk_result_matches_single_fetch(
 ) -> None:
     """一括取得の戻り値が、レースごとに1件取得した結果と一致する.
 
-    値・カラム構成・dtype・行順・indexのすべてを比較する。
+    値・カラム構成・dtype・行順・indexのすべてを比較する。プリフェッチできる全種別
+    （RACE_DATA_KINDS）を対象にする。
     """
     result = provider.get_race_data_bulk(_RACE_CODES, [kind])
 
