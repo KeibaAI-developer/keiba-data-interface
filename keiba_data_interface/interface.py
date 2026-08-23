@@ -6,17 +6,14 @@ Provider名を指定することで、データソースを切り替えてデー
 
 import importlib
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import pandas as pd
 
 from keiba_data_interface import course_days
-from keiba_data_interface.cache import DataCache, is_future_race_code
+from keiba_data_interface.cache import DataCache, DataKind, is_future_race_code
 from keiba_data_interface.exceptions import KeibaDataInterfaceError
 from keiba_data_interface.protocols import DataProvider
-
-# キャッシュのデータ種別名
-_RACE_BASIC_INFO_KIND = "race_basic_info"
 
 _PROVIDER_MAP: dict[str, str] = {
     "scraping": "keiba_data_interface.providers.scraping_provider.ScrapingProvider",
@@ -73,14 +70,11 @@ class DataInterface:
         Returns:
             レース基本情報のDataFrame（1行）
         """
-        cached = self._cache.get(self._cache_kind(_RACE_BASIC_INFO_KIND), race_code)
-        if cached is not None:
-            result = cached.copy()
-        else:
-            result = self._provider.get_race_basic_info(race_code)
-            # コース日数を付与する前の値をキャッシュする。コース日数はCourseDaysCacheが
-            # 別に持つため、ここへ混ぜると付与の有無で戻り値が変わってしまう
-            self._cache.set(self._cache_kind(_RACE_BASIC_INFO_KIND), race_code, result.copy())
+        # コース日数を付与する前の値をキャッシュする。コース日数はCourseDaysCacheが
+        # 別に持つため、ここへ混ぜると付与の有無で戻り値が変わってしまう
+        result = self._get_cached(
+            DataKind.RACE_BASIC_INFO, race_code, self._provider.get_race_basic_info
+        )
         if calc_course_days:
             result = course_days.calc_course_days(
                 result, self._provider, self._logger, self._course_days_cache
@@ -132,15 +126,43 @@ class DataInterface:
             self._logger.debug("プリフェッチ対象のレースコードがありません")
             return
 
-        self._logger.debug("レース基本情報をプリフェッチします: 件数=%d", len(targets))
-        races = self._provider.get_race_basic_info_bulk(targets)
-        for race_code, race_df in races.groupby("レースコード"):
-            self._cache.set(
-                self._cache_kind(_RACE_BASIC_INFO_KIND),
-                str(race_code),
-                race_df.reset_index(drop=True),
-            )
-        self._logger.debug("プリフェッチが完了しました: 取得=%d件", len(races))
+        self._logger.debug("レース単位データをプリフェッチします: 件数=%d", len(targets))
+        race_data = self._provider.get_race_data_bulk(targets)
+        for kind, by_race_code in race_data.items():
+            for race_code, df in by_race_code.items():
+                self._cache.set(self._cache_kind(kind), race_code, df)
+        self._logger.debug(
+            "プリフェッチが完了しました: 種別=%d, レース基本情報=%d件",
+            len(race_data),
+            len(race_data.get(DataKind.RACE_BASIC_INFO, {})),
+        )
+
+    def _get_cached(
+        self,
+        kind: str,
+        race_code: str,
+        fetch: Callable[[str], pd.DataFrame],
+    ) -> pd.DataFrame:
+        """キャッシュを見てから取得する.
+
+        キャッシュから返すのはコピーとする。呼び出し側が戻り値を変更してもキャッシュが
+        壊れないようにするため。
+
+        Args:
+            kind (str): キャッシュのデータ種別
+            race_code (str): 16桁レースコード
+            fetch (Callable[[str], pd.DataFrame]): キャッシュに無い場合の取得処理
+
+        Returns:
+            pd.DataFrame: 取得したDataFrame
+        """
+        cached = self._cache.get(self._cache_kind(kind), race_code)
+        if cached is not None:
+            return cached.copy()
+
+        result = fetch(race_code)
+        self._cache.set(self._cache_kind(kind), race_code, result.copy())
+        return result
 
     def _cache_kind(self, kind: str) -> str:
         """データソース名を含めたキャッシュのデータ種別名を返す.
@@ -166,8 +188,9 @@ class DataInterface:
         Returns:
             出馬表のDataFrame（出走頭数行）
         """
-        result = self._provider.get_entry(race_code)
-        return result
+        return self._get_cached(
+            DataKind.ENTRY, race_code, self._provider.get_entry
+        )
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
@@ -178,8 +201,9 @@ class DataInterface:
         Returns:
             単複オッズのDataFrame
         """
-        result = self._provider.get_win_show_odds(race_code)
-        return result
+        return self._get_cached(
+            DataKind.WIN_SHOW_ODDS, race_code, self._provider.get_win_show_odds
+        )
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
@@ -190,8 +214,9 @@ class DataInterface:
         Returns:
             レース結果のDataFrame（出走頭数行）
         """
-        result = self._provider.get_result(race_code)
-        return result
+        return self._get_cached(
+            DataKind.RESULT, race_code, self._provider.get_result
+        )
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
@@ -202,8 +227,9 @@ class DataInterface:
         Returns:
             レース結果情報のDataFrame（1行）
         """
-        result = self._provider.get_race_result_info(race_code)
-        return result
+        return self._get_cached(
+            DataKind.RACE_RESULT_INFO, race_code, self._provider.get_race_result_info
+        )
 
     def get_payoff(self, race_code: str) -> pd.DataFrame:
         """払戻情報を取得する.
@@ -214,8 +240,9 @@ class DataInterface:
         Returns:
             払戻情報のDataFrame（1行）
         """
-        result = self._provider.get_payoff(race_code)
-        return result
+        return self._get_cached(
+            DataKind.PAYOFF, race_code, self._provider.get_payoff
+        )
 
     def get_past_performances(self, horse_id: str) -> pd.DataFrame:
         """過去成績（馬柱）を取得する.

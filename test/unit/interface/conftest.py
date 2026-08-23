@@ -17,6 +17,7 @@ class _MockProvider:
         """コンストラクタ."""
         self.get_race_basic_info = MagicMock(return_value=pd.DataFrame({"col": [1]}))
         self.get_race_basic_info_bulk = MagicMock(return_value=pd.DataFrame({"col": [11]}))
+        self.get_race_data_bulk = MagicMock(return_value={})
         self.get_entry = MagicMock(return_value=pd.DataFrame({"col": [2]}))
         self.get_win_show_odds = MagicMock(return_value=pd.DataFrame({"col": [3]}))
         self.get_result = MagicMock(return_value=pd.DataFrame({"col": [4]}))
