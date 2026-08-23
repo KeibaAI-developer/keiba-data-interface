@@ -127,6 +127,8 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 |---|---|---|---|
 | `get_race_basic_info(race_code)` | 16桁レースコード | 1行 | [example_race_info.py](example/example_race_info.py) |
 | `get_race_basic_info_bulk(race_codes)` | 16桁レースコードのリスト | 実在したレース数行 | — |
+| `prefetch_races(race_codes)` | 16桁レースコードのリスト | `None` | — |
+| `clear_cache()` | なし | `None` | — |
 | `get_entry(race_code)` | 16桁レースコード | 出走頭数行 | [example_entry.py](example/example_entry.py) |
 | `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行 | [example_win_show_odds.py](example/example_win_show_odds.py) |
 | `get_result(race_code)` | 16桁レースコード | 出走頭数行 | [example_result.py](example/example_result.py) |
@@ -160,6 +162,50 @@ df = di.get_race_basic_info_bulk(race_codes)
 > **制約**: `scraping` プロバイダーは本メソッドに対応しておらず、`DataNotFoundError` を送出します。netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページスクレイピングになるためです。
 
 
+## プリフェッチとキャッシュ
+
+多数のレースを扱う場合、これから使うレースコードをまとめて渡して一括取得しておけます。以降の取得はメモリから返るため、**呼び出し側のコードを変えずに**クエリ回数を減らせます。
+
+```python
+from keiba_data_interface import DataCache, DataInterface
+
+di = DataInterface("mykeibadb")
+
+race_codes = ["2025122806050811", "2025122806050812"]
+di.prefetch_races(race_codes)   # 1クエリでまとめて取得
+
+df = di.get_race_basic_info(race_codes[0])  # メモリから返る
+```
+
+一度取得した結果もキャッシュされるため、プリフェッチしなくても同じレースを繰り返し取得すればクエリは1回で済みます。
+
+### キャッシュの共有
+
+複数の `DataInterface` でキャッシュを共有できます。対象レース群をまたいで処理する場合に使います。
+
+```python
+cache = DataCache()
+di_a = DataInterface("mykeibadb", cache=cache)
+di_b = DataInterface("mykeibadb", cache=cache)
+```
+
+キャッシュのキーにはデータソース名が含まれるため、データソースの異なる `DataInterface` で共有しても値が混ざりません。
+
+キャッシュを空にするには `clear_cache()` を使います。
+
+### 未来レースはキャッシュされない
+
+**未来レース（当日を含む）はキャッシュしません。** 単勝オッズは発走直前まで変動し、キャッシュした値を返すと古いオッズで予測することになるためです。`prefetch_races` に渡しても対象から外れ、毎回取得されます。
+
+### 上限
+
+保持する最大エントリ数を超えた分は、最も古く使われたものから捨てます（LRU）。上限はデータ種別ごとに独立して数えます。`DataCache(max_entries=...)` で変更できます。
+
+### scrapingプロバイダー
+
+`scraping` プロバイダーは一括取得に対応していないため、`prefetch_races` は何もしません（例外にはなりません）。単一キーの取得は従来どおり動作します。
+
+
 ## プロバイダーの違い
 
 | 項目 | `scraping` | `mykeibadb` |
@@ -170,6 +216,7 @@ df = di.get_race_basic_info_bulk(race_codes)
 | オフライン利用 | 不可 | 可（DB接続があれば） |
 | 取得可能な過去データ | ネットに残っている範囲 | mykeibadbが保持している範囲 |
 | `get_race_basic_info_bulk` | 非対応（`DataNotFoundError`） | 対応 |
+| `prefetch_races` | 何もしない | 対応 |
 
 
 ## ドキュメント
