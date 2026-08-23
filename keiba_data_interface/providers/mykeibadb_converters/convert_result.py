@@ -68,6 +68,11 @@ def convert_result_bulk(raw: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（複数レース分）
     """
+    if raw.empty:
+        # 0行ではレース単位の処理は何もしない。カラムを1つも持たないDataFrameが
+        # 渡されることもあるため、race_codeカラムの有無も問わない
+        return convert_result_common(convert_base(raw))
+
     # レース単位の処理はindexで行を対応づけるため、重複したindexを持つ入力では
     # 別レースの行を書き換えてしまう。位置と1対1に対応するindexで処理し、
     # 最後に入力のindexへ戻す

@@ -5,7 +5,7 @@ mykeibadb-pythonのRaceGetter/OddsGetterを使用してJRA-VANデータを取得
 """
 
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from datetime import date
 
 import pandas as pd
@@ -15,13 +15,17 @@ from keiba_data_interface.cache import RACE_DATA_KINDS, DataKind
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_chakudosu,
     convert_entry,
+    convert_entry_bulk,
     convert_horse_master,
     convert_past_performances,
     convert_payoff,
+    convert_payoff_bulk,
     convert_race_basic_info,
     convert_race_basic_info_bulk,
     convert_race_result_info,
+    convert_race_result_info_bulk,
     convert_result,
+    convert_result_bulk,
     convert_schedule,
     convert_win_show_odds,
 )
@@ -144,12 +148,12 @@ class MykeibaDBProvider:
                 race_code=unique_race_codes, convert_codes=False
             )
             if DataKind.RACE_BASIC_INFO in target_kinds:
-                result[DataKind.RACE_BASIC_INFO] = _convert_per_race(
-                    raw_shosai, convert_race_basic_info
+                result[DataKind.RACE_BASIC_INFO] = _split_per_race(
+                    convert_race_basic_info_bulk(raw_shosai)
                 )
             if DataKind.RACE_RESULT_INFO in target_kinds:
-                result[DataKind.RACE_RESULT_INFO] = _convert_per_race(
-                    raw_shosai, convert_race_result_info
+                result[DataKind.RACE_RESULT_INFO] = _split_per_race(
+                    convert_race_result_info_bulk(raw_shosai)
                 )
 
         if target_kinds & {DataKind.ENTRY, DataKind.RESULT}:
@@ -157,15 +161,19 @@ class MykeibaDBProvider:
                 race_code=unique_race_codes, convert_codes=False
             )
             if DataKind.ENTRY in target_kinds:
-                result[DataKind.ENTRY] = _convert_per_race(raw_umagoto, _convert_entry_sorted)
+                result[DataKind.ENTRY] = _split_per_race(
+                    convert_entry_bulk(raw_umagoto), sort_columns=["馬番"]
+                )
             if DataKind.RESULT in target_kinds:
-                result[DataKind.RESULT] = _convert_per_race(raw_umagoto, _convert_result_sorted)
+                result[DataKind.RESULT] = _split_per_race(
+                    convert_result_bulk(raw_umagoto), sort_columns=["確定着順", "馬番"]
+                )
 
         if DataKind.PAYOFF in target_kinds:
             raw_haraimodoshi = self._race_getter.get_haraimodoshi(
                 race_code=unique_race_codes, convert_codes=False
             )
-            result[DataKind.PAYOFF] = _convert_per_race(raw_haraimodoshi, convert_payoff)
+            result[DataKind.PAYOFF] = _split_per_race(convert_payoff_bulk(raw_haraimodoshi))
 
         if DataKind.WIN_SHOW_ODDS in target_kinds:
             raw_tansho = self._odds_getter.get_odds1_tansho(
@@ -374,27 +382,32 @@ class MykeibaDBProvider:
         return result
 
 
-def _convert_per_race(
-    raw: pd.DataFrame, converter: Callable[[pd.DataFrame], pd.DataFrame]
+def _split_per_race(
+    converted: pd.DataFrame, sort_columns: list[str] | None = None
 ) -> dict[str, pd.DataFrame]:
-    """レースコードでグループ化して変換関数を適用する.
+    """一括変換した結果をレースコードで分割する.
 
-    単勝人気順の再計算のようにレース単位でしか計算できない処理を含むため、
-    複数レースをまとめて変換できない。
+    変換をレースごとに行うと、カラム数と呼び出し回数に比例する型変換
+    （`apply_types`）がレース数だけ繰り返される。まとめて変換してから分割する。
+
+    indexは1件取得と同じく通し番号へ戻す。呼び出し側が1件取得と同じ形を期待するため。
 
     Args:
-        raw (pd.DataFrame): getterの出力（複数レース分）
-        converter (Callable[[pd.DataFrame], pd.DataFrame]): 1レース分の変換関数
+        converted (pd.DataFrame): 一括変換の結果（レースコードカラムを含む）
+        sort_columns (list[str] | None): レース内で並べ替えるカラム。1件取得と同じ
+            並びにするために使う
 
     Returns:
         dict[str, pd.DataFrame]: レースコード → 変換後のDataFrame
     """
-    if raw.empty:
+    if converted.empty:
         return {}
-    return {
-        str(race_code): converter(race_raw.reset_index(drop=True))
-        for race_code, race_raw in raw.groupby("race_code")
-    }
+    per_race: dict[str, pd.DataFrame] = {}
+    for race_code, race_df in converted.groupby("レースコード", sort=False):
+        if sort_columns:
+            race_df = race_df.sort_values(sort_columns)
+        per_race[str(race_code)] = race_df.reset_index(drop=True)
+    return per_race
 
 
 def _convert_odds_per_race(
@@ -433,31 +446,3 @@ def _convert_odds_per_race(
         )
         for race_code in race_codes
     }
-
-
-def _convert_entry_sorted(raw: pd.DataFrame) -> pd.DataFrame:
-    """出馬表を変換して馬番昇順に並べる.
-
-    単一キー取得（get_entry）と同じ並びにする。
-
-    Args:
-        raw (pd.DataFrame): UMAGOTO_RACE_JOHOの出力（1レース分）
-
-    Returns:
-        pd.DataFrame: 出馬表（馬番昇順）
-    """
-    return convert_entry(raw).sort_values("馬番").reset_index(drop=True)
-
-
-def _convert_result_sorted(raw: pd.DataFrame) -> pd.DataFrame:
-    """レース結果を変換して確定着順・馬番の昇順に並べる.
-
-    単一キー取得（get_result）と同じ並びにする。
-
-    Args:
-        raw (pd.DataFrame): UMAGOTO_RACE_JOHOの出力（1レース分）
-
-    Returns:
-        pd.DataFrame: レース結果（確定着順・馬番の昇順）
-    """
-    return convert_result(raw).sort_values(["確定着順", "馬番"]).reset_index(drop=True)
