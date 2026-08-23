@@ -159,6 +159,35 @@ def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
             f"get_haraimodoshi()は1行のDataFrameを返す必要がありますが、" f"{len(raw)}行返しました"
         )
 
+    return _convert_payoff_frame(raw)
+
+
+def convert_payoff_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """HARAIMODOSHIの出力（複数レース分）を統一スキーマに変換する.
+
+    変換はカラム単位の処理だけで構成されており、行数に依存しない。1件版と違い
+    行数のチェックは行わない（`convert_race_basic_info_bulk` と同じ扱い）。
+
+    分割は呼び出し側が行う。`レースコード` カラムはそのまま保持する。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_haraimodoshi()の出力（複数レース分）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（複数レース分）
+    """
+    return _convert_payoff_frame(raw)
+
+
+def _convert_payoff_frame(raw: pd.DataFrame) -> pd.DataFrame:
+    """HARAIMODOSHIの出力を統一スキーマへ変換する（行数に依存しない本体）.
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_haraimodoshi()の出力
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame
+    """
     df = raw.rename(columns=_PAYOFF_RENAME)
     df = ensure_columns(df, PAYOFF_COLUMNS)
     df = apply_types(df, PAYOFF_TYPES)

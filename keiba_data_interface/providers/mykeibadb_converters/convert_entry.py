@@ -148,6 +148,25 @@ def convert_entry(raw: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def convert_entry_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """UMAGOTO_RACE_JOHOの出力（複数レース分）を統一スキーマに変換する.
+
+    `convert_entry` の変換は要素単位・カラム単位の処理だけで構成されており、
+    レースをまたいで影響し合う処理が無い。そのため複数レース分をまとめて渡しても
+    レースごとに変換した結果と一致する。`ensure_columns` と `apply_types` は
+    レース数によらず1回で済むため、レースごとに変換するより大幅に速い。
+
+    分割は呼び出し側が行う。`レースコード` カラムはそのまま保持する。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（複数レース分）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（複数レース分）
+    """
+    return convert_entry(raw)
+
+
 def convert_base(raw: pd.DataFrame) -> pd.DataFrame:
     """UMAGOTO_RACE_JOHOの出力を統一スキーマに変換する（共通処理）.
 

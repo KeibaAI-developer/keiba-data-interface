@@ -53,7 +53,52 @@ def convert_race_result_info(raw: pd.DataFrame) -> pd.DataFrame:
             f"get_race_shosai()は1行のDataFrameを返す必要がありますが、" f"{len(raw)}行返しました"
         )
 
-    row = raw.iloc[0]
+    result = pd.DataFrame([_convert_row(raw.iloc[0])])
+    result = ensure_columns(result, RACE_RESULT_INFO_COLUMNS)
+    return apply_types(result, RACE_RESULT_INFO_TYPES)
+
+
+def convert_race_result_info_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """RACE_SHOSAIの出力（複数レース分）を統一スキーマに変換する.
+
+    変換は行ごとに辞書を組み立てる構造である（距離やコーナースロットによって
+    作られるカラム名が変わるため、カラム単位では書けない）。行ごとの変換は
+    そのまま残し、`ensure_columns` と `apply_types` だけをレース数によらず
+    1回にまとめる。
+
+    1件版と違い行数のチェックは行わない（`convert_race_basic_info_bulk` と同じ扱い）。
+    分割は呼び出し側が行う。`レースコード` カラムはそのまま保持する。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（複数レース分）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（複数レース分）
+    """
+    # 行ごとに作られるカラムが違う（距離やコーナースロットで変わる）ため、そのまま
+    # DataFrameにすると欠けたカラムがNaNで埋まる。1件版はensure_columnsがpd.NAで
+    # 埋めるため、object型のカラムで <NA> と nan の食い違いが出る。全カラムを
+    # pd.NAで初期化してから上書きし、1件版と同じ値になるようにする
+    empty_row: dict[str, object] = dict.fromkeys(RACE_RESULT_INFO_COLUMNS, pd.NA)
+    rows = [{**empty_row, **_convert_row(row)} for _, row in raw.iterrows()]
+    result = pd.DataFrame(rows)
+    result = ensure_columns(result, RACE_RESULT_INFO_COLUMNS)
+    return apply_types(result, RACE_RESULT_INFO_TYPES)
+
+
+def _convert_row(row: pd.Series) -> dict[str, object]:
+    """RACE_SHOSAIの1行を統一スキーマの辞書へ変換する.
+
+    ラップタイムは距離が200mの倍数かどうかで刻みが変わり、コーナー通過順は
+    スロット番号ではなく実際のコーナー番号へ割り当てるため、作られるカラム名が
+    行ごとに異なる。そのためカラム単位ではなく行単位で組み立てる。
+
+    Args:
+        row (pd.Series): RACE_SHOSAIの1行
+
+    Returns:
+        dict[str, object]: 統一スキーマのカラム名 → 値
+    """
     converted: dict[str, object] = {}
 
     converted["レースコード"] = row["race_code"]
@@ -106,7 +151,4 @@ def convert_race_result_info(raw: pd.DataFrame) -> pd.DataFrame:
         if src in row.index and pd.notna(row[src]):
             converted[dst] = row[src]
 
-    result = pd.DataFrame([converted])
-    result = ensure_columns(result, RACE_RESULT_INFO_COLUMNS)
-    result = apply_types(result, RACE_RESULT_INFO_TYPES)
-    return result
+    return converted
