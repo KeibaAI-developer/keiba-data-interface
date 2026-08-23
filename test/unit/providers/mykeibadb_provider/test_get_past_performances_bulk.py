@@ -140,6 +140,21 @@ def test_horse_without_history_has_empty_dataframe(
     )
 
 
+def test_horses_without_history_do_not_share_one_dataframe(
+    provider: MykeibaDBProvider, horse_getter: MagicMock
+) -> None:
+    """出走歴が無い馬どうしが同じDataFrameを共有しない.
+
+    同じインスタンスを共有すると、呼び出し側が一方を書き換えたときに他方まで変わる。
+    1件取得は呼び出しごとに独立したDataFrameを返す。
+    """
+    first, second = "9999999998", "9999999999"
+
+    result = provider.get_past_performances_bulk([first, second])
+
+    assert result[first] is not result[second]
+
+
 def test_empty_horse_ids_issues_no_query(
     provider: MykeibaDBProvider, horse_getter: MagicMock
 ) -> None:

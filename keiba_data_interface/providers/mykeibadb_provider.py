@@ -334,7 +334,9 @@ class MykeibaDBProvider:
             ketto_toroku_bango=unique_horse_ids, convert_codes=False
         )
         converted = convert_past_performances_bulk(raw)
-        result = {horse_id: empty for horse_id in unique_horse_ids}
+        # 出走歴が無い馬にはそれぞれ独立した空のDataFrameを持たせる。同じインスタンスを
+        # 共有すると、呼び出し側が一方を書き換えたときに他方まで変わる
+        result = {horse_id: empty.copy() for horse_id in unique_horse_ids}
         if not converted.empty:
             for horse_id, horse_df in converted.groupby("血統登録番号", sort=False):
                 key = str(horse_id)
