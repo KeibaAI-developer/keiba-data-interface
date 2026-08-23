@@ -166,19 +166,25 @@ def test_calc_course_days_raises_when_lookback_exceeds_limit() -> None:
 # 正常系（一括取得によるコース区分の判定）
 
 
-def test_bulk_provider_issues_single_call_per_race_day() -> None:
+@pytest.mark.parametrize("race_day_count", [1, 3])
+def test_bulk_provider_issues_single_call_per_race_day(race_day_count: int) -> None:
     """一括取得に対応したProviderでは開催日ごとに1回だけ問い合わせる.
 
     レース番号ごとに取得すると1開催日あたり最大12回の問い合わせが発生する。
+    遡及する開催日の数だけ呼び出され、それを超えないことを検証する。
     """
     target_date = date(2025, 6, 8)
-    provider = MockProvider([RaceDay(target_date - timedelta(days=7), 1, 1, turf_day_races("A"))])
+    race_days = [
+        RaceDay(target_date - timedelta(days=7 * week), 1, week, turf_day_races("A"))
+        for week in range(1, race_day_count + 1)
+    ]
+    provider = MockProvider(race_days)
     race_basic_info = build_race_basic_info(target_date, "芝", "A")
 
     calc_course_days(race_basic_info, provider)
 
     assert provider.get_race_basic_info_calls == []
-    assert len(provider.get_race_basic_info_bulk_calls) >= 1
+    assert len(provider.get_race_basic_info_bulk_calls) == race_day_count
     for race_codes in provider.get_race_basic_info_bulk_calls:
         assert len(race_codes) == 12
 

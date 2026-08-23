@@ -109,26 +109,6 @@ class MockProvider:
             return pd.DataFrame(columns=["レースコード", "芝ダ", "コース区分"])
         return pd.DataFrame(rows)[["レースコード", "芝ダ", "コース区分"]]
 
-    def _build_race_row(self, race_code: str) -> dict[str, object] | None:
-        """レースコードに対応する行を組み立てる
-
-        Args:
-            race_code (str): 16桁レースコード
-
-        Returns:
-            dict[str, object] | None: レース基本情報の1行。存在しない場合はNone
-        """
-        race_date = date(int(race_code[:4]), int(race_code[4:6]), int(race_code[6:8]))
-        race_num = int(race_code[14:16])
-        day = self.race_days.get(race_date)
-        if day is None or race_num > len(day.races) or day.races[race_num - 1] is None:
-            return None
-        race = day.races[race_num - 1]
-        assert race is not None
-        shiba_da, course_kubun = race
-        kubun_value = course_kubun if course_kubun is not None else pd.NA
-        return {"レースコード": race_code, "芝ダ": shiba_da, "コース区分": kubun_value}
-
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """テストでは使用しない
 
@@ -192,6 +172,26 @@ class MockProvider:
             NotImplementedError: 常に発生する
         """
         raise NotImplementedError
+
+    def _build_race_row(self, race_code: str) -> dict[str, object] | None:
+        """レースコードに対応する行を組み立てる
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Returns:
+            dict[str, object] | None: レース基本情報の1行。存在しない場合はNone
+        """
+        race_date = date(int(race_code[:4]), int(race_code[4:6]), int(race_code[6:8]))
+        race_num = int(race_code[14:16])
+        day = self.race_days.get(race_date)
+        if day is None or race_num > len(day.races) or day.races[race_num - 1] is None:
+            return None
+        race = day.races[race_num - 1]
+        assert race is not None
+        shiba_da, course_kubun = race
+        kubun_value = course_kubun if course_kubun is not None else pd.NA
+        return {"レースコード": race_code, "芝ダ": shiba_da, "コース区分": kubun_value}
 
 
 def build_race_basic_info(
