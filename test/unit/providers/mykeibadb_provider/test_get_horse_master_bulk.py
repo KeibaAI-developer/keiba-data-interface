@@ -134,6 +134,25 @@ def test_horses_not_in_master_do_not_share_one_dataframe(
     assert result[first] is not result[second]
 
 
+def test_duplicated_rows_are_reduced_to_one(
+    provider: MykeibaDBProvider, mock_master_getter: MagicMock
+) -> None:
+    """同じ馬の行が複数返っても1行だけを返す（1件取得と同じ）.
+
+    血統登録番号はkyosoba_master2の主キーなので起こらないが、起きた場合も
+    1件取得（raw.iloc[0]）と同じ結果になる必要がある。
+    """
+    horse_id = _HORSE_IDS[0]
+    duplicated = _make_multi_horse([horse_id, horse_id])
+    duplicated.loc[1, "bamei"] = "二行目の馬名"
+    mock_master_getter.get_kyosoba_master2.return_value = duplicated
+
+    result = provider.get_horse_master_bulk([horse_id])
+
+    assert len(result[horse_id]) == 1
+    assert result[horse_id]["馬名"].iloc[0] == "テスト馬1"
+
+
 def test_empty_horse_ids_issues_no_query(
     provider: MykeibaDBProvider, master_getter: MagicMock
 ) -> None:

@@ -402,7 +402,10 @@ class MykeibaDBProvider:
                 key = str(horse_id)
                 if key not in result:
                     continue
-                result[key] = horse_df.reset_index(drop=True)
+                # 1件版は raw.iloc[0] の1行だけを返す。血統登録番号はkyosoba_master2の
+                # 主キーなので同じ馬が複数行になることはないが、なった場合も1件版と
+                # 同じ結果にするため先頭行だけを採る
+                result[key] = horse_df.head(1).reset_index(drop=True)
         self._logger.debug("競走馬情報の一括取得が完了: 頭数=%d", len(result))
         return result
 
