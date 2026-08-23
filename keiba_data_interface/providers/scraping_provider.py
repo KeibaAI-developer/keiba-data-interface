@@ -17,6 +17,7 @@ from scraping import (
 )
 from scraping.exceptions import PageNotFoundError
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
     convert_chakudosu,
@@ -66,6 +67,22 @@ class ScrapingProvider:
         result = convert_race_basic_info(raw, race_code)
         self._logger.debug("レース基本情報の取得が完了: race_code=%s", race_code)
         return result
+
+    def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
+        """複数レースのレース基本情報をまとめて取得する（未対応）.
+
+        netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページ
+        スクレイピングになる。実用に耐えないためループでの実装は行わない。
+
+        Args:
+            race_codes (list[str]): 16桁レースコードのリスト
+
+        Raises:
+            DataNotFoundError: 常に送出する
+        """
+        message = "scrapingプロバイダーはレース基本情報の一括取得に対応していません"
+        self._logger.error(message)
+        raise DataNotFoundError(message)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.

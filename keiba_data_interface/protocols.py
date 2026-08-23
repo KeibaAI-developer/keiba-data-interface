@@ -24,6 +24,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
+        """複数レースのレース基本情報をまとめて取得する.
+
+        Args:
+            race_codes: 16桁レースコードのリスト
+        """
+        ...
+
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
 

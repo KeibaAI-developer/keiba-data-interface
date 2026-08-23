@@ -58,6 +58,27 @@ class DataInterface:
             result = course_days.calc_course_days(result, self._provider, self._logger)
         return result
 
+    def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
+        """複数レースのレース基本情報をまとめて取得する.
+
+        レースコードごとに`get_race_basic_info`を呼ぶとレース数だけクエリが発行される。
+        本メソッドは1回のクエリでまとめて取得する。
+
+        芝コース日数情報は付与しない。開催日ごとの遡及取得が必要で、まとめて取得する
+        利点が失われるため。
+
+        Args:
+            race_codes: 16桁レースコードのリスト
+
+        Returns:
+            レース基本情報のDataFrame（RACE_BASIC_INFO_COLUMNSのカラム、レースコード昇順）。
+            存在しないレースコードの行は含まれない。指定した件数と一致するとは限らない
+
+        Raises:
+            DataNotFoundError: scrapingプロバイダーを使用している場合
+        """
+        return self._provider.get_race_basic_info_bulk(race_codes)
+
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
 

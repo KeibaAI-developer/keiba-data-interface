@@ -49,6 +49,30 @@ def test_get_race_basic_info_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [1]}))
 
 
+def test_get_race_basic_info_bulk_delegates(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """get_race_basic_info_bulkがProviderに委譲される."""
+    interface, mock_provider = interface_with_mock
+    race_codes = ["2025050206021211", "2025050206021212"]
+    result = interface.get_race_basic_info_bulk(race_codes)
+    mock_provider.get_race_basic_info_bulk.assert_called_once_with(race_codes)
+    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [11]}))
+
+
+def test_get_race_basic_info_bulk_does_not_calc_course_days(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """get_race_basic_info_bulkが芝コース日数を計算しない.
+
+    開催日ごとの遡及取得が必要で、まとめて取得する利点が失われるため付与しない。
+    """
+    interface, _ = interface_with_mock
+    with patch("keiba_data_interface.course_days.calc_course_days") as mock_calc:
+        interface.get_race_basic_info_bulk(["2025050206021211"])
+    mock_calc.assert_not_called()
+
+
 def test_get_race_basic_info_with_calc_course_days(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:
