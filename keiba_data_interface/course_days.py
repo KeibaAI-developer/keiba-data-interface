@@ -33,10 +33,44 @@ _SCHEDULE_WINDOW_DAYS = 14
 _MAX_RACE_NUM = 12
 
 
+class CourseDaysCache:
+    """コース日数の計算に関わる取得結果と計算結果を保持するキャッシュ.
+
+    芝コース日数4カラムは「競馬場コード・開催日・コース区分」で決まり、レース単位の
+    情報ではない。同じ開催日のレースを繰り返し処理すると、同じ遡及取得と計算が
+    何度も走るため、次の3種類をキャッシュする。
+
+    | 対象 | キー |
+    |---|---|
+    | コース日数4カラムの値 | 競馬場コード / 開催年 / 開催月日 / コース区分 |
+    | 開催日のコース区分 | 競馬場コード / 開催年 / 開催月日 |
+    | 開催スケジュール | 開始日 / 終了日 |
+
+    上限は設けない。開催日の数は1年あたり200日程度で、5年分を連続処理しても
+    1,000件に満たないため。
+
+    Providerごとに別のインスタンスを持たせること。Providerが異なれば取得結果も
+    異なりうるため。
+    """
+
+    def __init__(self) -> None:
+        """キャッシュを初期化する."""
+        self._course_days: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+        self._course_kubun: dict[tuple[str, str, str], str | None] = {}
+        self._schedule: dict[tuple[str, str], pd.DataFrame] = {}
+
+    def clear(self) -> None:
+        """キャッシュを空にする."""
+        self._course_days.clear()
+        self._course_kubun.clear()
+        self._schedule.clear()
+
+
 def calc_course_days(
     race_basic_info: pd.DataFrame,
     provider: DataProvider,
     logger: logging.Logger | None = None,
+    cache: CourseDaysCache | None = None,
 ) -> pd.DataFrame:
     """芝コース日数4カラムを計算して埋めたDataFrameを返す
 
@@ -48,6 +82,8 @@ def calc_course_days(
         race_basic_info (pd.DataFrame): レース基本情報（1行、RACE_BASIC_INFO_COLUMNSのカラム）
         provider (DataProvider): 過去レース取得に使用するProvider
         logger (logging.Logger | None): ロガーインスタンス
+        cache (CourseDaysCache | None): 計算結果と取得結果のキャッシュ。省略時は
+            キャッシュせず毎回計算する
 
     Returns:
         pd.DataFrame: 芝コース日数4カラムを設定したレース基本情報
@@ -65,16 +101,24 @@ def calc_course_days(
         )
         return df
 
-    race_date = _to_date(str(row["開催年"]), str(row["開催月日"]))
     keibajo_code = str(row["競馬場コード"])
     course_kubun = str(row["コース区分"])
+    key = (keibajo_code, str(row["開催年"]), str(row["開催月日"]), course_kubun)
+
+    if cache is not None and key in cache._course_days:
+        logger.debug("コース日数をキャッシュから取得します: キー=%s", key)
+        return _apply_course_days(df, cache._course_days[key])
+
+    race_date = _to_date(str(row["開催年"]), str(row["開催月日"]))
     logger.debug(
         "コース日数の計算を開始します: 競馬場コード=%s, コース区分=%s, 開催日=%s",
         keibajo_code,
         course_kubun,
         race_date,
     )
-    past_days = _collect_same_course_days(provider, keibajo_code, course_kubun, race_date, logger)
+    past_days = _collect_same_course_days(
+        provider, keibajo_code, course_kubun, race_date, logger, cache
+    )
 
     # 対象レース日を含めた同一コースの開催日リスト（昇順）
     course_day_list = past_days + [race_date]
@@ -84,15 +128,40 @@ def calc_course_days(
         if (cur_day - prev_day).days > _SAME_WEEK_GAP_DAYS:
             course_week += 1
 
-    df["芝コース日目"] = pd.array([len(course_day_list)], dtype="Int64")
-    df["芝コース初日"] = first_date.strftime("%Y%m%d")
-    df["芝コース経過日数"] = pd.array([(race_date - first_date).days + 1], dtype="Int64")
-    df["芝コース週目"] = pd.array([course_week], dtype="Int64")
+    values: dict[str, Any] = {
+        "芝コース日目": len(course_day_list),
+        "芝コース初日": first_date.strftime("%Y%m%d"),
+        "芝コース経過日数": (race_date - first_date).days + 1,
+        "芝コース週目": course_week,
+    }
+    if cache is not None:
+        cache._course_days[key] = values
     logger.debug(
         "コース日数の計算が完了しました: 芝コース日目=%d, 芝コース週目=%d",
         len(course_day_list),
         course_week,
     )
+    return _apply_course_days(df, values)
+
+
+def _apply_course_days(df: pd.DataFrame, values: dict[str, Any]) -> pd.DataFrame:
+    """計算済みのコース日数4カラムをDataFrameへ設定する
+
+    キャッシュするのは計算した4カラムの値だけとし、呼び出しごとに渡された
+    レース基本情報へ設定する。DataFrame全体をキャッシュすると他のカラムまで
+    共有してしまうため。
+
+    Args:
+        df (pd.DataFrame): 設定先のレース基本情報（1行）
+        values (dict[str, Any]): コース日数4カラムの値
+
+    Returns:
+        pd.DataFrame: 4カラムを設定したDataFrame
+    """
+    df["芝コース日目"] = pd.array([values["芝コース日目"]], dtype="Int64")
+    df["芝コース初日"] = values["芝コース初日"]
+    df["芝コース経過日数"] = pd.array([values["芝コース経過日数"]], dtype="Int64")
+    df["芝コース週目"] = pd.array([values["芝コース週目"]], dtype="Int64")
     return df
 
 
@@ -102,6 +171,7 @@ def _collect_same_course_days(
     course_kubun: str,
     race_date: date,
     logger: logging.Logger,
+    cache: CourseDaysCache | None = None,
 ) -> list[date]:
     """対象レース日より前の同一競馬場・同一コース区分の開催日リストを昇順で返す
 
@@ -114,6 +184,7 @@ def _collect_same_course_days(
         course_kubun (str): コース区分（A〜E）
         race_date (date): 対象レースの開催日
         logger (logging.Logger): ロガーインスタンス
+        cache (CourseDaysCache | None): 取得結果のキャッシュ
 
     Returns:
         list[date]: 同一コース区分の開催日リスト（昇順）
@@ -137,13 +208,13 @@ def _collect_same_course_days(
                 f"コース日数計算の遡及が上限（{_MAX_LOOKBACK_DAYS}日）を超えました: "
                 f"競馬場コード={keibajo_code}, 開催日={race_date}"
             )
-        schedule_df = provider.get_schedule(window_start.isoformat(), window_end.isoformat())
+        schedule_df = _get_schedule(provider, window_start, window_end, cache)
         venue_days_df = _extract_venue_days(schedule_df, keibajo_code)
         for _, schedule_row in venue_days_df.iterrows():
             day = _to_date(str(schedule_row["開催年"]), str(schedule_row["開催月日"]))
             if (latest - day).days >= _RESET_GAP_DAYS:
                 return sorted(collected)
-            day_course_kubun = _get_course_kubun_of_day(provider, schedule_row, logger)
+            day_course_kubun = _get_course_kubun_of_day(provider, schedule_row, logger, cache)
             if day_course_kubun == course_kubun:
                 collected.append(day)
                 latest = day
@@ -151,8 +222,41 @@ def _collect_same_course_days(
     return sorted(collected)
 
 
+def _get_schedule(
+    provider: DataProvider,
+    start_date: date,
+    end_date: date,
+    cache: CourseDaysCache | None,
+) -> pd.DataFrame:
+    """開催スケジュールを取得する
+
+    同じ期間を繰り返し取得しないようキャッシュする。戻り値は呼び出し側で変更しない
+    こと（`_extract_venue_days`は絞り込みで新しいDataFrameを作るため変更しない）。
+
+    Args:
+        provider (DataProvider): 取得に使用するProvider
+        start_date (date): 開始日
+        end_date (date): 終了日
+        cache (CourseDaysCache | None): 取得結果のキャッシュ
+
+    Returns:
+        pd.DataFrame: 開催スケジュールのDataFrame
+    """
+    key = (start_date.isoformat(), end_date.isoformat())
+    if cache is not None and key in cache._schedule:
+        return cache._schedule[key]
+
+    schedule_df = provider.get_schedule(key[0], key[1])
+    if cache is not None:
+        cache._schedule[key] = schedule_df
+    return schedule_df
+
+
 def _get_course_kubun_of_day(
-    provider: DataProvider, schedule_row: "pd.Series[Any]", logger: logging.Logger
+    provider: DataProvider,
+    schedule_row: "pd.Series[Any]",
+    logger: logging.Logger,
+    cache: CourseDaysCache | None = None,
 ) -> str | None:
     """開催日のコース区分を取得する
 
@@ -169,10 +273,19 @@ def _get_course_kubun_of_day(
         provider (DataProvider): 過去レース取得に使用するProvider
         schedule_row (pd.Series): 開催スケジュールの1行
         logger (logging.Logger): ロガーインスタンス
+        cache (CourseDaysCache | None): 判定結果のキャッシュ
 
     Returns:
         str | None: コース区分（A〜E）。芝レースが存在しない開催日はNone
     """
+    key = (
+        str(schedule_row["競馬場コード"]),
+        str(schedule_row["開催年"]),
+        str(schedule_row["開催月日"]),
+    )
+    if cache is not None and key in cache._course_kubun:
+        return cache._course_kubun[key]
+
     race_codes = _build_race_codes_of_day(schedule_row)
     if provider.supports_bulk:
         course_kubun = _find_course_kubun_in_bulk(provider, race_codes)
@@ -185,6 +298,8 @@ def _get_course_kubun_of_day(
             schedule_row["開催年"],
             schedule_row["開催月日"],
         )
+    if cache is not None:
+        cache._course_kubun[key] = course_kubun
     return course_kubun
 
 
