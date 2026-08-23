@@ -150,15 +150,20 @@ def test_baseline_counts_past_same_course_days() -> None:
 
 
 @pytest.mark.parametrize(
-    "keibajo_code, race_date, course_kubun",
+    "keibajo_code, race_date, course_kubun, reason",
     [
-        ("06", _TARGET_DATE, "A"),
-        (KEIBAJO_CODE, _TARGET_DATE + timedelta(days=7), "A"),
-        (KEIBAJO_CODE, _TARGET_DATE, "B"),
+        ("06", _TARGET_DATE, "A", "その競馬場の過去開催日が1日も無い"),
+        (
+            KEIBAJO_CODE,
+            _TARGET_DATE + timedelta(days=60),
+            "A",
+            "過去開催日がすべて遡及の打ち切り間隔より前にある",
+        ),
+        (KEIBAJO_CODE, _TARGET_DATE, "B", "そのコース区分の過去開催日が1日も無い"),
     ],
 )
 def test_different_key_is_calculated_separately(
-    keibajo_code: str, race_date: date, course_kubun: str
+    keibajo_code: str, race_date: date, course_kubun: str, reason: str
 ) -> None:
     """キーのいずれかが異なれば別々に計算される.
 
@@ -167,6 +172,9 @@ def test_different_key_is_calculated_separately(
 
     クエリの発行回数ではなく計算結果で検証する。コース区分の判定と開催スケジュールは
     別のキーでキャッシュしており、コース区分だけが異なる場合はクエリが増えないため。
+
+    各ケースは`reason`のとおり同一コースの過去開催日が0日になるため、基準（4日目）とは
+    異なる値（初日）になる。
     """
     provider = _make_provider(race_day_count=3)
     cache = CourseDaysCache()
@@ -181,7 +189,7 @@ def test_different_key_is_calculated_separately(
     )
 
     assert baseline["芝コース日目"].iloc[0] == 4
-    assert other["芝コース日目"].iloc[0] == 1
+    assert other["芝コース日目"].iloc[0] == 1, reason
 
 
 @pytest.mark.parametrize(
