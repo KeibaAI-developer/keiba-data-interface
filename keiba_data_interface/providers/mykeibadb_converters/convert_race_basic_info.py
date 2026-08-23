@@ -130,13 +130,13 @@ RACE_INFO_RENAME: dict[str, str] = {
 
 
 def convert_race_basic_info(raw: pd.DataFrame) -> pd.DataFrame:
-    """RACE_SHOSAIの出力を統一スキーマに変換する.
+    """RACE_SHOSAIの出力（1行）を統一スキーマに変換する.
 
     Args:
         raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=False）
 
     Returns:
-        pd.DataFrame: 統一スキーマに変換されたDataFrame
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（1行）
 
     Raises:
         ValueError: rawが0行または2行以上の場合
@@ -157,6 +157,38 @@ def convert_race_basic_info(raw: pd.DataFrame) -> pd.DataFrame:
             f"{len(raw)}行返しました{race_code_info}"
         )
 
+    return _convert_race_basic_info_frame(raw)
+
+
+def convert_race_basic_info_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """RACE_SHOSAIの出力（0行以上）を統一スキーマに変換する.
+
+    複数レース分をまとめて変換する。行数のチェックは行わず、レースコード昇順に
+    並べて返す。呼び出し側が指定したレースコードのうち実在しないものは、単に行が
+    含まれない。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=False）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（レースコード昇順）。
+            rawが0行の場合はRACE_BASIC_INFO_COLUMNSを持つ0行のDataFrame
+    """
+    converted = _convert_race_basic_info_frame(raw)
+    return converted.sort_values("レースコード").reset_index(drop=True)
+
+
+def _convert_race_basic_info_frame(raw: pd.DataFrame) -> pd.DataFrame:
+    """RACE_SHOSAIの出力を統一スキーマへ変換する（行数に依存しない本体）.
+
+    変換は列単位の処理だけで構成されており、行数に依存しない。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_race_shosai()の出力（convert_codes=False）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame
+    """
     df = raw.copy()
 
     # 発走時刻 "HHMM" → "HH:MM" 変換
