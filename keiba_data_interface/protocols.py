@@ -4,6 +4,7 @@
 ScrapingProviderおよびMykeibaDBProviderはこのProtocolに準拠する。
 """
 
+from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
 import pandas as pd
@@ -45,14 +46,17 @@ class DataProvider(Protocol):
         """
         ...
 
-    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+    def get_race_data_bulk(
+        self, race_codes: list[str], kinds: Sequence[str] | None = None
+    ) -> dict[str, dict[str, pd.DataFrame]]:
         """複数レースのデータ種別ごとの結果をまとめて取得する.
 
-        プリフェッチ層が使う。同一テーブルを引く種別はテーブル単位で1回だけ取得し、
-        種別ごとの変換を適用して返す。
+        プリフェッチ層が使う。指定された種別に必要なテーブルだけを取得し、同一テーブルを
+        引く種別はテーブル単位で1回だけ取得して、種別ごとの変換を適用して返す。
 
         Args:
             race_codes: 16桁レースコードのリスト
+            kinds: 取得するデータ種別（DataKind）。省略時はレース単位の全種別
 
         Returns:
             データ種別（DataKind）→ レースコード → DataFrame の二段の辞書。
