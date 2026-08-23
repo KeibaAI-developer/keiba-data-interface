@@ -24,6 +24,20 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
+        """複数レースのレース基本情報をまとめて取得する.
+
+        Args:
+            race_codes: 16桁レースコードのリスト
+
+        Returns:
+            レース基本情報のDataFrame。カラム構成はget_race_basic_infoと同一で、
+            レースコード昇順に並ぶ。存在しないレースコードの行は含まれないため、
+            行数は指定した件数と一致するとは限らない。重複したレースコードは
+            取り除かれ、1レース1行になる
+        """
+        ...
+
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
 

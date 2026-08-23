@@ -126,6 +126,7 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | メソッド | 引数 | 戻り値の行数 | サンプルコード |
 |---|---|---|---|
 | `get_race_basic_info(race_code)` | 16桁レースコード | 1行 | [example_race_info.py](example/example_race_info.py) |
+| `get_race_basic_info_bulk(race_codes)` | 16桁レースコードのリスト | 実在したレース数行 | — |
 | `get_entry(race_code)` | 16桁レースコード | 出走頭数行 | [example_entry.py](example/example_entry.py) |
 | `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行 | [example_win_show_odds.py](example/example_win_show_odds.py) |
 | `get_result(race_code)` | 16桁レースコード | 出走頭数行 | [example_result.py](example/example_result.py) |
@@ -134,6 +135,29 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | `get_past_performances(horse_id)` | 血統登録番号 | 出走回数行 | [example_past_performances.py](example/example_past_performances.py) |
 | `get_horse_master(horse_id)` | 血統登録番号 | 1行 | [example_horse_master.py](example/example_horse_master.py) |
 | `get_schedule(start_date, end_date)` | 開始日・終了日（YYYY-MM-DD） | 開催レース数行 | [example_schedule.py](example/example_schedule.py) |
+
+
+### 複数レースの一括取得
+
+`get_race_basic_info_bulk` は複数レースのレース基本情報を **1クエリ**でまとめて取得します。レースコードごとに `get_race_basic_info` を呼ぶとレース数だけクエリが発行されるため、多数のレースを扱う場合に使います。
+
+```python
+race_codes = ["2025122806050811", "2025122806050812"]
+df = di.get_race_basic_info_bulk(race_codes)
+```
+
+| 項目 | 仕様 |
+|---|---|
+| 戻り値のカラム | `get_race_basic_info` と同一 |
+| 行数 | 実在したレースコードの件数。指定した件数と一致するとは限らない |
+| 行順 | レースコード昇順 |
+| 重複入力 | 取り除いて問い合わせ、戻り値も1レース1行 |
+| 空入力 | クエリを発行せず、カラムを持つ0行のDataFrameを返す |
+| 存在しないレースコード | 例外にせず、単に行が返らない |
+
+芝コース日数（`get_race_basic_info(calc_course_days=True)` で付与される4カラム）は付与しません。開催日ごとの遡及取得が必要で、まとめて取得する利点が失われるためです。
+
+> **制約**: `scraping` プロバイダーは本メソッドに対応しておらず、`DataNotFoundError` を送出します。netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページスクレイピングになるためです。
 
 
 ## プロバイダーの違い
@@ -145,6 +169,7 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | 安定性 | サイト構造変更で壊れる可能性あり | スキーマが安定 |
 | オフライン利用 | 不可 | 可（DB接続があれば） |
 | 取得可能な過去データ | ネットに残っている範囲 | mykeibadbが保持している範囲 |
+| `get_race_basic_info_bulk` | 非対応（`DataNotFoundError`） | 対応 |
 
 
 ## ドキュメント

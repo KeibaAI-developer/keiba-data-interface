@@ -17,6 +17,7 @@ from keiba_data_interface.providers.mykeibadb_converters import (
     convert_past_performances,
     convert_payoff,
     convert_race_basic_info,
+    convert_race_basic_info_bulk,
     convert_race_result_info,
     convert_result,
     convert_schedule,
@@ -62,6 +63,39 @@ class MykeibaDBProvider:
         raw = self._race_getter.get_race_shosai(race_code=race_code, convert_codes=False)
         result = convert_race_basic_info(raw)
         self._logger.debug("レース基本情報の取得が完了: race_code=%s", race_code)
+        return result
+
+    def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
+        """複数レースのレース基本情報をまとめて取得する.
+
+        RaceGetter.get_race_shosai()へレースコードのリストを渡し、1クエリで取得して
+        統一スキーマに変換する。レースコードごとに取得するとレース数だけクエリが
+        発行されるため、まとめて取得する経路を用意している。
+
+        Args:
+            race_codes (list[str]): 16桁レースコードのリスト
+
+        Returns:
+            pd.DataFrame: レース基本情報（RACE_BASIC_INFO_COLUMNSのカラム、
+                レースコード昇順）。存在しないレースコードの行は含まれない
+        """
+        unique_race_codes = list(dict.fromkeys(race_codes))
+        if not unique_race_codes:
+            self._logger.debug("レースコードが空のためクエリを発行しません")
+            return convert_race_basic_info_bulk(pd.DataFrame())
+
+        self._logger.debug(
+            "RaceGetterでレース基本情報を一括取得: 件数=%d", len(unique_race_codes)
+        )
+        raw = self._race_getter.get_race_shosai(
+            race_code=unique_race_codes, convert_codes=False
+        )
+        result = convert_race_basic_info_bulk(raw)
+        self._logger.debug(
+            "レース基本情報の一括取得が完了: 指定=%d件, 取得=%d件",
+            len(unique_race_codes),
+            len(result),
+        )
         return result
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
