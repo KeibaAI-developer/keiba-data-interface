@@ -6,12 +6,17 @@ Provider名を指定することで、データソースを切り替えてデー
 
 import importlib
 import logging
+from collections.abc import Sequence
 
 import pandas as pd
 
 from keiba_data_interface import course_days
+from keiba_data_interface.cache import DataCache, is_future_race_code
 from keiba_data_interface.exceptions import KeibaDataInterfaceError
 from keiba_data_interface.protocols import DataProvider
+
+# キャッシュのデータ種別名
+_RACE_BASIC_INFO_KIND = "race_basic_info"
 
 _PROVIDER_MAP: dict[str, str] = {
     "scraping": "keiba_data_interface.providers.scraping_provider.ScrapingProvider",
@@ -25,12 +30,19 @@ class DataInterface:
     データソースを選択し、統一されたインターフェースでデータを取得する。
     """
 
-    def __init__(self, provider: str, logger: logging.Logger | None = None) -> None:
+    def __init__(
+        self,
+        provider: str,
+        logger: logging.Logger | None = None,
+        cache: DataCache | None = None,
+    ) -> None:
         """コンストラクタ.
 
         Args:
             provider: データソース名（'scraping' または 'mykeibadb'）
             logger: ロガーインスタンス
+            cache: 取得結果のキャッシュ。複数のDataInterfaceで共有したい場合に渡す。
+                省略時はインスタンス専用のキャッシュを持つ
 
         Raises:
             KeibaDataInterfaceError: 不正なprovider名が指定された場合
@@ -38,6 +50,7 @@ class DataInterface:
         self._logger = logger or logging.getLogger(__name__)
         provider_logger = self._logger.getChild(provider)
         self._provider: DataProvider = _create_provider(provider, provider_logger)
+        self._cache = cache if cache is not None else DataCache(logger=self._logger)
         # コース日数は開催日単位で決まる値のため、インスタンス内で使い回す
         self._course_days_cache = course_days.CourseDaysCache()
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
@@ -55,7 +68,14 @@ class DataInterface:
         Returns:
             レース基本情報のDataFrame（1行）
         """
-        result = self._provider.get_race_basic_info(race_code)
+        cached = self._cache.get(_RACE_BASIC_INFO_KIND, race_code)
+        if cached is not None:
+            result = cached.copy()
+        else:
+            result = self._provider.get_race_basic_info(race_code)
+            # コース日数を付与する前の値をキャッシュする。コース日数はCourseDaysCacheが
+            # 別に持つため、ここへ混ぜると付与の有無で戻り値が変わってしまう
+            self._cache.set(_RACE_BASIC_INFO_KIND, race_code, result.copy())
         if calc_course_days:
             result = course_days.calc_course_days(
                 result, self._provider, self._logger, self._course_days_cache
@@ -82,6 +102,42 @@ class DataInterface:
             DataNotFoundError: scrapingプロバイダーを使用している場合
         """
         return self._provider.get_race_basic_info_bulk(race_codes)
+
+    def prefetch_races(self, race_codes: Sequence[str]) -> None:
+        """指定したレースコードのデータを一括取得してキャッシュへ格納する.
+
+        レースコードごとに取得するとレース数だけクエリが発行される。これから使う
+        レースコードをまとめて渡すことで、取得を1回にまとめられる。
+
+        未来レース（当日を含む）はキャッシュしない。単勝オッズは発走直前まで変動し、
+        キャッシュした値を返すと古いオッズで予測することになるため。
+
+        一括取得に対応していないProvider（scraping）では何もしない。プリフェッチは
+        高速化のための処理であり、行わなくても単一キー取得は従来どおり動作する。
+
+        Args:
+            race_codes: 16桁レースコードのリスト
+        """
+        if not self._provider.supports_bulk:
+            self._logger.debug("Providerが一括取得に未対応のためプリフェッチしません")
+            return
+
+        targets = [code for code in dict.fromkeys(race_codes) if not is_future_race_code(code)]
+        if not targets:
+            self._logger.debug("プリフェッチ対象のレースコードがありません")
+            return
+
+        self._logger.debug("レース基本情報をプリフェッチします: 件数=%d", len(targets))
+        races = self._provider.get_race_basic_info_bulk(targets)
+        for race_code, race_df in races.groupby("レースコード"):
+            self._cache.set(
+                _RACE_BASIC_INFO_KIND, str(race_code), race_df.reset_index(drop=True)
+            )
+        self._logger.debug("プリフェッチが完了しました: 取得=%d件", len(races))
+
+    def clear_cache(self) -> None:
+        """キャッシュを空にする."""
+        self._cache.clear()
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
