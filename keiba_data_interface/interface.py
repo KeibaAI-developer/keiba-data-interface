@@ -38,6 +38,8 @@ class DataInterface:
         self._logger = logger or logging.getLogger(__name__)
         provider_logger = self._logger.getChild(provider)
         self._provider: DataProvider = _create_provider(provider, provider_logger)
+        # コース日数は開催日単位で決まる値のため、インスタンス内で使い回す
+        self._course_days_cache = course_days.CourseDaysCache()
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
 
     def get_race_basic_info(self, race_code: str, calc_course_days: bool = False) -> pd.DataFrame:
@@ -55,7 +57,9 @@ class DataInterface:
         """
         result = self._provider.get_race_basic_info(race_code)
         if calc_course_days:
-            result = course_days.calc_course_days(result, self._provider, self._logger)
+            result = course_days.calc_course_days(
+                result, self._provider, self._logger, self._course_days_cache
+            )
         return result
 
     def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
