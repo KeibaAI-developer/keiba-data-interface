@@ -29,6 +29,12 @@ class DataProvider(Protocol):
 
         Args:
             race_codes: 16桁レースコードのリスト
+
+        Returns:
+            レース基本情報のDataFrame。カラム構成はget_race_basic_infoと同一で、
+            レースコード昇順に並ぶ。存在しないレースコードの行は含まれないため、
+            行数は指定した件数と一致するとは限らない。重複したレースコードは
+            取り除かれ、1レース1行になる
         """
         ...
 
