@@ -40,6 +40,9 @@ from keiba_data_interface.utils.race_code import race_code_to_race_id
 class ScrapingProvider:
     """keiba-scrapingを使用したデータ取得Provider."""
 
+    # 一括取得メソッドに未対応（netkeibaに複数件をまとめて取得する手段がないため）
+    supports_bulk = False
+
     def __init__(self, logger: logging.Logger | None = None) -> None:
         """コンストラクタ.
 

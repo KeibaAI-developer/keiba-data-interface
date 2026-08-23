@@ -36,6 +36,9 @@ class MykeibaDBProvider:
             ShussobetsuGetterインスタンス
     """
 
+    # 一括取得メソッドに対応している（RaceGetter等がキーのリストを受け付けるため）
+    supports_bulk = True
+
     def __init__(self, logger: logging.Logger | None = None) -> None:
         """コンストラクタ.
 

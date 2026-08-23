@@ -41,8 +41,13 @@ class MockProvider:
         race_days (dict[date, RaceDay]): 開催日ごとのレース構成
     """
 
-    def __init__(self, race_days: list[RaceDay]) -> None:
+    supports_bulk = True
+
+    def __init__(self, race_days: list[RaceDay], supports_bulk: bool = True) -> None:
         self.race_days = {day.race_date: day for day in race_days}
+        self.supports_bulk = supports_bulk
+        self.get_race_basic_info_calls: list[str] = []
+        self.get_race_basic_info_bulk_calls: list[list[str]] = []
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """期間内の開催日から開催スケジュールを生成する
@@ -77,16 +82,52 @@ class MockProvider:
         Raises:
             ValueError: 開催日データに存在しないレースコードの場合
         """
+        self.get_race_basic_info_calls.append(race_code)
+        row = self._build_race_row(race_code)
+        if row is None:
+            raise ValueError(f"get_race_shosai()が空のDataFrameを返しました: race_code={race_code}")
+        return pd.DataFrame([row])[["芝ダ", "コース区分"]]
+
+    def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
+        """複数レースのレース基本情報をまとめて生成する
+
+        存在しないレースコードの行は含めず、レースコード昇順で返す。
+
+        Args:
+            race_codes (list[str]): 16桁レースコードのリスト
+
+        Returns:
+            pd.DataFrame: 芝ダ・コース区分を含むレース基本情報のDataFrame
+        """
+        self.get_race_basic_info_bulk_calls.append(list(race_codes))
+        rows = []
+        for race_code in sorted(dict.fromkeys(race_codes)):
+            row = self._build_race_row(race_code)
+            if row is not None:
+                rows.append(row)
+        if not rows:
+            return pd.DataFrame(columns=["レースコード", "芝ダ", "コース区分"])
+        return pd.DataFrame(rows)[["レースコード", "芝ダ", "コース区分"]]
+
+    def _build_race_row(self, race_code: str) -> dict[str, object] | None:
+        """レースコードに対応する行を組み立てる
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Returns:
+            dict[str, object] | None: レース基本情報の1行。存在しない場合はNone
+        """
         race_date = date(int(race_code[:4]), int(race_code[4:6]), int(race_code[6:8]))
         race_num = int(race_code[14:16])
         day = self.race_days.get(race_date)
         if day is None or race_num > len(day.races) or day.races[race_num - 1] is None:
-            raise ValueError(f"get_race_shosai()が空のDataFrameを返しました: race_code={race_code}")
+            return None
         race = day.races[race_num - 1]
         assert race is not None
         shiba_da, course_kubun = race
         kubun_value = course_kubun if course_kubun is not None else pd.NA
-        return pd.DataFrame({"芝ダ": [shiba_da], "コース区分": [kubun_value]})
+        return {"レースコード": race_code, "芝ダ": shiba_da, "コース区分": kubun_value}
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """テストでは使用しない

@@ -43,6 +43,8 @@ def test_incomplete_provider_does_not_satisfy_protocol() -> None:
 class _FullProvider:
     """全メソッドを実装したProvider."""
 
+    supports_bulk = True
+
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する."""
         return pd.DataFrame()

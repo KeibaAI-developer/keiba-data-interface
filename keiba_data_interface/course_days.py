@@ -156,10 +156,14 @@ def _get_course_kubun_of_day(
 ) -> str | None:
     """開催日のコース区分を取得する
 
-    レース番号1〜12の順にレース基本情報を取得し、最初に見つかった芝レースの
-    コース区分を返す。芝コースのコース区分は競馬場・開催日単位で共通であるため、
-    1レース分の情報で判定できる。
-    開催日に存在しないレース番号（ValueError）は読み飛ばす。
+    レース番号1〜12のレース基本情報を取得し、レース番号の小さい順に見て最初に
+    見つかった芝レースのコース区分を返す。芝コースのコース区分は競馬場・開催日単位で
+    共通であるため、1レース分の情報で判定できる。
+    開催日に存在しないレース番号は読み飛ばす。
+
+    一括取得に対応したProviderでは12レース分を1回で取得する。レース番号ごとに
+    取得すると1開催日あたり最大12回の問い合わせが発生し、コース日数の計算が
+    入力生成全体のボトルネックになるため。
 
     Args:
         provider (DataProvider): 過去レース取得に使用するProvider
@@ -169,13 +173,79 @@ def _get_course_kubun_of_day(
     Returns:
         str | None: コース区分（A〜E）。芝レースが存在しない開催日はNone
     """
+    race_codes = _build_race_codes_of_day(schedule_row)
+    if provider.supports_bulk:
+        course_kubun = _find_course_kubun_in_bulk(provider, race_codes)
+    else:
+        course_kubun = _find_course_kubun_one_by_one(provider, race_codes, logger)
+
+    if course_kubun is None:
+        logger.debug(
+            "芝レースが存在しない開催日です: 開催年=%s, 開催月日=%s",
+            schedule_row["開催年"],
+            schedule_row["開催月日"],
+        )
+    return course_kubun
+
+
+def _build_race_codes_of_day(schedule_row: "pd.Series[Any]") -> list[str]:
+    """開催日のレース番号1〜12に対応する16桁レースコードを組み立てる
+
+    Args:
+        schedule_row (pd.Series): 開催スケジュールの1行
+
+    Returns:
+        list[str]: レース番号昇順の16桁レースコード
+    """
     year = str(schedule_row["開催年"])
     monthday = str(schedule_row["開催月日"])
     keibajo_code = str(schedule_row["競馬場コード"])
     kai = int(schedule_row["開催回"])
     nichime = int(schedule_row["開催日目"])
-    for race_num in range(1, _MAX_RACE_NUM + 1):
-        race_code = f"{year}{monthday}{keibajo_code}{kai:02d}{nichime:02d}{race_num:02d}"
+    return [
+        f"{year}{monthday}{keibajo_code}{kai:02d}{nichime:02d}{race_num:02d}"
+        for race_num in range(1, _MAX_RACE_NUM + 1)
+    ]
+
+
+def _find_course_kubun_in_bulk(provider: DataProvider, race_codes: list[str]) -> str | None:
+    """一括取得したレース基本情報から最初の芝レースのコース区分を返す
+
+    get_race_basic_info_bulkはレースコード昇順で返す。同一開催日ではレースコードの
+    末尾2桁がレース番号であるため、レースコード昇順はレース番号昇順と一致する。
+    存在しないレース番号の行は含まれない。
+
+    Args:
+        provider (DataProvider): 過去レース取得に使用するProvider
+        race_codes (list[str]): レース番号昇順の16桁レースコード
+
+    Returns:
+        str | None: コース区分（A〜E）。芝レースが存在しない場合はNone
+    """
+    races = provider.get_race_basic_info_bulk(race_codes)
+    for _, race_row in races.iterrows():
+        course_kubun = _extract_course_kubun(race_row)
+        if course_kubun is not None:
+            return course_kubun
+    return None
+
+
+def _find_course_kubun_one_by_one(
+    provider: DataProvider, race_codes: list[str], logger: logging.Logger
+) -> str | None:
+    """レース基本情報を1件ずつ取得して最初の芝レースのコース区分を返す
+
+    一括取得に対応していないProvider向けの経路。
+
+    Args:
+        provider (DataProvider): 過去レース取得に使用するProvider
+        race_codes (list[str]): レース番号昇順の16桁レースコード
+        logger (logging.Logger): ロガーインスタンス
+
+    Returns:
+        str | None: コース区分（A〜E）。芝レースが存在しない場合はNone
+    """
+    for race_code in race_codes:
         try:
             race_row = provider.get_race_basic_info(race_code).iloc[0]
         except ValueError as exc:
@@ -185,10 +255,24 @@ def _get_course_kubun_of_day(
                 exc,
             )
             continue
-        if race_row["芝ダ"] == "芝" and not pd.isna(race_row["コース区分"]):
-            return str(race_row["コース区分"])
-    logger.debug("芝レースが存在しない開催日です: 開催年=%s, 開催月日=%s", year, monthday)
+        course_kubun = _extract_course_kubun(race_row)
+        if course_kubun is not None:
+            return course_kubun
     return None
+
+
+def _extract_course_kubun(race_row: "pd.Series[Any]") -> str | None:
+    """レース基本情報の1行から芝レースのコース区分を取り出す
+
+    Args:
+        race_row (pd.Series): レース基本情報の1行
+
+    Returns:
+        str | None: コース区分（A〜E）。芝レースでないかコース区分が不明な場合はNone
+    """
+    if race_row["芝ダ"] != "芝" or pd.isna(race_row["コース区分"]):
+        return None
+    return str(race_row["コース区分"])
 
 
 def _extract_venue_days(schedule_df: pd.DataFrame, keibajo_code: str) -> pd.DataFrame:

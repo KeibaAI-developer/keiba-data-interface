@@ -161,3 +161,104 @@ def test_calc_course_days_raises_when_lookback_exceeds_limit() -> None:
 
     with pytest.raises(KeibaDataInterfaceError):
         calc_course_days(race_basic_info, provider)
+
+
+# 正常系（一括取得によるコース区分の判定）
+
+
+def test_bulk_provider_issues_single_call_per_race_day() -> None:
+    """一括取得に対応したProviderでは開催日ごとに1回だけ問い合わせる.
+
+    レース番号ごとに取得すると1開催日あたり最大12回の問い合わせが発生する。
+    """
+    target_date = date(2025, 6, 8)
+    provider = MockProvider([RaceDay(target_date - timedelta(days=7), 1, 1, turf_day_races("A"))])
+    race_basic_info = build_race_basic_info(target_date, "芝", "A")
+
+    calc_course_days(race_basic_info, provider)
+
+    assert provider.get_race_basic_info_calls == []
+    assert len(provider.get_race_basic_info_bulk_calls) >= 1
+    for race_codes in provider.get_race_basic_info_bulk_calls:
+        assert len(race_codes) == 12
+
+
+def test_bulk_provider_passes_race_numbers_in_ascending_order() -> None:
+    """一括取得へレース番号1〜12のレースコードが昇順で渡される."""
+    target_date = date(2025, 6, 8)
+    provider = MockProvider([RaceDay(target_date - timedelta(days=7), 1, 1, turf_day_races("A"))])
+    race_basic_info = build_race_basic_info(target_date, "芝", "A")
+
+    calc_course_days(race_basic_info, provider)
+
+    race_codes = provider.get_race_basic_info_bulk_calls[0]
+    assert [code[-2:] for code in race_codes] == [f"{n:02d}" for n in range(1, 13)]
+
+
+def test_bulk_and_one_by_one_return_same_result() -> None:
+    """一括取得の経路と1件ずつ取得の経路で結果が一致する."""
+    target_date = date(2025, 6, 8)
+    race_days = [
+        RaceDay(target_date - timedelta(days=7 * week), 1, week, turf_day_races("A"))
+        for week in range(1, 4)
+    ]
+    race_basic_info = build_race_basic_info(target_date, "芝", "A")
+
+    bulk_result = calc_course_days(race_basic_info, MockProvider(race_days))
+    one_by_one_result = calc_course_days(
+        race_basic_info, MockProvider(race_days, supports_bulk=False)
+    )
+
+    pd.testing.assert_frame_equal(bulk_result, one_by_one_result)
+
+
+def test_one_by_one_provider_does_not_use_bulk() -> None:
+    """一括取得に未対応のProviderでは1件ずつ取得する経路を通る."""
+    target_date = date(2025, 6, 8)
+    provider = MockProvider(
+        [RaceDay(target_date - timedelta(days=7), 1, 1, turf_day_races("A"))],
+        supports_bulk=False,
+    )
+    race_basic_info = build_race_basic_info(target_date, "芝", "A")
+
+    calc_course_days(race_basic_info, provider)
+
+    assert provider.get_race_basic_info_bulk_calls == []
+    assert provider.get_race_basic_info_calls != []
+
+
+@pytest.mark.parametrize("supports_bulk", [True, False])
+def test_missing_low_race_numbers_are_skipped(supports_bulk: bool) -> None:
+    """レース番号1・2が欠番でも3レース目の芝レースのコース区分で判定される."""
+    target_date = date(2025, 6, 8)
+    provider = MockProvider(
+        [
+            RaceDay(
+                target_date - timedelta(days=7),
+                1,
+                1,
+                turf_day_races_with_missing_low_numbers("A"),
+            )
+        ],
+        supports_bulk=supports_bulk,
+    )
+    race_basic_info = build_race_basic_info(target_date, "芝", "A")
+
+    result = calc_course_days(race_basic_info, provider)
+
+    assert result["芝コース日目"].iloc[0] == 2
+
+
+@pytest.mark.parametrize("supports_bulk", [True, False])
+def test_dirt_only_day_is_not_counted(supports_bulk: bool) -> None:
+    """芝レースが存在しない開催日は同一コースの開催日として数えられない."""
+    target_date = date(2025, 6, 8)
+    provider = MockProvider(
+        [RaceDay(target_date - timedelta(days=7), 1, 1, dirt_only_day_races())],
+        supports_bulk=supports_bulk,
+    )
+    race_basic_info = build_race_basic_info(target_date, "芝", "A")
+
+    result = calc_course_days(race_basic_info, provider)
+
+    assert result["芝コース日目"].iloc[0] == 1
