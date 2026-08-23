@@ -91,7 +91,12 @@ def apply_types(df: pd.DataFrame, type_dict: dict[str, str]) -> pd.DataFrame:
                 series.map(lambda v: isinstance(v, str) and v.strip() == ""), pd.NA
             )
         converted[col] = series.astype(target_dtype)
-    return pd.DataFrame(converted, index=df.index, columns=df.columns, copy=False)
+
+    result = pd.DataFrame(converted, index=df.index, columns=df.columns, copy=False)
+    # DataFrame.copy()はattrsを引き継ぐが、辞書からの構築では引き継がれない。
+    # 戻り値を変えないため明示的に写す
+    result.attrs = df.attrs.copy()
+    return result
 
 
 def _resolve_dtype(dtype: str) -> Any:

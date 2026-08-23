@@ -169,6 +169,30 @@ def test_apply_types_empty_dataframe_keeps_columns_and_dtypes() -> None:
     assert len(result) == 0
 
 
+def test_apply_types_keeps_attrs_of_input() -> None:
+    """attrsが入力DataFrameから引き継がれる.
+
+    DataFrame.copy()はattrsを引き継ぐため、組み立て直しでも同じ振る舞いにする。
+    """
+    df = pd.DataFrame({"A": [1, 2]})
+    df.attrs["メモ"] = "値"
+
+    result = apply_types(df, {"A": "Int64"})
+
+    assert result.attrs == {"メモ": "値"}
+
+
+def test_apply_types_does_not_share_attrs_with_input() -> None:
+    """戻り値のattrsを書き換えても入力DataFrameが変わらない."""
+    df = pd.DataFrame({"A": [1, 2]})
+    df.attrs["メモ"] = "値"
+
+    result = apply_types(df, {"A": "Int64"})
+    result.attrs["メモ"] = "変更後"
+
+    assert df.attrs["メモ"] == "値"
+
+
 def test_apply_types_empty_type_dict_returns_same_content() -> None:
     """型定義辞書が空なら内容が変わらない."""
     df = pd.DataFrame({"A": [1, 2], "B": ["x", "y"]})
