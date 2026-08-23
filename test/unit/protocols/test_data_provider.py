@@ -88,6 +88,10 @@ class _FullProvider:
         """複数馬の過去成績をまとめて取得する."""
         return {}
 
+    def get_horse_master_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の競走馬情報をまとめて取得する."""
+        return {}
+
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する."""
         return pd.DataFrame()

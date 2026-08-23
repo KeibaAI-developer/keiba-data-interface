@@ -318,6 +318,28 @@ class DataInterface:
         result = self._provider.get_horse_master(horse_id)
         return result
 
+    def get_horse_master_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の競走馬情報をまとめて取得する.
+
+        Providerが一括取得に対応していない場合は1頭ずつ取得して同じ形の辞書を返す。
+        `get_past_performances_bulk` と同じ扱い。
+
+        Args:
+            horse_ids: 馬ID（血統登録番号）のリスト
+
+        Returns:
+            馬ID → 競走馬情報のDataFrame（1行）。
+            指定した馬IDは必ずキーに含まれる
+        """
+        if self._provider.supports_bulk:
+            return self._provider.get_horse_master_bulk(horse_ids)
+
+        self._logger.debug("Providerが一括取得に未対応のため1頭ずつ取得します")
+        return {
+            horse_id: self._provider.get_horse_master(horse_id)
+            for horse_id in dict.fromkeys(horse_ids)
+        }
+
     def get_chakudosu(self, race_code: str) -> pd.DataFrame:
         """出走別着度数を取得する.
 

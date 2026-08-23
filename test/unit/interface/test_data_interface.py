@@ -237,6 +237,33 @@ def test_get_horse_master_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [8]}))
 
 
+def test_get_horse_master_bulk_delegates_when_provider_supports_bulk(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に対応したProviderではget_horse_master_bulkへ委譲される."""
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = True
+
+    result = interface.get_horse_master_bulk(["2022105081"])
+
+    mock_provider.get_horse_master_bulk.assert_called_once_with(["2022105081"])
+    assert result == mock_provider.get_horse_master_bulk.return_value
+
+
+def test_get_horse_master_bulk_fetches_one_by_one_when_not_supported(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に未対応のProviderでは1頭ずつ取得して同じ形の辞書を返す."""
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = False
+
+    result = interface.get_horse_master_bulk(["2022105081", "2022105102"])
+
+    assert set(result) == {"2022105081", "2022105102"}
+    mock_provider.get_horse_master_bulk.assert_not_called()
+    assert mock_provider.get_horse_master.call_count == 2
+
+
 def test_get_chakudosu_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:
