@@ -1,5 +1,6 @@
 """DataProvider Protocolのテスト."""
 
+from collections.abc import Sequence
 from unittest.mock import patch
 
 import pandas as pd
@@ -53,7 +54,9 @@ class _FullProvider:
         """複数レースのレース基本情報をまとめて取得する."""
         return pd.DataFrame()
 
-    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+    def get_race_data_bulk(
+        self, race_codes: list[str], kinds: Sequence[str] | None = None
+    ) -> dict[str, dict[str, pd.DataFrame]]:
         """複数レースのデータ種別ごとの結果をまとめて取得する."""
         return {}
 

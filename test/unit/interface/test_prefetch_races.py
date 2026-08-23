@@ -65,9 +65,9 @@ class _BulkProvider:
                 MagicMock(side_effect=lambda race_code: _make_basic_info(race_code)),
             )
         self.get_race_data_bulk = MagicMock(
-            side_effect=lambda race_codes: {
+            side_effect=lambda race_codes, kinds=None: {
                 kind: {c: _make_basic_info(c) for c in race_codes}
-                for kind in _RACE_KEYED_METHODS
+                for kind in (_RACE_KEYED_METHODS if kinds is None else kinds)
             }
         )
 
@@ -364,3 +364,81 @@ def test_cached_kind_matches_uncached(
     cached = getattr(interface, method)(race_code)
 
     pd.testing.assert_frame_equal(cached, uncached)
+
+
+# 正常系（取得するデータ種別の指定）
+def test_kinds_limits_prefetched_kinds(
+    bulk_interface: tuple[DataInterface, _BulkProvider],
+) -> None:
+    """kindsで指定した種別だけがキャッシュへ格納される."""
+    interface, provider = bulk_interface
+    race_code = _RACE_CODES[0]
+
+    interface.prefetch_races([race_code], kinds=[DataKind.RACE_BASIC_INFO])
+    interface.get_race_basic_info(race_code)
+    interface.get_payoff(race_code)
+
+    provider.get_race_basic_info.assert_not_called()
+    provider.get_payoff.assert_called_once()
+
+
+def test_kinds_is_passed_to_provider(
+    bulk_interface: tuple[DataInterface, _BulkProvider],
+) -> None:
+    """指定した種別がProviderへ渡される.
+
+    Provider側で必要なテーブルだけを取得できるようにするため。
+    """
+    interface, provider = bulk_interface
+    kinds = [DataKind.RACE_BASIC_INFO, DataKind.ENTRY]
+
+    interface.prefetch_races(_RACE_CODES, kinds=kinds)
+
+    assert provider.get_race_data_bulk.call_args[0][1] == kinds
+
+
+def test_omitting_kinds_prefetches_all(
+    bulk_interface: tuple[DataInterface, _BulkProvider],
+) -> None:
+    """kindsを省略すると全種別が取得される（現状維持）."""
+    interface, provider = bulk_interface
+
+    interface.prefetch_races(_RACE_CODES)
+    for method in _RACE_KEYED_METHODS.values():
+        for race_code in _RACE_CODES:
+            getattr(interface, method)(race_code)
+
+    for method in _RACE_KEYED_METHODS.values():
+        getattr(provider, method).assert_not_called()
+
+
+# 準正常系（取得するデータ種別の指定）
+def test_empty_kinds_issues_no_query(
+    bulk_interface: tuple[DataInterface, _BulkProvider],
+) -> None:
+    """kindsに空のリストを渡すとクエリを発行しない.
+
+    None（全種別）との区別を保つ。
+    """
+    interface, provider = bulk_interface
+
+    interface.prefetch_races(_RACE_CODES, kinds=[])
+    interface.get_race_basic_info(_RACE_CODES[0])
+
+    provider.get_race_basic_info.assert_called_once()
+
+
+def test_unknown_kind_raises(
+    bulk_interface: tuple[DataInterface, _BulkProvider],
+) -> None:
+    """未知のデータ種別を指定するとValueErrorが発生する.
+
+    黙って無視すると、指定したつもりの種別が取得されずキャッシュミスが続き、
+    原因が分かりにくい。
+    """
+    interface, provider = bulk_interface
+
+    with pytest.raises(ValueError, match="未知のデータ種別"):
+        interface.prefetch_races(_RACE_CODES, kinds=["not_exist_kind"])
+
+    provider.get_race_data_bulk.assert_not_called()

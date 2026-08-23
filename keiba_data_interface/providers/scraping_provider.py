@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import Coroutine
+from collections.abc import Coroutine, Sequence
 from datetime import date, timedelta
 from typing import TypeVar
 
@@ -87,7 +87,9 @@ class ScrapingProvider:
         self._logger.error(message)
         raise DataNotFoundError(message)
 
-    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+    def get_race_data_bulk(
+        self, race_codes: list[str], kinds: Sequence[str] | None = None
+    ) -> dict[str, dict[str, pd.DataFrame]]:
         """複数レースのデータ種別ごとの結果をまとめて取得する（未対応）.
 
         netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページ
@@ -95,6 +97,7 @@ class ScrapingProvider:
 
         Args:
             race_codes (list[str]): 16桁レースコードのリスト
+            kinds (Sequence[str] | None): 取得するデータ種別（未使用）
 
         Raises:
             DataNotFoundError: 常に送出する

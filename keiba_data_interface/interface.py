@@ -11,7 +11,12 @@ from collections.abc import Callable, Sequence
 import pandas as pd
 
 from keiba_data_interface import course_days
-from keiba_data_interface.cache import DataCache, DataKind, is_future_race_code
+from keiba_data_interface.cache import (
+    RACE_DATA_KINDS,
+    DataCache,
+    DataKind,
+    is_future_race_code,
+)
 from keiba_data_interface.exceptions import KeibaDataInterfaceError
 from keiba_data_interface.protocols import DataProvider
 
@@ -102,11 +107,17 @@ class DataInterface:
         """
         return self._provider.get_race_basic_info_bulk(race_codes)
 
-    def prefetch_races(self, race_codes: Sequence[str]) -> None:
+    def prefetch_races(
+        self, race_codes: Sequence[str], kinds: Sequence[str] | None = None
+    ) -> None:
         """指定したレースコードのデータを一括取得してキャッシュへ格納する.
 
         レースコードごとに取得するとレース数だけクエリが発行される。これから使う
         レースコードをまとめて渡すことで、取得を1回にまとめられる。
+
+        使わないデータ種別は `kinds` から外すこと。取得だけでなく変換のコストも
+        避けられる。変換はレース単位でしか行えないため、取得する種別を絞る以外に
+        減らす手段がない。
 
         未来レース（当日を含む）はキャッシュしない。単勝オッズは発走直前まで変動し、
         キャッシュした値を返すと古いオッズで予測することになるため。
@@ -116,7 +127,22 @@ class DataInterface:
 
         Args:
             race_codes: 16桁レースコードのリスト
+            kinds: 取得するデータ種別（DataKind）。省略時はレース単位の全種別。
+                空のリストを渡した場合は何も取得しない
+
+        Raises:
+            ValueError: kindsに未知のデータ種別が含まれる場合
         """
+        if kinds is not None:
+            unknown_kinds = sorted(set(kinds) - set(RACE_DATA_KINDS))
+            if unknown_kinds:
+                message = (
+                    f"未知のデータ種別が指定されました: {unknown_kinds}"
+                    f"（指定できる種別: {list(RACE_DATA_KINDS)}）"
+                )
+                self._logger.error(message)
+                raise ValueError(message)
+
         if not self._provider.supports_bulk:
             self._logger.debug("Providerが一括取得に未対応のためプリフェッチしません")
             return
@@ -127,7 +153,7 @@ class DataInterface:
             return
 
         self._logger.debug("レース単位データをプリフェッチします: 件数=%d", len(targets))
-        race_data = self._provider.get_race_data_bulk(targets)
+        race_data = self._provider.get_race_data_bulk(targets, kinds)
         for kind, by_race_code in race_data.items():
             for race_code, df in by_race_code.items():
                 self._cache.set(self._cache_kind(kind), race_code, df)

@@ -5,13 +5,13 @@ mykeibadb-pythonのRaceGetter/OddsGetterを使用してJRA-VANデータを取得
 """
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import date
 
 import pandas as pd
 from mykeibadb import MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
 
-from keiba_data_interface.cache import DataKind
+from keiba_data_interface.cache import RACE_DATA_KINDS, DataKind
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_chakudosu,
     convert_entry,
@@ -103,57 +103,82 @@ class MykeibaDBProvider:
         )
         return result
 
-    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+    def get_race_data_bulk(
+        self, race_codes: list[str], kinds: Sequence[str] | None = None
+    ) -> dict[str, dict[str, pd.DataFrame]]:
         """複数レースのデータ種別ごとの結果をまとめて取得する.
 
         同一テーブルを引く種別はテーブル単位で1回だけ取得する。UMAGOTO_RACE_JOHOから
         出馬表とレース結果を、RACE_SHOSAIからレース基本情報とレース結果情報を作る。
 
-        変換はレースコードでグループ化してから種別ごとの変換関数へ渡す。単勝人気順の
-        再計算やレース内での人気順など、レース単位でしか計算できない処理を含むため、
-        複数レースをまとめて変換できない。**減るのはクエリ回数であり変換回数ではない。**
+        指定された種別に必要なテーブルだけを取得する。変換はレースコードでグループ化
+        してから種別ごとの変換関数へ渡す。単勝人気順の再計算やレース内での人気順など、
+        レース単位でしか計算できない処理を含むため、複数レースをまとめて変換できない。
+        **減るのはクエリ回数であり変換回数ではない。** 使わない種別を指定から外すことで
+        変換のコストも避けられる。
 
         Args:
             race_codes (list[str]): 16桁レースコードのリスト
+            kinds (Sequence[str] | None): 取得するデータ種別（DataKind）。
+                省略時はレース単位の全種別
 
         Returns:
             dict[str, dict[str, pd.DataFrame]]: データ種別 → レースコード → DataFrame。
                 存在しないレースコードは含まれない
         """
+        target_kinds = set(RACE_DATA_KINDS if kinds is None else kinds)
         unique_race_codes = list(dict.fromkeys(race_codes))
-        if not unique_race_codes:
-            self._logger.debug("レースコードが空のためクエリを発行しません")
+        if not unique_race_codes or not target_kinds:
+            self._logger.debug("取得対象が無いためクエリを発行しません")
             return {}
 
-        self._logger.debug("レース単位データを一括取得: 件数=%d", len(unique_race_codes))
-        raw_shosai = self._race_getter.get_race_shosai(
-            race_code=unique_race_codes, convert_codes=False
-        )
-        raw_umagoto = self._race_getter.get_umagoto_race_joho(
-            race_code=unique_race_codes, convert_codes=False
-        )
-        raw_haraimodoshi = self._race_getter.get_haraimodoshi(
-            race_code=unique_race_codes, convert_codes=False
-        )
-        raw_tansho = self._odds_getter.get_odds1_tansho(
-            race_code=unique_race_codes, convert_codes=False
-        )
-        raw_fukusho = self._odds_getter.get_odds1_fukusho(
-            race_code=unique_race_codes, convert_codes=False
-        )
-
-        result: dict[str, dict[str, pd.DataFrame]] = {
-            DataKind.RACE_BASIC_INFO: _convert_per_race(raw_shosai, convert_race_basic_info),
-            DataKind.RACE_RESULT_INFO: _convert_per_race(raw_shosai, convert_race_result_info),
-            DataKind.ENTRY: _convert_per_race(raw_umagoto, _convert_entry_sorted),
-            DataKind.RESULT: _convert_per_race(raw_umagoto, _convert_result_sorted),
-            DataKind.PAYOFF: _convert_per_race(raw_haraimodoshi, convert_payoff),
-            DataKind.WIN_SHOW_ODDS: _convert_odds_per_race(raw_tansho, raw_fukusho),
-        }
         self._logger.debug(
-            "レース単位データの一括取得が完了: 指定=%d件, レース基本情報=%d件",
+            "レース単位データを一括取得: 件数=%d, 種別=%d",
             len(unique_race_codes),
-            len(result[DataKind.RACE_BASIC_INFO]),
+            len(target_kinds),
+        )
+        result: dict[str, dict[str, pd.DataFrame]] = {}
+
+        if target_kinds & {DataKind.RACE_BASIC_INFO, DataKind.RACE_RESULT_INFO}:
+            raw_shosai = self._race_getter.get_race_shosai(
+                race_code=unique_race_codes, convert_codes=False
+            )
+            if DataKind.RACE_BASIC_INFO in target_kinds:
+                result[DataKind.RACE_BASIC_INFO] = _convert_per_race(
+                    raw_shosai, convert_race_basic_info
+                )
+            if DataKind.RACE_RESULT_INFO in target_kinds:
+                result[DataKind.RACE_RESULT_INFO] = _convert_per_race(
+                    raw_shosai, convert_race_result_info
+                )
+
+        if target_kinds & {DataKind.ENTRY, DataKind.RESULT}:
+            raw_umagoto = self._race_getter.get_umagoto_race_joho(
+                race_code=unique_race_codes, convert_codes=False
+            )
+            if DataKind.ENTRY in target_kinds:
+                result[DataKind.ENTRY] = _convert_per_race(raw_umagoto, _convert_entry_sorted)
+            if DataKind.RESULT in target_kinds:
+                result[DataKind.RESULT] = _convert_per_race(raw_umagoto, _convert_result_sorted)
+
+        if DataKind.PAYOFF in target_kinds:
+            raw_haraimodoshi = self._race_getter.get_haraimodoshi(
+                race_code=unique_race_codes, convert_codes=False
+            )
+            result[DataKind.PAYOFF] = _convert_per_race(raw_haraimodoshi, convert_payoff)
+
+        if DataKind.WIN_SHOW_ODDS in target_kinds:
+            raw_tansho = self._odds_getter.get_odds1_tansho(
+                race_code=unique_race_codes, convert_codes=False
+            )
+            raw_fukusho = self._odds_getter.get_odds1_fukusho(
+                race_code=unique_race_codes, convert_codes=False
+            )
+            result[DataKind.WIN_SHOW_ODDS] = _convert_odds_per_race(raw_tansho, raw_fukusho)
+        self._logger.debug(
+            "レース単位データの一括取得が完了: 指定=%d件, 種別=%s",
+            len(unique_race_codes),
+            {kind: len(by_race_code) for kind, by_race_code in result.items()},
         )
         return result
 

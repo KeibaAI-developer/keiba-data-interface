@@ -26,6 +26,17 @@ class DataKind:
     WIN_SHOW_ODDS = "win_show_odds"
 
 
+# レース単位でプリフェッチできるデータ種別
+RACE_DATA_KINDS: tuple[str, ...] = (
+    DataKind.RACE_BASIC_INFO,
+    DataKind.ENTRY,
+    DataKind.RESULT,
+    DataKind.RACE_RESULT_INFO,
+    DataKind.PAYOFF,
+    DataKind.WIN_SHOW_ODDS,
+)
+
+
 # 保持する最大エントリ数の既定値。
 # データ種別ごとに独立して数える。学習データ生成では5年分（約15,000レース）を
 # 連続処理するため、上限がないとメモリを圧迫する
