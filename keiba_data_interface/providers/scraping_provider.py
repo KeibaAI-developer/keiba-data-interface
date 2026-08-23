@@ -226,6 +226,22 @@ class ScrapingProvider:
         self._logger.debug("過去成績の取得が完了: horse_id=%s", horse_id)
         return result
 
+    def get_past_performances_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の過去成績をまとめて取得する（未対応）.
+
+        netkeibaには複数馬をまとめて取得する手段がなく、頭数ぶんのページ
+        スクレイピングになる。実用に耐えないためループでの実装は行わない。
+
+        Args:
+            horse_ids (list[str]): 馬ID（血統登録番号）のリスト
+
+        Raises:
+            DataNotFoundError: 常に送出する
+        """
+        message = "scrapingプロバイダーは過去成績の一括取得に対応していません"
+        self._logger.error(message)
+        raise DataNotFoundError(message)
+
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬マスタを取得する.
 

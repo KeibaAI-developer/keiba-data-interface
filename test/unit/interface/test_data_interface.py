@@ -183,6 +183,50 @@ def test_get_past_performances_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [7]}))
 
 
+def test_get_past_performances_bulk_delegates_when_provider_supports_bulk(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に対応したProviderではget_past_performances_bulkへ委譲される."""
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = True
+
+    result = interface.get_past_performances_bulk(["2022105102"])
+
+    mock_provider.get_past_performances_bulk.assert_called_once_with(["2022105102"])
+    assert result == mock_provider.get_past_performances_bulk.return_value
+
+
+def test_get_past_performances_bulk_fetches_one_by_one_when_not_supported(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に未対応のProviderでは1頭ずつ取得して同じ形の辞書を返す.
+
+    プリフェッチと違い戻り値そのものが必要なため、何もしないわけにはいかない。
+    Providerの能力差を吸収するのはDataInterfaceの役割であり、呼び出し側が
+    Providerの種類で分岐しなくて済む。
+    """
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = False
+
+    result = interface.get_past_performances_bulk(["2022105102", "2022105081"])
+
+    assert set(result) == {"2022105102", "2022105081"}
+    mock_provider.get_past_performances_bulk.assert_not_called()
+    assert mock_provider.get_past_performances.call_count == 2
+
+
+def test_get_past_performances_bulk_does_not_fetch_duplicated_horse_twice(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に未対応のProviderでも、重複した馬IDは1回だけ取得する."""
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = False
+
+    interface.get_past_performances_bulk(["2022105102", "2022105102"])
+
+    assert mock_provider.get_past_performances.call_count == 1
+
+
 def test_get_horse_master_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:

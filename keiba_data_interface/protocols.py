@@ -112,6 +112,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_past_performances_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の過去成績（馬柱）をまとめて取得する.
+
+        Args:
+            horse_ids: 馬ID（血統登録番号）のリスト
+        """
+        ...
+
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する.
 
