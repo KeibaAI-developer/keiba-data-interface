@@ -68,9 +68,15 @@ def convert_result_bulk(raw: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（複数レース分）
     """
-    df = convert_result_common(convert_base(raw))
-    df = _apply_niigata_straight_rank_per_race(raw, df)
-    return recalculate_ninkijun_per_race(df)
+    # レース単位の処理はindexで行を対応づけるため、重複したindexを持つ入力では
+    # 別レースの行を書き換えてしまう。位置と1対1に対応するindexで処理し、
+    # 最後に入力のindexへ戻す
+    raw_positional = raw.reset_index(drop=True)
+    df = convert_result_common(convert_base(raw_positional))
+    df = _apply_niigata_straight_rank_per_race(raw_positional, df)
+    df = recalculate_ninkijun_per_race(df)
+    df.index = raw.index
+    return df
 
 
 def convert_result_common(df: pd.DataFrame) -> pd.DataFrame:
@@ -121,11 +127,13 @@ def _apply_niigata_straight_rank_per_race(raw: pd.DataFrame, df: pd.DataFrame) -
 
     Raises:
         KeyError: rawにrace_codeカラムが存在しない場合
+        ValueError: race_codeに欠損値がある場合
     """
-    if "4コーナー順位" not in df.columns:
-        return df
     if "race_code" not in raw.columns:
         raise KeyError("レースを識別するカラムがありません: race_code")
+    if raw["race_code"].isna().any():
+        # groupbyは欠損キーの行を黙って除外するため、レース単位の処理から漏れる
+        raise ValueError("race_codeに欠損値があります")
 
     for _, race_raw in raw.groupby("race_code", sort=False):
         if not _is_niigata_straight_1000m(race_raw):

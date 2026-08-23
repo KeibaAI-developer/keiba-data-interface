@@ -70,9 +70,13 @@ def recalculate_ninkijun_per_race(
 
     Raises:
         KeyError: group_columnがDataFrameに存在しない場合
+        ValueError: group_columnに欠損値がある場合
     """
     if group_column not in df.columns:
         raise KeyError(f"レースを識別するカラムがありません: {group_column}")
+    if df[group_column].isna().any():
+        # groupbyは欠損キーの行を黙って除外するため、人気順が付かないまま残る
+        raise ValueError(f"{group_column}に欠損値があります")
     return _recalculate_ninkijun(df, group_column=group_column)
 
 
