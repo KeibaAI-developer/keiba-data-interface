@@ -6,10 +6,20 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from keiba_data_interface.cache import DataCache
+from keiba_data_interface.cache import DataCache, DataKind
 from keiba_data_interface.interface import DataInterface
 
 _RACE_CODES = ["2020122806050811", "2020122806050812"]
+
+# キャッシュのデータ種別 → DataInterfaceの取得メソッド名
+_RACE_KEYED_METHODS = {
+    DataKind.RACE_BASIC_INFO: "get_race_basic_info",
+    DataKind.ENTRY: "get_entry",
+    DataKind.RESULT: "get_result",
+    DataKind.RACE_RESULT_INFO: "get_race_result_info",
+    DataKind.PAYOFF: "get_payoff",
+    DataKind.WIN_SHOW_ODDS: "get_win_show_odds",
+}
 
 
 def _make_basic_info(race_code: str) -> pd.DataFrame:
@@ -48,6 +58,18 @@ class _BulkProvider:
                 [_make_basic_info(c) for c in race_codes], ignore_index=True
             )
         )
+        for method in _RACE_KEYED_METHODS.values():
+            setattr(
+                self,
+                method,
+                MagicMock(side_effect=lambda race_code: _make_basic_info(race_code)),
+            )
+        self.get_race_data_bulk = MagicMock(
+            side_effect=lambda race_codes: {
+                kind: {c: _make_basic_info(c) for c in race_codes}
+                for kind in _RACE_KEYED_METHODS
+            }
+        )
 
 
 class _NoBulkProvider(_BulkProvider):
@@ -82,12 +104,12 @@ def test_prefetched_race_is_not_queried_again(
 def test_prefetch_issues_single_query(
     bulk_interface: tuple[DataInterface, _BulkProvider],
 ) -> None:
-    """プリフェッチが発行するクエリはレース数によらず1回である."""
+    """プリフェッチの一括取得がレース数によらず1回である."""
     interface, provider = bulk_interface
 
     interface.prefetch_races(_RACE_CODES)
 
-    provider.get_race_basic_info_bulk.assert_called_once()
+    provider.get_race_data_bulk.assert_called_once()
 
 
 def test_cached_result_matches_uncached_result(
@@ -210,7 +232,7 @@ def test_future_race_is_excluded_from_bulk_query(
 
     interface.prefetch_races([_RACE_CODES[0], _future_race_code()])
 
-    passed = provider.get_race_basic_info_bulk.call_args[0][0]
+    passed = provider.get_race_data_bulk.call_args[0][0]
     assert passed == [_RACE_CODES[0]]
 
 
@@ -222,7 +244,7 @@ def test_prefetch_with_only_future_races_issues_no_query(
 
     interface.prefetch_races([_future_race_code()])
 
-    provider.get_race_basic_info_bulk.assert_not_called()
+    provider.get_race_data_bulk.assert_not_called()
 
 
 def test_prefetch_deduplicates_race_codes(
@@ -233,7 +255,7 @@ def test_prefetch_deduplicates_race_codes(
 
     interface.prefetch_races([_RACE_CODES[0], _RACE_CODES[0], _RACE_CODES[1]])
 
-    passed = provider.get_race_basic_info_bulk.call_args[0][0]
+    passed = provider.get_race_data_bulk.call_args[0][0]
     assert passed == _RACE_CODES
 
 
@@ -245,7 +267,7 @@ def test_prefetch_with_empty_list_issues_no_query(
 
     interface.prefetch_races([])
 
-    provider.get_race_basic_info_bulk.assert_not_called()
+    provider.get_race_data_bulk.assert_not_called()
 
 
 def test_provider_without_bulk_support_does_nothing() -> None:
@@ -261,7 +283,7 @@ def test_provider_without_bulk_support_does_nothing() -> None:
     interface.prefetch_races(_RACE_CODES)
     result = interface.get_race_basic_info(_RACE_CODES[0])
 
-    provider.get_race_basic_info_bulk.assert_not_called()
+    provider.get_race_data_bulk.assert_not_called()
     provider.get_race_basic_info.assert_called_once()
     assert not result.empty
 
@@ -287,3 +309,58 @@ def test_shared_cache_separates_providers() -> None:
     scraping_interface.get_race_basic_info(_RACE_CODES[0])
 
     scraping_provider.get_race_basic_info.assert_called_once()
+
+
+# 正常系（プリフェッチの対象データ種別）
+@pytest.mark.parametrize("kind, method", list(_RACE_KEYED_METHODS.items()))
+def test_prefetched_kind_is_not_queried_again(
+    bulk_interface: tuple[DataInterface, _BulkProvider], kind: str, method: str
+) -> None:
+    """プリフェッチ後、各データ種別の取得でクエリが発行されない.
+
+    input-generatorは過去走1件につきこれらを呼ぶため、まとめて取得できることが
+    高速化の中心になる。
+    """
+    interface, provider = bulk_interface
+
+    interface.prefetch_races(_RACE_CODES)
+    for race_code in _RACE_CODES:
+        getattr(interface, method)(race_code)
+
+    getattr(provider, method).assert_not_called()
+
+
+@pytest.mark.parametrize("kind, method", list(_RACE_KEYED_METHODS.items()))
+def test_each_kind_is_cached_separately(
+    bulk_interface: tuple[DataInterface, _BulkProvider], kind: str, method: str
+) -> None:
+    """データ種別ごとに独立したキー空間で保持される.
+
+    出馬表とレース結果は同じテーブルから別の変換で作られるため、同じレースコードでも
+    別の値になる。
+    """
+    interface, provider = bulk_interface
+    race_code = _RACE_CODES[0]
+
+    getattr(interface, method)(race_code)
+
+    for other_method in _RACE_KEYED_METHODS.values():
+        if other_method == method:
+            continue
+        getattr(provider, other_method).assert_not_called()
+
+
+@pytest.mark.parametrize("kind, method", list(_RACE_KEYED_METHODS.items()))
+def test_cached_kind_matches_uncached(
+    bulk_interface: tuple[DataInterface, _BulkProvider], kind: str, method: str
+) -> None:
+    """各データ種別の戻り値がキャッシュの有無で完全に一致する."""
+    interface, _ = bulk_interface
+    race_code = _RACE_CODES[0]
+
+    uncached = getattr(interface, method)(race_code)
+    interface.clear_cache()
+    interface.prefetch_races([race_code])
+    cached = getattr(interface, method)(race_code)
+
+    pd.testing.assert_frame_equal(cached, uncached)

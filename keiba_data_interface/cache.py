@@ -10,6 +10,22 @@ import logging
 from collections import OrderedDict
 from typing import Any
 
+
+class DataKind:
+    """キャッシュのデータ種別.
+
+    取得メソッドごとに独立したキー空間を持つ。同じレースコードでも取得メソッドが
+    違えば別の値になるため（出馬表とレース結果は同じテーブルから別の変換で作られる）。
+    """
+
+    RACE_BASIC_INFO = "race_basic_info"
+    ENTRY = "entry"
+    RESULT = "result"
+    RACE_RESULT_INFO = "race_result_info"
+    PAYOFF = "payoff"
+    WIN_SHOW_ODDS = "win_show_odds"
+
+
 # 保持する最大エントリ数の既定値。
 # データ種別ごとに独立して数える。学習データ生成では5年分（約15,000レース）を
 # 連続処理するため、上限がないとメモリを圧迫する

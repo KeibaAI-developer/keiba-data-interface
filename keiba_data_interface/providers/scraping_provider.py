@@ -87,6 +87,22 @@ class ScrapingProvider:
         self._logger.error(message)
         raise DataNotFoundError(message)
 
+    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+        """複数レースのデータ種別ごとの結果をまとめて取得する（未対応）.
+
+        netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページ
+        スクレイピングになる。実用に耐えないためループでの実装は行わない。
+
+        Args:
+            race_codes (list[str]): 16桁レースコードのリスト
+
+        Raises:
+            DataNotFoundError: 常に送出する
+        """
+        message = "scrapingプロバイダーはレース単位データの一括取得に対応していません"
+        self._logger.error(message)
+        raise DataNotFoundError(message)
+
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
 

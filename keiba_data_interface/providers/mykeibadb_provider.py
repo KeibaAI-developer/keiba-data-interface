@@ -5,11 +5,13 @@ mykeibadb-pythonのRaceGetter/OddsGetterを使用してJRA-VANデータを取得
 """
 
 import logging
+from collections.abc import Callable
 from datetime import date
 
 import pandas as pd
 from mykeibadb import MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
 
+from keiba_data_interface.cache import DataKind
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_chakudosu,
     convert_entry,
@@ -98,6 +100,60 @@ class MykeibaDBProvider:
             "レース基本情報の一括取得が完了: 指定=%d件, 取得=%d件",
             len(unique_race_codes),
             len(result),
+        )
+        return result
+
+    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+        """複数レースのデータ種別ごとの結果をまとめて取得する.
+
+        同一テーブルを引く種別はテーブル単位で1回だけ取得する。UMAGOTO_RACE_JOHOから
+        出馬表とレース結果を、RACE_SHOSAIからレース基本情報とレース結果情報を作る。
+
+        変換はレースコードでグループ化してから種別ごとの変換関数へ渡す。単勝人気順の
+        再計算やレース内での人気順など、レース単位でしか計算できない処理を含むため、
+        複数レースをまとめて変換できない。**減るのはクエリ回数であり変換回数ではない。**
+
+        Args:
+            race_codes (list[str]): 16桁レースコードのリスト
+
+        Returns:
+            dict[str, dict[str, pd.DataFrame]]: データ種別 → レースコード → DataFrame。
+                存在しないレースコードは含まれない
+        """
+        unique_race_codes = list(dict.fromkeys(race_codes))
+        if not unique_race_codes:
+            self._logger.debug("レースコードが空のためクエリを発行しません")
+            return {}
+
+        self._logger.debug("レース単位データを一括取得: 件数=%d", len(unique_race_codes))
+        raw_shosai = self._race_getter.get_race_shosai(
+            race_code=unique_race_codes, convert_codes=False
+        )
+        raw_umagoto = self._race_getter.get_umagoto_race_joho(
+            race_code=unique_race_codes, convert_codes=False
+        )
+        raw_haraimodoshi = self._race_getter.get_haraimodoshi(
+            race_code=unique_race_codes, convert_codes=False
+        )
+        raw_tansho = self._odds_getter.get_odds1_tansho(
+            race_code=unique_race_codes, convert_codes=False
+        )
+        raw_fukusho = self._odds_getter.get_odds1_fukusho(
+            race_code=unique_race_codes, convert_codes=False
+        )
+
+        result: dict[str, dict[str, pd.DataFrame]] = {
+            DataKind.RACE_BASIC_INFO: _convert_per_race(raw_shosai, convert_race_basic_info),
+            DataKind.RACE_RESULT_INFO: _convert_per_race(raw_shosai, convert_race_result_info),
+            DataKind.ENTRY: _convert_per_race(raw_umagoto, _convert_entry_sorted),
+            DataKind.RESULT: _convert_per_race(raw_umagoto, _convert_result_sorted),
+            DataKind.PAYOFF: _convert_per_race(raw_haraimodoshi, convert_payoff),
+            DataKind.WIN_SHOW_ODDS: _convert_odds_per_race(raw_tansho, raw_fukusho),
+        }
+        self._logger.debug(
+            "レース単位データの一括取得が完了: 指定=%d件, レース基本情報=%d件",
+            len(unique_race_codes),
+            len(result[DataKind.RACE_BASIC_INFO]),
         )
         return result
 
@@ -291,3 +347,92 @@ class MykeibaDBProvider:
             "開催スケジュールの取得が完了: start_date=%s, end_date=%s", start_date, end_date
         )
         return result
+
+
+def _convert_per_race(
+    raw: pd.DataFrame, converter: Callable[[pd.DataFrame], pd.DataFrame]
+) -> dict[str, pd.DataFrame]:
+    """レースコードでグループ化して変換関数を適用する.
+
+    単勝人気順の再計算のようにレース単位でしか計算できない処理を含むため、
+    複数レースをまとめて変換できない。
+
+    Args:
+        raw (pd.DataFrame): getterの出力（複数レース分）
+        converter (Callable[[pd.DataFrame], pd.DataFrame]): 1レース分の変換関数
+
+    Returns:
+        dict[str, pd.DataFrame]: レースコード → 変換後のDataFrame
+    """
+    if raw.empty:
+        return {}
+    return {
+        str(race_code): converter(race_raw.reset_index(drop=True))
+        for race_code, race_raw in raw.groupby("race_code")
+    }
+
+
+def _convert_odds_per_race(
+    raw_tansho: pd.DataFrame, raw_fukusho: pd.DataFrame
+) -> dict[str, pd.DataFrame]:
+    """単勝・複勝オッズをレースコードでグループ化して変換する.
+
+    単勝と複勝を馬番で結合するため、レース単位で組にしてから変換する。
+    片方にしか存在しないレースコードも対象にする（convert_win_show_oddsが
+    片方が空の場合に対応しているため）。
+
+    Args:
+        raw_tansho (pd.DataFrame): 単勝オッズの取得結果（複数レース分）
+        raw_fukusho (pd.DataFrame): 複勝オッズの取得結果（複数レース分）
+
+    Returns:
+        dict[str, pd.DataFrame]: レースコード → 変換後のDataFrame
+    """
+    tansho_by_race = (
+        {str(code): df for code, df in raw_tansho.groupby("race_code")}
+        if not raw_tansho.empty
+        else {}
+    )
+    fukusho_by_race = (
+        {str(code): df for code, df in raw_fukusho.groupby("race_code")}
+        if not raw_fukusho.empty
+        else {}
+    )
+
+    race_codes = dict.fromkeys([*tansho_by_race, *fukusho_by_race])
+    empty = pd.DataFrame()
+    return {
+        race_code: convert_win_show_odds(
+            tansho_by_race.get(race_code, empty).reset_index(drop=True),
+            fukusho_by_race.get(race_code, empty).reset_index(drop=True),
+        )
+        for race_code in race_codes
+    }
+
+
+def _convert_entry_sorted(raw: pd.DataFrame) -> pd.DataFrame:
+    """出馬表を変換して馬番昇順に並べる.
+
+    単一キー取得（get_entry）と同じ並びにする。
+
+    Args:
+        raw (pd.DataFrame): UMAGOTO_RACE_JOHOの出力（1レース分）
+
+    Returns:
+        pd.DataFrame: 出馬表（馬番昇順）
+    """
+    return convert_entry(raw).sort_values("馬番").reset_index(drop=True)
+
+
+def _convert_result_sorted(raw: pd.DataFrame) -> pd.DataFrame:
+    """レース結果を変換して確定着順・馬番の昇順に並べる.
+
+    単一キー取得（get_result）と同じ並びにする。
+
+    Args:
+        raw (pd.DataFrame): UMAGOTO_RACE_JOHOの出力（1レース分）
+
+    Returns:
+        pd.DataFrame: レース結果（確定着順・馬番の昇順）
+    """
+    return convert_result(raw).sort_values(["確定着順", "馬番"]).reset_index(drop=True)

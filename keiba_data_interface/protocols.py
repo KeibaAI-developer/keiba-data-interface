@@ -45,6 +45,21 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+        """複数レースのデータ種別ごとの結果をまとめて取得する.
+
+        プリフェッチ層が使う。同一テーブルを引く種別はテーブル単位で1回だけ取得し、
+        種別ごとの変換を適用して返す。
+
+        Args:
+            race_codes: 16桁レースコードのリスト
+
+        Returns:
+            データ種別（DataKind）→ レースコード → DataFrame の二段の辞書。
+            存在しないレースコードは含まれない
+        """
+        ...
+
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
 

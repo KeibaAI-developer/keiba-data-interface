@@ -53,6 +53,10 @@ class _FullProvider:
         """複数レースのレース基本情報をまとめて取得する."""
         return pd.DataFrame()
 
+    def get_race_data_bulk(self, race_codes: list[str]) -> dict[str, dict[str, pd.DataFrame]]:
+        """複数レースのデータ種別ごとの結果をまとめて取得する."""
+        return {}
+
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する."""
         return pd.DataFrame()
