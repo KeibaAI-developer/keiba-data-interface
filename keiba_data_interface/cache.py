@@ -24,7 +24,8 @@ class DataCache:
 
     複数の`DataInterface`インスタンスで共有できるよう、`DataInterface`の外へ
     置ける設計にしている。学習データ生成では対象レース群をまたいでキャッシュを
-    効かせたいため。
+    効かせたいため。データ種別にはデータソース名が含まれるため、データソースの
+    異なる`DataInterface`で共有しても値が混ざらない。
 
     未来レース（結果が確定していないレース）は保持しない。単勝オッズは発走直前まで
     変動し、予測実行では直前に取得し直す必要があるため、キャッシュした値を返すと
@@ -42,9 +43,16 @@ class DataCache:
         """キャッシュを初期化する.
 
         Args:
-            max_entries (int): データ種別ごとに保持する最大エントリ数
+            max_entries (int): データ種別ごとに保持する最大エントリ数。1以上を指定する
             logger (logging.Logger | None): ロガーインスタンス
+
+        Raises:
+            ValueError: max_entriesが1未満の場合
         """
+        if max_entries < 1:
+            message = f"max_entriesは1以上を指定してください: {max_entries}"
+            raise ValueError(message)
+
         self._logger = logger or logging.getLogger(__name__)
         self.max_entries = max_entries
         self._entries: dict[str, OrderedDict[str, Any]] = {}

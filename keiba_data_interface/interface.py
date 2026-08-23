@@ -50,7 +50,12 @@ class DataInterface:
         self._logger = logger or logging.getLogger(__name__)
         provider_logger = self._logger.getChild(provider)
         self._provider: DataProvider = _create_provider(provider, provider_logger)
-        self._cache = cache if cache is not None else DataCache(logger=self._logger)
+        self._cache = (
+            cache if cache is not None else DataCache(logger=self._logger.getChild("cache"))
+        )
+        # キャッシュのデータ種別へデータソース名を含める。データソースが異なれば
+        # 同じレースコードでも値が異なりうるため、共有しても混ざらないようにする
+        self._cache_kind_prefix = provider
         # コース日数は開催日単位で決まる値のため、インスタンス内で使い回す
         self._course_days_cache = course_days.CourseDaysCache()
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
@@ -68,14 +73,14 @@ class DataInterface:
         Returns:
             レース基本情報のDataFrame（1行）
         """
-        cached = self._cache.get(_RACE_BASIC_INFO_KIND, race_code)
+        cached = self._cache.get(self._cache_kind(_RACE_BASIC_INFO_KIND), race_code)
         if cached is not None:
             result = cached.copy()
         else:
             result = self._provider.get_race_basic_info(race_code)
             # コース日数を付与する前の値をキャッシュする。コース日数はCourseDaysCacheが
             # 別に持つため、ここへ混ぜると付与の有無で戻り値が変わってしまう
-            self._cache.set(_RACE_BASIC_INFO_KIND, race_code, result.copy())
+            self._cache.set(self._cache_kind(_RACE_BASIC_INFO_KIND), race_code, result.copy())
         if calc_course_days:
             result = course_days.calc_course_days(
                 result, self._provider, self._logger, self._course_days_cache
@@ -131,9 +136,22 @@ class DataInterface:
         races = self._provider.get_race_basic_info_bulk(targets)
         for race_code, race_df in races.groupby("レースコード"):
             self._cache.set(
-                _RACE_BASIC_INFO_KIND, str(race_code), race_df.reset_index(drop=True)
+                self._cache_kind(_RACE_BASIC_INFO_KIND),
+                str(race_code),
+                race_df.reset_index(drop=True),
             )
         self._logger.debug("プリフェッチが完了しました: 取得=%d件", len(races))
+
+    def _cache_kind(self, kind: str) -> str:
+        """データソース名を含めたキャッシュのデータ種別名を返す.
+
+        Args:
+            kind (str): データ種別名
+
+        Returns:
+            str: データソース名を含めたデータ種別名
+        """
+        return f"{self._cache_kind_prefix}:{kind}"
 
     def clear_cache(self) -> None:
         """キャッシュを空にする."""

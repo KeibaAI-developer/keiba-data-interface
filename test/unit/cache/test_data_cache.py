@@ -135,3 +135,13 @@ def test_is_future_race_code_includes_today() -> None:
     発走前のレースを過去として扱わないため。
     """
     assert is_future_race_code(_future_race_code()) is True
+
+
+@pytest.mark.parametrize("max_entries", [0, -1])
+def test_invalid_max_entries_raises(max_entries: int) -> None:
+    """max_entriesが1未満の場合にValueErrorが発生する.
+
+    負数を許すと退避のループが空のキャッシュに対して実行され、KeyErrorになる。
+    """
+    with pytest.raises(ValueError, match="max_entriesは1以上"):
+        DataCache(max_entries=max_entries)

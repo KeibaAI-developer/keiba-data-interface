@@ -189,6 +189,8 @@ di_a = DataInterface("mykeibadb", cache=cache)
 di_b = DataInterface("mykeibadb", cache=cache)
 ```
 
+キャッシュのキーにはデータソース名が含まれるため、データソースの異なる `DataInterface` で共有しても値が混ざりません。
+
 キャッシュを空にするには `clear_cache()` を使います。
 
 ### 未来レースはキャッシュされない

@@ -264,3 +264,26 @@ def test_provider_without_bulk_support_does_nothing() -> None:
     provider.get_race_basic_info_bulk.assert_not_called()
     provider.get_race_basic_info.assert_called_once()
     assert not result.empty
+
+
+def test_shared_cache_separates_providers() -> None:
+    """cacheを共有してもデータソースが異なれば値が混ざらない.
+
+    同じレースコードでもデータソースが違えば値が異なりうる。
+    """
+    cache = DataCache()
+    mykeibadb_provider = _BulkProvider()
+    scraping_provider = _NoBulkProvider()
+    with patch(
+        "keiba_data_interface.interface._create_provider", return_value=mykeibadb_provider
+    ):
+        mykeibadb_interface = DataInterface("mykeibadb", cache=cache)
+    with patch(
+        "keiba_data_interface.interface._create_provider", return_value=scraping_provider
+    ):
+        scraping_interface = DataInterface("scraping", cache=cache)
+
+    mykeibadb_interface.get_race_basic_info(_RACE_CODES[0])
+    scraping_interface.get_race_basic_info(_RACE_CODES[0])
+
+    scraping_provider.get_race_basic_info.assert_called_once()
