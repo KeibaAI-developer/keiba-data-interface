@@ -14,7 +14,14 @@ class DataProvider(Protocol):
     """データソースの抽象インターフェース.
 
     各データソース（scraping, mykeibadb）はこのProtocolを実装する。
+
+    Attributes:
+        supports_bulk: 一括取得メソッド（get_xxx_bulk）に対応しているか。
+            未対応のProviderは一括取得メソッドでDataNotFoundErrorを送出するため、
+            呼び出し側はこのフラグを見て1件ずつ取得する経路へ切り替える
     """
+
+    supports_bulk: bool
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.

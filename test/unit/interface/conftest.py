@@ -11,6 +11,8 @@ from keiba_data_interface.interface import DataInterface
 class _MockProvider:
     """DataProvider Protocolを満たすモックProvider."""
 
+    supports_bulk = True
+
     def __init__(self) -> None:
         """コンストラクタ."""
         self.get_race_basic_info = MagicMock(return_value=pd.DataFrame({"col": [1]}))
