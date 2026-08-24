@@ -282,6 +282,30 @@ class DataInterface:
         result = self._provider.get_past_performances(horse_id)
         return result
 
+    def get_past_performances_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の過去成績（馬柱）をまとめて取得する.
+
+        Providerが一括取得に対応していない場合は1頭ずつ取得して同じ形の辞書を返す。
+        `prefetch_races`（一括に未対応なら何もしない）と違い、こちらは戻り値そのものが
+        必要なため。Providerの能力差を吸収するのはDataInterfaceの役割であり、
+        呼び出し側がProviderの種類で分岐しなくて済む。
+
+        Args:
+            horse_ids: 馬ID（血統登録番号）のリスト
+
+        Returns:
+            馬ID → 過去成績のDataFrame（レースコード降順）。
+            指定した馬IDは必ずキーに含まれる
+        """
+        if self._provider.supports_bulk:
+            return self._provider.get_past_performances_bulk(horse_ids)
+
+        self._logger.debug("Providerが一括取得に未対応のため1頭ずつ取得します")
+        return {
+            horse_id: self._provider.get_past_performances(horse_id)
+            for horse_id in dict.fromkeys(horse_ids)
+        }
+
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬情報を取得する.
 

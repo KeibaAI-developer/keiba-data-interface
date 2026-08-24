@@ -18,6 +18,7 @@ from keiba_data_interface.providers.mykeibadb_converters import (
     convert_entry_bulk,
     convert_horse_master,
     convert_past_performances,
+    convert_past_performances_bulk,
     convert_payoff,
     convert_payoff_bulk,
     convert_race_basic_info,
@@ -305,6 +306,47 @@ class MykeibaDBProvider:
         df = df.sort_values("レースコード", ascending=False).reset_index(drop=True)
         self._logger.debug("過去成績の取得が完了: horse_id=%s", horse_id)
         return df
+
+    def get_past_performances_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の過去成績（馬柱）をまとめて取得する.
+
+        `umagoto_race_joho` の主キーは (race_code, ketto_toroku_bango) であり、
+        血統登録番号だけで絞り込むと主キーの前方一致にならず、PostgreSQLがインデックスを
+        頭から走査する（1頭あたり約276ms）。IN句でまとめると走査が1回で済み、
+        16頭ぶんで実測8.8倍になる。
+
+        Args:
+            horse_ids (list[str]): 馬ID（血統登録番号）のリスト
+
+        Returns:
+            dict[str, pd.DataFrame]: 馬ID → 過去成績（レースコード降順）。
+                指定した馬IDは必ずキーに含まれる。出走歴が無い馬には
+                1件取得と同じカラム構成・dtypeの空DataFrameを返す
+        """
+        unique_horse_ids = list(dict.fromkeys(horse_ids))
+        empty = convert_past_performances(pd.DataFrame())
+        if not unique_horse_ids:
+            self._logger.debug("取得対象が無いためクエリを発行しません")
+            return {}
+
+        self._logger.debug("RaceGetterで過去成績を一括取得: 頭数=%d", len(unique_horse_ids))
+        raw = self._race_getter.get_umagoto_race_joho(
+            ketto_toroku_bango=unique_horse_ids, convert_codes=False
+        )
+        converted = convert_past_performances_bulk(raw)
+        # 出走歴が無い馬にはそれぞれ独立した空のDataFrameを持たせる。同じインスタンスを
+        # 共有すると、呼び出し側が一方を書き換えたときに他方まで変わる
+        result = {horse_id: empty.copy() for horse_id in unique_horse_ids}
+        if not converted.empty:
+            for horse_id, horse_df in converted.groupby("血統登録番号", sort=False):
+                key = str(horse_id)
+                if key not in result:
+                    continue
+                result[key] = horse_df.sort_values("レースコード", ascending=False).reset_index(
+                    drop=True
+                )
+        self._logger.debug("過去成績の一括取得が完了: 頭数=%d", len(result))
+        return result
 
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬マスタを取得する.

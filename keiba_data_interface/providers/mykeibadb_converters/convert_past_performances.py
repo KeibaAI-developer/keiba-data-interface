@@ -23,6 +23,22 @@ def convert_past_performances(raw: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（HORSE_RACE_INFO_COLUMNSのカラム）
     """
-    df = convert_result_common(convert_base(raw))
+    return convert_result_common(convert_base(raw))
 
-    return df
+
+def convert_past_performances_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """馬ID指定のUMAGOTO_RACE_JOHO出力（複数馬分）を統一スキーマに変換する.
+
+    変換は要素単位・カラム単位の処理だけで構成されており、馬をまたいで影響し合う
+    処理が無い（単勝人気順の再計算は行わない）。そのため複数馬分をまとめて渡しても
+    馬ごとに変換した結果と一致する。
+
+    分割は呼び出し側が行う。`血統登録番号` カラムはそのまま保持する。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（複数馬分）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（複数馬分）
+    """
+    return convert_past_performances(raw)

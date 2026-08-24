@@ -10,6 +10,7 @@ from keiba_data_interface.providers.mykeibadb_converters.convert_horse_master im
 )
 from keiba_data_interface.providers.mykeibadb_converters.convert_past_performances import (
     convert_past_performances,
+    convert_past_performances_bulk,
 )
 from keiba_data_interface.providers.mykeibadb_converters.convert_payoff import (
     convert_payoff,
@@ -38,6 +39,7 @@ __all__ = [
     "convert_entry_bulk",
     "convert_horse_master",
     "convert_past_performances",
+    "convert_past_performances_bulk",
     "convert_payoff",
     "convert_payoff_bulk",
     "convert_race_basic_info",
