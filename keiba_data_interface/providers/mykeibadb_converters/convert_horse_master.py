@@ -253,16 +253,49 @@ def convert_horse_master(raw: pd.DataFrame) -> pd.DataFrame:
     if raw.empty:
         return apply_types(ensure_columns(pd.DataFrame(), HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)
 
-    row = raw.iloc[0].to_dict()
+    df = pd.DataFrame([_convert_row(raw.iloc[0])])
+    return apply_types(ensure_columns(df, HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)
+
+
+def convert_horse_master_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """KYOSOBA_MASTER2出力（複数馬分）を統一スキーマに変換する.
+
+    変換は行ごとに辞書を組み立てる構造だが、`ensure_columns` と `apply_types` は
+    馬数によらず1回で済む。`apply_types` はコストがカラム数と呼び出し回数に比例する
+    （競走馬マスタは228カラムある）ため、まとめると大きく効く。
+
+    分割は呼び出し側が行う。`血統登録番号` カラムはそのまま保持する。
+    1件版が `raw.iloc[0]` の1行だけを返すのに対し、本関数は渡された行をすべて返す。
+    馬ごとに1行へ絞るのは呼び出し側の責務である。
+
+    Args:
+        raw (pd.DataFrame): MasterGetter.get_kyosoba_master2()の出力（複数馬分）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（複数馬分）
+    """
+    rows = [_convert_row(row) for _, row in raw.iterrows()]
+    df = pd.DataFrame(rows)
+    return apply_types(ensure_columns(df, HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)
+
+
+def _convert_row(row: pd.Series) -> dict[str, object]:
+    """KYOSOBA_MASTER2の1行を統一スキーマの辞書へ変換する.
+
+    Args:
+        row (pd.Series): KYOSOBA_MASTER2の1行
+
+    Returns:
+        dict[str, object]: 統一スキーマのカラム名 → 値
+    """
+    values = row.to_dict()
     converted: dict[str, object] = {}
     for raw_col, ja_col in _COLUMN_MAP.items():
-        val = row.get(raw_col, pd.NA)
+        val = values.get(raw_col, pd.NA)
         if isinstance(val, float) and pd.isna(val):
             converted[ja_col] = pd.NA
         elif ja_col == "馬主名" and isinstance(val, str):
             converted[ja_col] = val.replace("　", "").strip()
         else:
             converted[ja_col] = val
-
-    df = pd.DataFrame([converted])
-    return apply_types(ensure_columns(df, HORSE_MASTER_COLUMNS), HORSE_MASTER_TYPES)
+    return converted

@@ -17,6 +17,7 @@ from keiba_data_interface.providers.mykeibadb_converters import (
     convert_entry,
     convert_entry_bulk,
     convert_horse_master,
+    convert_horse_master_bulk,
     convert_past_performances,
     convert_past_performances_bulk,
     convert_payoff,
@@ -366,6 +367,46 @@ class MykeibaDBProvider:
         )
         result = convert_horse_master(raw)
         self._logger.debug("競走馬情報の取得が完了: horse_id=%s", horse_id)
+        return result
+
+    def get_horse_master_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の競走馬マスタをまとめて取得する.
+
+        `kyosoba_master2` は血統登録番号が主キーのためクエリ自体は速いが、頭数ぶんの
+        往復と変換（228カラムの型変換を1頭につき2回）が積み上がる。1回にまとめる。
+
+        Args:
+            horse_ids (list[str]): 馬ID（血統登録番号）のリスト
+
+        Returns:
+            dict[str, pd.DataFrame]: 馬ID → 競走馬マスタ（1行）。
+                指定した馬IDは必ずキーに含まれる。マスタに存在しない馬には
+                1件取得と同じカラム構成・dtypeの空DataFrameを返す
+        """
+        unique_horse_ids = list(dict.fromkeys(horse_ids))
+        if not unique_horse_ids:
+            self._logger.debug("取得対象が無いためクエリを発行しません")
+            return {}
+
+        self._logger.debug("MasterGetterで競走馬情報を一括取得: 頭数=%d", len(unique_horse_ids))
+        raw = self._master_getter.get_kyosoba_master2(
+            ketto_toroku_bango=unique_horse_ids, convert_codes=False
+        )
+        converted = convert_horse_master_bulk(raw)
+        empty = convert_horse_master(pd.DataFrame())
+        # マスタに存在しない馬にはそれぞれ独立した空のDataFrameを持たせる。同じ
+        # インスタンスを共有すると、呼び出し側が一方を書き換えたときに他方まで変わる
+        result = {horse_id: empty.copy() for horse_id in unique_horse_ids}
+        if not converted.empty:
+            for horse_id, horse_df in converted.groupby("血統登録番号", sort=False):
+                key = str(horse_id)
+                if key not in result:
+                    continue
+                # 1件版は raw.iloc[0] の1行だけを返す。血統登録番号はkyosoba_master2の
+                # 主キーなので同じ馬が複数行になることはないが、なった場合も1件版と
+                # 同じ結果にするため先頭行だけを採る
+                result[key] = horse_df.head(1).reset_index(drop=True)
+        self._logger.debug("競走馬情報の一括取得が完了: 頭数=%d", len(result))
         return result
 
     def get_chakudosu(self, race_code: str) -> pd.DataFrame:

@@ -259,6 +259,22 @@ class ScrapingProvider:
         self._logger.debug("競走馬情報の取得が完了: horse_id=%s", horse_id)
         return result
 
+    def get_horse_master_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の競走馬情報をまとめて取得する（未対応）.
+
+        netkeibaには複数馬をまとめて取得する手段がなく、頭数ぶんのページ
+        スクレイピングになる。実用に耐えないためループでの実装は行わない。
+
+        Args:
+            horse_ids (list[str]): 馬ID（血統登録番号）のリスト
+
+        Raises:
+            DataNotFoundError: 常に送出する
+        """
+        message = "scrapingプロバイダーは競走馬情報の一括取得に対応していません"
+        self._logger.error(message)
+        raise DataNotFoundError(message)
+
     def get_chakudosu(self, race_code: str) -> pd.DataFrame:
         """出走別着度数を取得する.
 

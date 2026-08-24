@@ -128,6 +128,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_horse_master_bulk(self, horse_ids: list[str]) -> dict[str, pd.DataFrame]:
+        """複数馬の競走馬情報をまとめて取得する.
+
+        Args:
+            horse_ids: 馬ID（血統登録番号）のリスト
+        """
+        ...
+
     def get_chakudosu(self, race_code: str) -> pd.DataFrame:
         """出走別着度数を取得する.
 

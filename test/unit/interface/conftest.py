@@ -28,6 +28,9 @@ class _MockProvider:
             return_value={"2022105102": pd.DataFrame({"col": [7]})}
         )
         self.get_horse_master = MagicMock(return_value=pd.DataFrame({"col": [8]}))
+        self.get_horse_master_bulk = MagicMock(
+            return_value={"2022105081": pd.DataFrame({"col": [8]})}
+        )
         self.get_chakudosu = MagicMock(return_value=pd.DataFrame({"col": [9]}))
         self.get_schedule = MagicMock(return_value=pd.DataFrame({"col": [10]}))
 

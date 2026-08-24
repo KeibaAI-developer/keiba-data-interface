@@ -1,6 +1,6 @@
 """DataInterfaceクラスのテスト."""
 
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pandas as pd
 import pytest
@@ -204,15 +204,26 @@ def test_get_past_performances_bulk_fetches_one_by_one_when_not_supported(
     プリフェッチと違い戻り値そのものが必要なため、何もしないわけにはいかない。
     Providerの能力差を吸収するのはDataInterfaceの役割であり、呼び出し側が
     Providerの種類で分岐しなくて済む。
+
+    馬IDと戻り値の対応が入れ替わらないことも検証する。
     """
     interface, mock_provider = interface_with_mock
     mock_provider.supports_bulk = False
+    by_horse = {
+        "2022105102": pd.DataFrame({"col": [1]}),
+        "2022105081": pd.DataFrame({"col": [2]}),
+    }
+    mock_provider.get_past_performances.side_effect = lambda horse_id: by_horse[horse_id]
 
     result = interface.get_past_performances_bulk(["2022105102", "2022105081"])
 
-    assert set(result) == {"2022105102", "2022105081"}
     mock_provider.get_past_performances_bulk.assert_not_called()
-    assert mock_provider.get_past_performances.call_count == 2
+    mock_provider.get_past_performances.assert_has_calls(
+        [call("2022105102"), call("2022105081")]
+    )
+    assert set(result) == set(by_horse)
+    for horse_id, expected in by_horse.items():
+        pd.testing.assert_frame_equal(result[horse_id], expected)
 
 
 def test_get_past_performances_bulk_does_not_fetch_duplicated_horse_twice(
@@ -235,6 +246,45 @@ def test_get_horse_master_delegates(
     result = interface.get_horse_master("2022105081")
     mock_provider.get_horse_master.assert_called_once_with("2022105081")
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [8]}))
+
+
+def test_get_horse_master_bulk_delegates_when_provider_supports_bulk(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に対応したProviderではget_horse_master_bulkへ委譲される."""
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = True
+
+    result = interface.get_horse_master_bulk(["2022105081"])
+
+    mock_provider.get_horse_master_bulk.assert_called_once_with(["2022105081"])
+    assert result == mock_provider.get_horse_master_bulk.return_value
+
+
+def test_get_horse_master_bulk_fetches_one_by_one_when_not_supported(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """一括取得に未対応のProviderでは1頭ずつ取得して同じ形の辞書を返す.
+
+    馬IDと戻り値の対応が入れ替わらないことも検証する。
+    """
+    interface, mock_provider = interface_with_mock
+    mock_provider.supports_bulk = False
+    by_horse = {
+        "2022105081": pd.DataFrame({"col": [1]}),
+        "2022105102": pd.DataFrame({"col": [2]}),
+    }
+    mock_provider.get_horse_master.side_effect = lambda horse_id: by_horse[horse_id]
+
+    result = interface.get_horse_master_bulk(["2022105081", "2022105102"])
+
+    mock_provider.get_horse_master_bulk.assert_not_called()
+    mock_provider.get_horse_master.assert_has_calls(
+        [call("2022105081"), call("2022105102")]
+    )
+    assert set(result) == set(by_horse)
+    for horse_id, expected in by_horse.items():
+        pd.testing.assert_frame_equal(result[horse_id], expected)
 
 
 def test_get_chakudosu_delegates(
