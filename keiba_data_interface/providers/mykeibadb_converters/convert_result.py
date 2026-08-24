@@ -10,7 +10,10 @@ import pandas as pd
 
 from keiba_data_interface.providers.mykeibadb_converters.convert_entry import convert_base
 from keiba_data_interface.utils.converters import convert_time_msss_to_display
-from keiba_data_interface.utils.dataframe import recalculate_ninkijun
+from keiba_data_interface.utils.dataframe import (
+    recalculate_ninkijun,
+    recalculate_ninkijun_per_race,
+)
 
 
 def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
@@ -44,6 +47,38 @@ def convert_result(raw: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def convert_result_bulk(raw: pd.DataFrame) -> pd.DataFrame:
+    """UMAGOTO_RACE_JOHOの結果データ（複数レース分）を統一スキーマに変換する.
+
+    `convert_result` のうちレース単位でしか計算できない次の3つを、レースごとに
+    処理する。それ以外は要素単位・カラム単位の処理であり、複数レース分をまとめて
+    渡してもレースごとに変換した結果と一致する。
+
+    | 処理 | レース単位で行う理由 |
+    |---|---|
+    | 新潟芝1000m直線の判定 | 全馬のコーナー通過順位が0かどうかで判定するため |
+    | 前半タイムの昇順ランク | レース内の順位であるため |
+    | 単勝人気順の再計算 | レース内の順位であるため |
+
+    分割は呼び出し側が行う。`レースコード` カラムはそのまま保持する。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（複数レース分）
+
+    Returns:
+        pd.DataFrame: 統一スキーマに変換されたDataFrame（複数レース分）
+    """
+    # レース単位の処理はindexで行を対応づけるため、重複したindexを持つ入力では
+    # 別レースの行を書き換えてしまう。位置と1対1に対応するindexで処理し、
+    # 最後に入力のindexへ戻す
+    raw_positional = raw.reset_index(drop=True)
+    df = convert_result_common(convert_base(raw_positional))
+    df = _apply_niigata_straight_rank_per_race(raw_positional, df)
+    df = recalculate_ninkijun_per_race(df)
+    df.index = raw.index
+    return df
+
+
 def convert_result_common(df: pd.DataFrame) -> pd.DataFrame:
     """走破タイム・タイム差・コーナー順位の共通変換を適用する.
 
@@ -74,6 +109,37 @@ def convert_result_common(df: pd.DataFrame) -> pd.DataFrame:
             .astype("Int64")
         )
 
+    return df
+
+
+def _apply_niigata_straight_rank_per_race(raw: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
+    """新潟芝1000m直線のレースについてのみ、4コーナー順位を前半タイムの順位で置き換える.
+
+    判定もランクもレース単位で行う。複数レース分をまとめて判定すると、直線コースの
+    レースと通常のレースが混ざった時点で判定が成立しない。
+
+    Args:
+        raw (pd.DataFrame): RaceGetter.get_umagoto_race_joho()の出力（複数レース分）
+        df (pd.DataFrame): 変換済みのDataFrame（rawと同じindex）
+
+    Returns:
+        pd.DataFrame: 4コーナー順位を置き換えたDataFrame
+
+    Raises:
+        KeyError: rawにrace_codeカラムが存在しない場合
+        ValueError: race_codeに欠損値がある場合
+    """
+    if "race_code" not in raw.columns:
+        raise KeyError("レースを識別するカラムがありません: race_code")
+    if raw["race_code"].isna().any():
+        # groupbyは欠損キーの行を黙って除外するため、レース単位の処理から漏れる
+        raise ValueError("race_codeに欠損値があります")
+
+    for _, race_raw in raw.groupby("race_code", sort=False):
+        if not _is_niigata_straight_1000m(race_raw):
+            continue
+        rank = _calc_zenhan_time_rank(race_raw)
+        df.loc[rank.index, "4コーナー順位"] = rank
     return df
 
 

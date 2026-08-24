@@ -41,8 +41,51 @@ def recalculate_ninkijun(df: pd.DataFrame) -> pd.DataFrame:
     単勝オッズがNaNの馬は単勝人気順もNaNにする。
     入力DataFrameは変更しない。
 
+    **1レース分のDataFrameを渡すこと。** 複数レース分をまとめて渡すとレースをまたいで
+    順位が付く。複数レース分は `recalculate_ninkijun_per_race` を使う。
+
+    Args:
+        df (pd.DataFrame): 単勝オッズカラムを含むDataFrame（1レース分）
+
+    Returns:
+        pd.DataFrame: 単勝人気順が再計算された新しいDataFrame
+    """
+    return _recalculate_ninkijun(df, group_column=None)
+
+
+def recalculate_ninkijun_per_race(
+    df: pd.DataFrame, group_column: str = "レースコード"
+) -> pd.DataFrame:
+    """複数レース分のDataFrameについて、レースごとに単勝人気順を再計算する.
+
+    レースごとに分割して `recalculate_ninkijun` を呼ぶより速い。入力DataFrameは
+    変更しない。
+
+    Args:
+        df (pd.DataFrame): 単勝オッズカラムとレースコードカラムを含むDataFrame
+        group_column (str): レースを識別するカラム名
+
+    Returns:
+        pd.DataFrame: 単勝人気順が再計算された新しいDataFrame
+
+    Raises:
+        KeyError: group_columnがDataFrameに存在しない場合
+        ValueError: group_columnに欠損値がある場合
+    """
+    if group_column not in df.columns:
+        raise KeyError(f"レースを識別するカラムがありません: {group_column}")
+    if df[group_column].isna().any():
+        # groupbyは欠損キーの行を黙って除外するため、人気順が付かないまま残る
+        raise ValueError(f"{group_column}に欠損値があります")
+    return _recalculate_ninkijun(df, group_column=group_column)
+
+
+def _recalculate_ninkijun(df: pd.DataFrame, group_column: str | None) -> pd.DataFrame:
+    """単勝人気順の再計算の本体.
+
     Args:
         df (pd.DataFrame): 単勝オッズカラムを含むDataFrame
+        group_column (str | None): レースを識別するカラム名。Noneなら全行を1レースとして扱う
 
     Returns:
         pd.DataFrame: 単勝人気順が再計算された新しいDataFrame
@@ -52,9 +95,14 @@ def recalculate_ninkijun(df: pd.DataFrame) -> pd.DataFrame:
         return result
     valid_mask = result["単勝オッズ"].notna()
     if valid_mask.any():
-        result.loc[valid_mask, "単勝人気順"] = (
-            result.loc[valid_mask, "単勝オッズ"].rank(method="min", ascending=True).astype("Int64")
-        )
+        valid_odds = result.loc[valid_mask, "単勝オッズ"]
+        if group_column is None:
+            ranked = valid_odds.rank(method="min", ascending=True)
+        else:
+            ranked = valid_odds.groupby(result.loc[valid_mask, group_column]).rank(
+                method="min", ascending=True
+            )
+        result.loc[valid_mask, "単勝人気順"] = ranked.astype("Int64")
     result.loc[~valid_mask, "単勝人気順"] = pd.NA
     return result
 
