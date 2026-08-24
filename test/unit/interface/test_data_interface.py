@@ -39,6 +39,19 @@ def test_create_mykeibadb_provider() -> None:
         assert isinstance(interface._provider, MykeibaDBProvider)
 
 
+def test_supports_bulk_reflects_provider(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """supports_bulkがProviderの値をそのまま返す."""
+    interface, mock_provider = interface_with_mock
+
+    mock_provider.supports_bulk = True
+    assert interface.supports_bulk is True
+
+    mock_provider.supports_bulk = False
+    assert interface.supports_bulk is False
+
+
 def test_get_race_basic_info_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:

@@ -62,6 +62,19 @@ class DataInterface:
         self._course_days_cache = course_days.CourseDaysCache()
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
 
+    @property
+    def supports_bulk(self) -> bool:
+        """Providerが一括取得に対応しているか.
+
+        一括取得の有無で処理を変えたい呼び出し側のために公開する。多くの場合は
+        `DataInterface` 側が能力差を吸収する（`get_past_performances_bulk` など）ため、
+        呼び出し側が参照する必要はない。
+
+        Returns:
+            Providerが一括取得メソッドに対応していればTrue
+        """
+        return self._provider.supports_bulk
+
     def get_race_basic_info(self, race_code: str, calc_course_days: bool = False) -> pd.DataFrame:
         """レース基本情報を取得する.
 
