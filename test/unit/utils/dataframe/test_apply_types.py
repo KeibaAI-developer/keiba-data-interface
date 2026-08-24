@@ -115,3 +115,86 @@ def test_apply_types_whitespace_string_not_converted_for_object_type() -> None:
     result = apply_types(df, {"A": "object"})
     assert result["A"].iloc[0] == ""
     assert result["A"].iloc[1] == " "
+
+
+# カラム構成の保持
+def test_apply_types_keeps_column_order_of_input() -> None:
+    """カラムの順序が入力DataFrameと同じになる.
+
+    型定義辞書の順序ではなく入力DataFrameの順序を保つ。カラム順が変わると、
+    呼び出し側が期待するスキーマと食い違う。
+    """
+    df = pd.DataFrame({"C": [1], "A": [2], "B": [3]})
+    result = apply_types(df, {"A": "Int64", "B": "Float64", "C": "object"})
+    assert list(result.columns) == ["C", "A", "B"]
+
+
+def test_apply_types_keeps_column_not_in_type_dict() -> None:
+    """型定義辞書に無いカラムは値もdtypeもそのまま残る."""
+    df = pd.DataFrame({"A": [1, 2], "対象外": ["x", "y"]})
+    result = apply_types(df, {"A": "Int64"})
+    assert list(result["対象外"]) == ["x", "y"]
+    assert result["対象外"].dtype == df["対象外"].dtype
+
+
+def test_apply_types_does_not_share_values_with_input() -> None:
+    """型定義辞書に無いカラムを書き換えても入力DataFrameが変わらない.
+
+    組み立て直しで入力のSeriesをそのまま持つと、実体を共有してしまう。
+    """
+    df = pd.DataFrame({"A": [1, 2], "対象外": ["x", "y"]})
+    result = apply_types(df, {"A": "Int64"})
+    result.loc[0, "対象外"] = "変更後"
+    assert df.loc[0, "対象外"] == "x"
+
+
+def test_apply_types_keeps_index_of_input() -> None:
+    """indexが入力DataFrameと同じになる."""
+    df = pd.DataFrame({"A": [1, 2]}, index=[5, 8])
+    result = apply_types(df, {"A": "Int64"})
+    assert list(result.index) == [5, 8]
+
+
+# 準正常系
+def test_apply_types_empty_dataframe_keeps_columns_and_dtypes() -> None:
+    """0行のDataFrameでもカラム構成とdtypeが保たれる.
+
+    存在しないレースコードを指定した場合など、0行のDataFrameを変換する経路がある。
+    """
+    df = pd.DataFrame({"A": pd.Series(dtype=object), "B": pd.Series(dtype=object)})
+    result = apply_types(df, {"A": "Int64", "B": "object"})
+    assert list(result.columns) == ["A", "B"]
+    assert result["A"].dtype == pd.Int64Dtype()
+    assert result["B"].dtype == object
+    assert len(result) == 0
+
+
+def test_apply_types_keeps_attrs_of_input() -> None:
+    """attrsが入力DataFrameから引き継がれる.
+
+    DataFrame.copy()はattrsを引き継ぐため、組み立て直しでも同じ振る舞いにする。
+    """
+    df = pd.DataFrame({"A": [1, 2]})
+    df.attrs["メモ"] = "値"
+
+    result = apply_types(df, {"A": "Int64"})
+
+    assert result.attrs == {"メモ": "値"}
+
+
+def test_apply_types_does_not_share_attrs_with_input() -> None:
+    """戻り値のattrsを書き換えても入力DataFrameが変わらない."""
+    df = pd.DataFrame({"A": [1, 2]})
+    df.attrs["メモ"] = "値"
+
+    result = apply_types(df, {"A": "Int64"})
+    result.attrs["メモ"] = "変更後"
+
+    assert df.attrs["メモ"] == "値"
+
+
+def test_apply_types_empty_type_dict_returns_same_content() -> None:
+    """型定義辞書が空なら内容が変わらない."""
+    df = pd.DataFrame({"A": [1, 2], "B": ["x", "y"]})
+    result = apply_types(df, {})
+    pd.testing.assert_frame_equal(result, df)
