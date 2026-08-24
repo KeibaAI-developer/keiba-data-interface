@@ -10,7 +10,6 @@ from collections.abc import Callable, Sequence
 
 import pandas as pd
 
-from keiba_data_interface import course_days
 from keiba_data_interface.cache import (
     RACE_DATA_KINDS,
     DataCache,
@@ -58,8 +57,6 @@ class DataInterface:
         # キャッシュのデータ種別へデータソース名を含める。データソースが異なれば
         # 同じレースコードでも値が異なりうるため、共有しても混ざらないようにする
         self._cache_kind_prefix = provider
-        # コース日数は開催日単位で決まる値のため、インスタンス内で使い回す
-        self._course_days_cache = course_days.CourseDaysCache()
         self._logger.debug("DataInterfaceを初期化しました: provider=%s", provider)
 
     @property
@@ -75,38 +72,26 @@ class DataInterface:
         """
         return self._provider.supports_bulk
 
-    def get_race_basic_info(self, race_code: str, calc_course_days: bool = False) -> pd.DataFrame:
+    def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
+
+        芝コース日数（芝コース日目など）は含まない。計算と保存は course-days が担う。
 
         Args:
             race_code: 16桁レースコード
-            calc_course_days: Trueの場合、芝コース日数情報（芝コース日目・芝コース初日・
-                芝コース経過日数・芝コース週目）を計算して付与する。計算には過去レースの
-                遡及取得が発生するため取得時間が増加する（特にscraping providerでは
-                複数ページのスクレイピングを伴う）
 
         Returns:
             レース基本情報のDataFrame（1行）
         """
-        # コース日数を付与する前の値をキャッシュする。コース日数はCourseDaysCacheが
-        # 別に持つため、ここへ混ぜると付与の有無で戻り値が変わってしまう
-        result = self._get_cached(
+        return self._get_cached(
             DataKind.RACE_BASIC_INFO, race_code, self._provider.get_race_basic_info
         )
-        if calc_course_days:
-            result = course_days.calc_course_days(
-                result, self._provider, self._logger, self._course_days_cache
-            )
-        return result
 
     def get_race_basic_info_bulk(self, race_codes: list[str]) -> pd.DataFrame:
         """複数レースのレース基本情報をまとめて取得する.
 
         レースコードごとに`get_race_basic_info`を呼ぶとレース数だけクエリが発行される。
         本メソッドは1回のクエリでまとめて取得する。
-
-        芝コース日数情報は付与しない。開催日ごとの遡及取得が必要で、まとめて取得する
-        利点が失われるため。
 
         Args:
             race_codes: 16桁レースコードのリスト

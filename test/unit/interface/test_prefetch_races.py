@@ -188,27 +188,6 @@ def test_shared_cache_works_across_interfaces() -> None:
     provider_b.get_race_basic_info.assert_not_called()
 
 
-def test_course_days_are_not_cached(
-    bulk_interface: tuple[DataInterface, _BulkProvider],
-) -> None:
-    """コース日数を付与した結果はキャッシュされない.
-
-    キャッシュするのは付与前の値。付与の有無で戻り値が変わってしまわないこと。
-    """
-    interface, _ = bulk_interface
-    race_code = _RACE_CODES[0]
-    with_days = _make_basic_info(race_code)
-    with_days["芝コース日目"] = 3
-
-    with patch(
-        "keiba_data_interface.course_days.calc_course_days", return_value=with_days
-    ):
-        interface.get_race_basic_info(race_code, calc_course_days=True)
-    result = interface.get_race_basic_info(race_code)
-
-    assert "芝コース日目" not in result.columns
-
-
 # 準正常系
 def test_future_race_is_not_cached(
     bulk_interface: tuple[DataInterface, _BulkProvider],

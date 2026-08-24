@@ -157,8 +157,6 @@ df = di.get_race_basic_info_bulk(race_codes)
 | 空入力 | クエリを発行せず、カラムを持つ0行のDataFrameを返す |
 | 存在しないレースコード | 例外にせず、単に行が返らない |
 
-芝コース日数（`get_race_basic_info(calc_course_days=True)` で付与される4カラム）は付与しません。開催日ごとの遡及取得が必要で、まとめて取得する利点が失われるためです。
-
 > **制約**: `scraping` プロバイダーは本メソッドに対応しておらず、`DataNotFoundError` を送出します。netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページスクレイピングになるためです。
 
 
