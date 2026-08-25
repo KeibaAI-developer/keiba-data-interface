@@ -96,7 +96,7 @@ def test_empty_input_returns_empty_frame_with_columns() -> None:
 
 # 回帰（1行版の振る舞いを変えていないこと）
 def test_single_row_version_raises_for_empty_input() -> None:
-    """1行版が0行の入力でValueErrorを送出する."""
+    """1行版が0行の入力でDataNotFoundErrorを送出する."""
     raw = _make_raw(["2025050206050811"]).iloc[0:0]
 
     with pytest.raises(DataNotFoundError, match="空のDataFrame"):

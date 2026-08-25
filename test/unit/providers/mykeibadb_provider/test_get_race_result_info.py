@@ -199,12 +199,12 @@ def test_record_koshin_kubun_copied(
 
 
 # 準正常系
-def test_empty_dataframe_raises_error(
+def test_empty_dataframe_raises_data_not_found_error(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """空のDataFrameでValueErrorが発生する."""
+    """空のDataFrameでDataNotFoundErrorが発生する."""
     mock_race_getter.get_race_shosai.return_value = pd.DataFrame()
 
     with pytest.raises(DataNotFoundError):
