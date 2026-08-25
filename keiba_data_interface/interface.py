@@ -80,6 +80,9 @@ class DataInterface:
 
         Returns:
             レース基本情報のDataFrame（1行）
+
+        Raises:
+            DataNotFoundError: レースが存在しない場合
         """
         return self._get_cached(
             DataKind.RACE_BASIC_INFO, race_code, self._provider.get_race_basic_info
@@ -248,6 +251,9 @@ class DataInterface:
 
         Returns:
             レース結果情報のDataFrame（1行）
+
+        Raises:
+            DataNotFoundError: レースが存在しない場合
         """
         return self._get_cached(
             DataKind.RACE_RESULT_INFO, race_code, self._provider.get_race_result_info
@@ -261,6 +267,9 @@ class DataInterface:
 
         Returns:
             払戻情報のDataFrame（1行）
+
+        Raises:
+            DataNotFoundError: レースが存在しない場合
         """
         return self._get_cached(
             DataKind.PAYOFF, race_code, self._provider.get_payoff

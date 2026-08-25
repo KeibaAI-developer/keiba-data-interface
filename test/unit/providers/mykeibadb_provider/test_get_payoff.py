@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.schema.columns import PAYOFF_COLUMNS
 
@@ -176,15 +177,15 @@ def test_missing_payoff_columns_nan(
 
 
 # 準正常系
-def test_empty_dataframe_raises_error(
+def test_empty_dataframe_raises_data_not_found_error(
     provider: MykeibaDBProvider,
     mock_race_getter: MagicMock,
     race_code: str,
 ) -> None:
-    """空のDataFrameでValueErrorが発生する."""
+    """空のDataFrameでDataNotFoundErrorが発生する."""
     mock_race_getter.get_haraimodoshi.return_value = pd.DataFrame()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(DataNotFoundError):
         provider.get_payoff(race_code)
 
 
