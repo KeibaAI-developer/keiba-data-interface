@@ -5,6 +5,7 @@ HARAIMODOSHIテーブルの出力を統一スキーマに変換する。
 
 import pandas as pd
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.schema.columns import PAYOFF_COLUMNS
 from keiba_data_interface.schema.types import PAYOFF_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
@@ -150,10 +151,11 @@ def convert_payoff(raw: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（PAYOFF_COLUMNSのカラム）
 
     Raises:
-        ValueError: rawが0行または2行以上の場合
+        DataNotFoundError: rawが0行の場合（レースが存在しない）
+        ValueError: rawが2行以上の場合
     """
     if len(raw) == 0:
-        raise ValueError("get_haraimodoshi()が空のDataFrameを返しました")
+        raise DataNotFoundError("get_haraimodoshi()が空のDataFrameを返しました")
     if len(raw) > 1:
         raise ValueError(
             f"get_haraimodoshi()は1行のDataFrameを返す必要がありますが、" f"{len(raw)}行返しました"

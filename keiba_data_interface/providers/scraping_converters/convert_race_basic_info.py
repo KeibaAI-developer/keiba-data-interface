@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_converters.common import (
     BABAJOTAI_TO_CODE,
     GRADE_TO_CODE,
@@ -30,12 +31,13 @@ def convert_race_basic_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
         pd.DataFrame: 統一スキーマに変換されたDataFrame
 
     Raises:
-        ValueError: rawが0行または2行以上の場合
+        DataNotFoundError: rawが0行の場合（レースが存在しない）
+        ValueError: rawが2行以上の場合
     """
     parts = extract_race_code_parts(race_code)
 
     if len(raw) == 0:
-        raise ValueError(
+        raise DataNotFoundError(
             f"EntryPageScraper.get_race_info() が空のDataFrameを返しました。"
             f"race_code={race_code!r}"
         )

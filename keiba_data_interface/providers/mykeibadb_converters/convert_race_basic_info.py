@@ -5,6 +5,7 @@ RACE_SHOSAIテーブルの出力を統一スキーマに変換する。
 
 import pandas as pd
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_hhmm_to_display
@@ -139,7 +140,8 @@ def convert_race_basic_info(raw: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: 統一スキーマに変換されたDataFrame（1行）
 
     Raises:
-        ValueError: rawが0行または2行以上の場合
+        DataNotFoundError: rawが0行の場合（レースが存在しない）
+        ValueError: rawが2行以上の場合
     """
     race_code_info = ""
     if "race_code" in raw.columns:
@@ -150,7 +152,7 @@ def convert_race_basic_info(raw: pd.DataFrame) -> pd.DataFrame:
             race_code_info = f" (race_code一覧={unique_race_codes.tolist()})"
 
     if len(raw) == 0:
-        raise ValueError(f"get_race_shosai()が空のDataFrameを返しました{race_code_info}")
+        raise DataNotFoundError(f"get_race_shosai()が空のDataFrameを返しました{race_code_info}")
     if len(raw) > 1:
         raise ValueError(
             f"get_race_shosai()は1行のDataFrameを返す必要がありますが、"

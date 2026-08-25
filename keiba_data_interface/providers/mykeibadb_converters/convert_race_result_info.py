@@ -5,6 +5,7 @@ RACE_SHOSAIテーブルのラップタイム・コーナー通過順部分を統
 
 import pandas as pd
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.schema.columns import RACE_RESULT_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_RESULT_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_tenth_to_unit
@@ -44,10 +45,11 @@ def convert_race_result_info(raw: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: 統一スキーマに変換されたDataFrame
 
     Raises:
-        ValueError: rawが0行または2行以上の場合
+        DataNotFoundError: rawが0行の場合（レースが存在しない）
+        ValueError: rawが2行以上の場合
     """
     if len(raw) == 0:
-        raise ValueError("get_race_shosai()が空のDataFrameを返しました")
+        raise DataNotFoundError("get_race_shosai()が空のDataFrameを返しました")
     if len(raw) > 1:
         raise ValueError(
             f"get_race_shosai()は1行のDataFrameを返す必要がありますが、" f"{len(raw)}行返しました"

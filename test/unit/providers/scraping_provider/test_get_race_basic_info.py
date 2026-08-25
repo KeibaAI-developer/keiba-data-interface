@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 
@@ -354,7 +355,7 @@ def test_empty_raw_raises_value_error(
 
     mock_scraper.get_race_info.return_value = pd.DataFrame()
 
-    with pytest.raises(ValueError, match="空のDataFrame"):
+    with pytest.raises(DataNotFoundError, match="空のDataFrame"):
         provider.get_race_basic_info(race_code)
 
 

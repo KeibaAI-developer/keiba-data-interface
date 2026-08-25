@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.schema.columns import RACE_RESULT_INFO_COLUMNS
 
@@ -206,7 +207,7 @@ def test_empty_dataframe_raises_error(
     """空のDataFrameでValueErrorが発生する."""
     mock_race_getter.get_race_shosai.return_value = pd.DataFrame()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(DataNotFoundError):
         provider.get_race_result_info(race_code)
 
 
