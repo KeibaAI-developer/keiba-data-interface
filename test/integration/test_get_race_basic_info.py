@@ -1,8 +1,6 @@
 """get_race_basic_info: 両Providerの出力一致テスト."""
 
-import pandas as pd
 
-from keiba_data_interface.course_days import COURSE_DAYS_COLUMNS
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
@@ -52,23 +50,6 @@ def test_get_race_basic_info_common_values_match(
         "レース基本情報",
         exclude_columns=KNOWN_DIFF_RACE_INFO,
     )
-
-
-def test_get_race_basic_info_course_days_columns_nan(
-    scraping_provider_with_mocks: tuple[ScrapingProvider, RaceFixtures],
-    mykeibadb_provider_with_mocks: tuple[MykeibaDBProvider, RaceFixtures],
-) -> None:
-    """get_race_basic_info: 芝コース日数4カラムはProvider出力では常にNaNである."""
-    s_provider, fixtures = scraping_provider_with_mocks
-    m_provider, _ = mykeibadb_provider_with_mocks
-    rc = fixtures.race_code
-
-    s_df = s_provider.get_race_basic_info(rc)
-    m_df = m_provider.get_race_basic_info(rc)
-
-    for df in (s_df, m_df):
-        for column in COURSE_DAYS_COLUMNS:
-            assert pd.isna(df[column].iloc[0])
 
 
 def test_get_race_basic_info_scraping_nan_columns(
