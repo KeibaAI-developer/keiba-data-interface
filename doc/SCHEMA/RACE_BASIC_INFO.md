@@ -81,9 +81,6 @@
 | 芝馬場状態コード | str | ○ | ○ | [コード表2010](../CODE_TABLE.md#BABAJOTAI_CODE)参照 | "1" | | |
 | ダート馬場状態コード | str | ○ | ○ | [コード表2010](../CODE_TABLE.md#BABAJOTAI_CODE)参照 | - | | |
 
-※ 芝コース日数（芝コース日目・芝コース初日・芝コース経過日数・芝コース週目）は本ライブラリでは
-扱わない。計算と保存は course-days（KeibaAI-developer/course-days）が担う。
-
 ## 差分A: プロバイダー間の既知差分
 
 | カラム | 内容 | レースコードの例 |

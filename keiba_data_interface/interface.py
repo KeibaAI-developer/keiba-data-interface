@@ -75,8 +75,6 @@ class DataInterface:
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
-        芝コース日数（芝コース日目など）は含まない。計算と保存は course-days が担う。
-
         Args:
             race_code: 16桁レースコード
 
