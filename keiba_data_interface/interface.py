@@ -230,6 +230,23 @@ class DataInterface:
             DataKind.WIN_SHOW_ODDS, race_code, self._provider.get_win_show_odds
         )
 
+    def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
+        """単勝・複勝の票数を取得する.
+
+        票数は予測時に対象レース1件を取るデータのため、キャッシュ（prefetch_races）の
+        対象にしない。
+
+        Args:
+            race_code: 16桁レースコード
+
+        Returns:
+            単複票数のDataFrame（出走頭数行、馬番順）
+
+        Raises:
+            DataNotFoundError: 該当レースの票数が存在しない、またはscrapingプロバイダーの場合
+        """
+        return self._provider.get_win_show_votes(race_code)
+
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
 

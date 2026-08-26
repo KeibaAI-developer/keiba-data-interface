@@ -37,5 +37,6 @@ keiba-data-interfaceは、keiba-scraping（netkeiba）とmykeibadb-python（JRA-
 | [競走馬マスタ](./SCHEMA/HORSE_MASTER.md) | `get_horse_master()` | 1行 |
 | [払戻情報](./SCHEMA/PAYOFF.md) | `get_payoff()` | 1行 |
 | [単複オッズ情報](./SCHEMA/WIN_SHOW_ODDS.md) | `get_win_show_odds()` | 出走頭数分の行数 |
+| [単複票数情報](./SCHEMA/WIN_SHOW_VOTES.md) | `get_win_show_votes()` | 出走頭数分の行数（mykeibadbのみ） |
 | [開催スケジュール情報](./SCHEMA/SCHEDULE.md) | `get_schedule()` | 開催場数の行数 |
 | [出走別着度数](./SCHEMA/CHAKUDOSU.md) | `get_chakudosu()` | 出走頭数分の行数 |

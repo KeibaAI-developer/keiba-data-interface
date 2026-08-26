@@ -20,6 +20,7 @@ class _MockProvider:
         self.get_race_data_bulk = MagicMock(return_value={})
         self.get_entry = MagicMock(return_value=pd.DataFrame({"col": [2]}))
         self.get_win_show_odds = MagicMock(return_value=pd.DataFrame({"col": [3]}))
+        self.get_win_show_votes = MagicMock(return_value=pd.DataFrame({"col": [12]}))
         self.get_result = MagicMock(return_value=pd.DataFrame({"col": [4]}))
         self.get_race_result_info = MagicMock(return_value=pd.DataFrame({"col": [5]}))
         self.get_payoff = MagicMock(return_value=pd.DataFrame({"col": [6]}))

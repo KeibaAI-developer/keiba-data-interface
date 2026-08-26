@@ -80,6 +80,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
+        """単勝・複勝の票数を取得する.
+
+        Args:
+            race_code: 16桁レースコード
+        """
+        ...
+
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
 

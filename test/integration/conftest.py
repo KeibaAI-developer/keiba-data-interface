@@ -367,6 +367,7 @@ def mykeibadb_provider_with_mocks(
             "keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter",
             return_value=mocks["shussobetsu_getter"],
         ),
+        patch("keiba_data_interface.providers.mykeibadb_provider.HyosuGetter"),
     ):
         yield MykeibaDBProvider(), race_fixtures
 
@@ -433,5 +434,6 @@ def chakudosu_mykeibadb_provider_with_mocks(
             "keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter",
             return_value=mocks["shussobetsu_getter"],
         ),
+        patch("keiba_data_interface.providers.mykeibadb_provider.HyosuGetter"),
     ):
         yield MykeibaDBProvider(), chakudosu_race_fixtures
