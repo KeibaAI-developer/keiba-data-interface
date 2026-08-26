@@ -108,3 +108,38 @@ def test_missing_totals_raises(
 
     with pytest.raises(DataNotFoundError, match="票数が存在しません"):
         provider.get_win_show_votes(race_code)
+
+
+def test_only_unregistered_rows_raises(
+    provider: MykeibaDBProvider,
+    mock_hyosu_getter: MagicMock,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """未登録行（票数がスペース）しか無い場合、空のDataFrameを返さずDataNotFoundErrorになる."""
+    _set_returns(mock_hyosu_getter, mock_odds_getter)
+    tansho = create_hyosu1_tansho_df()
+    tansho["hyosu"] = "           "
+    fukusho = create_hyosu1_fukusho_df()
+    fukusho["hyosu"] = "           "
+    mock_hyosu_getter.get_hyosu1_tansho.return_value = tansho
+    mock_hyosu_getter.get_hyosu1_fukusho.return_value = fukusho
+
+    with pytest.raises(DataNotFoundError, match="登録済みの票数が存在しません"):
+        provider.get_win_show_votes(race_code)
+
+
+def test_multiple_totals_rows_raises(
+    provider: MykeibaDBProvider,
+    mock_hyosu_getter: MagicMock,
+    mock_odds_getter: MagicMock,
+    race_code: str,
+) -> None:
+    """票数合計（ODDS1）が複数行の場合DataNotFoundErrorになる（ValueErrorを漏らさない）."""
+    _set_returns(mock_hyosu_getter, mock_odds_getter)
+    mock_odds_getter.get_odds1.return_value = pd.concat(
+        [create_odds1_df(), create_odds1_df()], ignore_index=True
+    )
+
+    with pytest.raises(DataNotFoundError, match="1行"):
+        provider.get_win_show_votes(race_code)

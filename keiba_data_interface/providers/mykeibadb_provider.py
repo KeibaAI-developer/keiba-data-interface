@@ -248,7 +248,8 @@ class MykeibaDBProvider:
             pd.DataFrame: 単複票数（出走頭数行、WIN_SHOW_VOTES_COLUMNSのカラム, 馬番順）
 
         Raises:
-            DataNotFoundError: 該当レースの票数（単勝・複勝・合計のいずれか）が存在しない場合
+            DataNotFoundError: 該当レースの票数（単勝・複勝・合計のいずれか）が存在しない、
+                票数合計が1行でない、または登録済みの馬番が1頭も無い場合
         """
         self._logger.debug("HyosuGetterで単複票数を取得: race_code=%s", race_code)
         raw_tansho = self._hyosu_getter.get_hyosu1_tansho(race_code=race_code, convert_codes=False)
@@ -263,7 +264,17 @@ class MykeibaDBProvider:
             )
             self._logger.error(message)
             raise DataNotFoundError(message)
+        if len(raw_odds1) != 1:
+            message = (
+                f"票数合計は1行である必要があります: race_code={race_code}, rows={len(raw_odds1)}"
+            )
+            self._logger.error(message)
+            raise DataNotFoundError(message)
         df = convert_win_show_votes(raw_tansho, raw_fukusho, raw_odds1)
+        if df.empty:
+            message = f"登録済みの票数が存在しません: race_code={race_code}"
+            self._logger.error(message)
+            raise DataNotFoundError(message)
         self._logger.debug("単複票数の取得が完了: race_code=%s", race_code)
         return df
 
