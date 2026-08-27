@@ -17,7 +17,7 @@ from scraping import (
 )
 from scraping.exceptions import PageNotFoundError
 
-from keiba_data_interface.exceptions import DataNotFoundError
+from keiba_data_interface.exceptions import UnsupportedOperationError
 from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
     convert_chakudosu,
@@ -81,11 +81,11 @@ class ScrapingProvider:
             race_codes (list[str]): 16桁レースコードのリスト
 
         Raises:
-            DataNotFoundError: 常に送出する
+            UnsupportedOperationError: 常に送出する
         """
         message = "scrapingプロバイダーはレース基本情報の一括取得に対応していません"
         self._logger.error(message)
-        raise DataNotFoundError(message)
+        raise UnsupportedOperationError(message)
 
     def get_race_data_bulk(
         self, race_codes: list[str], kinds: Sequence[str] | None = None
@@ -100,11 +100,11 @@ class ScrapingProvider:
             kinds (Sequence[str] | None): 取得するデータ種別（未使用）
 
         Raises:
-            DataNotFoundError: 常に送出する
+            UnsupportedOperationError: 常に送出する
         """
         message = "scrapingプロバイダーはレース単位データの一括取得に対応していません"
         self._logger.error(message)
-        raise DataNotFoundError(message)
+        raise UnsupportedOperationError(message)
 
     def get_entry(self, race_code: str) -> pd.DataFrame:
         """出馬表を取得する.
@@ -158,11 +158,11 @@ class ScrapingProvider:
             race_code (str): 16桁レースコード
 
         Raises:
-            DataNotFoundError: 常に送出する
+            UnsupportedOperationError: 常に送出する
         """
         message = "scrapingプロバイダーは票数の取得に対応していません"
         self._logger.error(message)
-        raise DataNotFoundError(message)
+        raise UnsupportedOperationError(message)
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
@@ -251,11 +251,11 @@ class ScrapingProvider:
             horse_ids (list[str]): 馬ID（血統登録番号）のリスト
 
         Raises:
-            DataNotFoundError: 常に送出する
+            UnsupportedOperationError: 常に送出する
         """
         message = "scrapingプロバイダーは過去成績の一括取得に対応していません"
         self._logger.error(message)
-        raise DataNotFoundError(message)
+        raise UnsupportedOperationError(message)
 
     def get_horse_master(self, horse_id: str) -> pd.DataFrame:
         """競走馬マスタを取得する.
@@ -284,11 +284,11 @@ class ScrapingProvider:
             horse_ids (list[str]): 馬ID（血統登録番号）のリスト
 
         Raises:
-            DataNotFoundError: 常に送出する
+            UnsupportedOperationError: 常に送出する
         """
         message = "scrapingプロバイダーは競走馬情報の一括取得に対応していません"
         self._logger.error(message)
-        raise DataNotFoundError(message)
+        raise UnsupportedOperationError(message)
 
     def get_chakudosu(self, race_code: str) -> pd.DataFrame:
         """出走別着度数を取得する.

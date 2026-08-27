@@ -1,6 +1,6 @@
 # 単複票数情報
 
-単勝・複勝の票数（投票数）。出走頭数分の行数のDataFrame。scrapingプロバイダーでは取得できない（`DataNotFoundError`）。
+単勝・複勝の票数（投票数）。出走頭数分の行数のDataFrame。scrapingプロバイダーでは取得できない（`UnsupportedOperationError`）。
 
 関数: `DataInterface.get_win_show_votes()`
 

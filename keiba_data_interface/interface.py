@@ -102,7 +102,7 @@ class DataInterface:
             存在しないレースコードの行は含まれない。指定した件数と一致するとは限らない
 
         Raises:
-            DataNotFoundError: scrapingプロバイダーを使用している場合
+            UnsupportedOperationError: scrapingプロバイダーを使用している場合
         """
         return self._provider.get_race_basic_info_bulk(race_codes)
 
@@ -243,7 +243,8 @@ class DataInterface:
             単複票数のDataFrame（出走頭数行、馬番順）
 
         Raises:
-            DataNotFoundError: 該当レースの票数が存在しない、またはscrapingプロバイダーの場合
+            DataNotFoundError: 該当レースの票数が存在しない場合
+            UnsupportedOperationError: scrapingプロバイダーの場合（netkeibaに票数の掲載が無い）
         """
         return self._provider.get_win_show_votes(race_code)
 
@@ -375,7 +376,7 @@ class DataInterface:
             出走別着度数のDataFrame（出走頭数行、血統登録番号昇順）
 
         Raises:
-            DataNotFoundError: scrapingプロバイダーの場合（netkeibaから取得不可）
+            UnsupportedOperationError: scrapingプロバイダーの場合（netkeibaから取得不可）
         """
         result = self._provider.get_chakudosu(race_code)
         return result

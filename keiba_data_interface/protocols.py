@@ -18,7 +18,7 @@ class DataProvider(Protocol):
 
     Attributes:
         supports_bulk: 一括取得メソッド（get_xxx_bulk）に対応しているか。
-            未対応のProviderは一括取得メソッドでDataNotFoundErrorを送出するため、
+            未対応のProviderは一括取得メソッドでUnsupportedOperationErrorを送出するため、
             呼び出し側はこのフラグを見て1件ずつ取得する経路へ切り替える
     """
 

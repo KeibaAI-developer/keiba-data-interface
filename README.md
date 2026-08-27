@@ -132,7 +132,7 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | `clear_cache()` | なし | `None` | — |
 | `get_entry(race_code)` | 16桁レースコード | 出走頭数行 | [example_entry.py](example/example_entry.py) |
 | `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行 | [example_win_show_odds.py](example/example_win_show_odds.py) |
-| `get_win_show_votes(race_code)` | 16桁レースコード | 出走頭数行（mykeibadbのみ。scrapingは `DataNotFoundError`） | [example_win_show_votes.py](example/example_win_show_votes.py) |
+| `get_win_show_votes(race_code)` | 16桁レースコード | 出走頭数行（mykeibadbのみ。scrapingは `UnsupportedOperationError`） | [example_win_show_votes.py](example/example_win_show_votes.py) |
 | `get_result(race_code)` | 16桁レースコード | 出走頭数行 | [example_result.py](example/example_result.py) |
 | `get_race_result_info(race_code)` | 16桁レースコード | 1行 | [example_race_result_info.py](example/example_race_result_info.py) |
 | `get_payoff(race_code)` | 16桁レースコード | 1行 | [example_payoff.py](example/example_payoff.py) |
@@ -159,7 +159,7 @@ df = di.get_race_basic_info_bulk(race_codes)
 | 空入力 | クエリを発行せず、カラムを持つ0行のDataFrameを返す |
 | 存在しないレースコード | 例外にせず、単に行が返らない |
 
-> **制約**: `scraping` プロバイダーは本メソッドに対応しておらず、`DataNotFoundError` を送出します。netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページスクレイピングになるためです。
+> **制約**: `scraping` プロバイダーは本メソッドに対応しておらず、`UnsupportedOperationError` を送出します。netkeibaには複数レースをまとめて取得する手段がなく、レース数ぶんのページスクレイピングになるためです。
 
 
 ## プリフェッチとキャッシュ
@@ -215,7 +215,7 @@ di_b = DataInterface("mykeibadb", cache=cache)
 | 安定性 | サイト構造変更で壊れる可能性あり | スキーマが安定 |
 | オフライン利用 | 不可 | 可（DB接続があれば） |
 | 取得可能な過去データ | ネットに残っている範囲 | mykeibadbが保持している範囲 |
-| `get_race_basic_info_bulk` | 非対応（`DataNotFoundError`） | 対応 |
+| `get_race_basic_info_bulk` | 非対応（`UnsupportedOperationError`） | 対応 |
 | `prefetch_races` | 何もしない | 対応 |
 
 
