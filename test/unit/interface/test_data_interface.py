@@ -52,6 +52,19 @@ def test_supports_bulk_reflects_provider(
     assert interface.supports_bulk is False
 
 
+def test_supports_votes_reflects_provider(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """supports_votesがProviderの値をそのまま返す."""
+    interface, mock_provider = interface_with_mock
+
+    mock_provider.supports_votes = True
+    assert interface.supports_votes is True
+
+    mock_provider.supports_votes = False
+    assert interface.supports_votes is False
+
+
 def test_get_race_basic_info_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:

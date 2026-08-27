@@ -47,6 +47,7 @@ class _BulkProvider:
     """一括取得に対応したテスト用Provider."""
 
     supports_bulk = True
+    supports_votes = True
 
     def __init__(self) -> None:
         """コンストラクタ."""
@@ -76,6 +77,7 @@ class _NoBulkProvider(_BulkProvider):
     """一括取得に未対応のテスト用Provider."""
 
     supports_bulk = False
+    supports_votes = False
 
 
 @pytest.fixture

@@ -46,6 +46,7 @@ class _FullProvider:
     """全メソッドを実装したProvider."""
 
     supports_bulk = True
+    supports_votes = True
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する."""

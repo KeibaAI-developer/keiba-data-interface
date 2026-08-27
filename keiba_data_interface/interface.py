@@ -72,6 +72,18 @@ class DataInterface:
         """
         return self._provider.supports_bulk
 
+    @property
+    def supports_votes(self) -> bool:
+        """Providerが単複票数の取得に対応しているか.
+
+        未対応のProviderでは `get_win_show_votes` が `DataNotFoundError` を送出する。
+        票数の有無で処理を変えたい呼び出し側のために公開する。
+
+        Returns:
+            Providerが単複票数の取得に対応していればTrue
+        """
+        return self._provider.supports_votes
+
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 

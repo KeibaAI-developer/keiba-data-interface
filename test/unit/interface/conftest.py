@@ -12,6 +12,7 @@ class _MockProvider:
     """DataProvider Protocolを満たすモックProvider."""
 
     supports_bulk = True
+    supports_votes = True
 
     def __init__(self) -> None:
         """コンストラクタ."""

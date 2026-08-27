@@ -42,6 +42,8 @@ class ScrapingProvider:
 
     # 一括取得メソッドに未対応（netkeibaに複数件をまとめて取得する手段がないため）
     supports_bulk = False
+    # 単複票数に未対応（netkeibaに票数の掲載が無いため）
+    supports_votes = False
 
     def __init__(self, logger: logging.Logger | None = None) -> None:
         """コンストラクタ.

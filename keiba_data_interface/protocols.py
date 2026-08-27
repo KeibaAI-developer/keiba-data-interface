@@ -20,9 +20,13 @@ class DataProvider(Protocol):
         supports_bulk: 一括取得メソッド（get_xxx_bulk）に対応しているか。
             未対応のProviderは一括取得メソッドでDataNotFoundErrorを送出するため、
             呼び出し側はこのフラグを見て1件ずつ取得する経路へ切り替える
+        supports_votes: 単複票数（get_win_show_votes）に対応しているか。
+            未対応のProviderはDataNotFoundErrorを送出するため、呼び出し側は
+            このフラグを見て票数の取得を省く
     """
 
     supports_bulk: bool
+    supports_votes: bool
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.

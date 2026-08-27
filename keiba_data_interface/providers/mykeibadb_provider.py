@@ -49,6 +49,8 @@ class MykeibaDBProvider:
 
     # 一括取得メソッドに対応している（RaceGetter等がキーのリストを受け付けるため）
     supports_bulk = True
+    # 単複票数（HYOSU1_TANSHO / HYOSU1_FUKUSHO）を取得できる
+    supports_votes = True
 
     def __init__(self, logger: logging.Logger | None = None) -> None:
         """コンストラクタ.
