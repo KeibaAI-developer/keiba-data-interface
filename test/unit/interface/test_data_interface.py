@@ -33,6 +33,7 @@ def test_create_mykeibadb_provider() -> None:
         patch("keiba_data_interface.providers.mykeibadb_provider.OddsGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.MasterGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter"),
+        patch("keiba_data_interface.providers.mykeibadb_provider.HyosuGetter"),
     ):
         interface = DataInterface(provider="mykeibadb")
         assert isinstance(interface._provider, MykeibaDBProvider)
@@ -90,6 +91,16 @@ def test_get_win_show_odds_delegates(
     result = interface.get_win_show_odds("2025050206021211")
     mock_provider.get_win_show_odds.assert_called_once_with("2025050206021211")
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [3]}))
+
+
+def test_get_win_show_votes_delegates(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """get_win_show_votesがProviderに委譲される."""
+    interface, mock_provider = interface_with_mock
+    result = interface.get_win_show_votes("2025050206021211")
+    mock_provider.get_win_show_votes.assert_called_once_with("2025050206021211")
+    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [12]}))
 
 
 def test_get_result_delegates(

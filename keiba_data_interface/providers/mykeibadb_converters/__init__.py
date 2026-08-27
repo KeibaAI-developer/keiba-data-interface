@@ -33,6 +33,9 @@ from keiba_data_interface.providers.mykeibadb_converters.convert_schedule import
 from keiba_data_interface.providers.mykeibadb_converters.convert_win_show_odds import (
     convert_win_show_odds,
 )
+from keiba_data_interface.providers.mykeibadb_converters.convert_win_show_votes import (
+    convert_win_show_votes,
+)
 
 __all__ = [
     "convert_chakudosu",
@@ -52,4 +55,5 @@ __all__ = [
     "convert_result_bulk",
     "convert_schedule",
     "convert_win_show_odds",
+    "convert_win_show_votes",
 ]

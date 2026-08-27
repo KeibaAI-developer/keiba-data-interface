@@ -303,6 +303,25 @@ ODDS_TYPES: dict[str, str] = {
     "複勝人気": "Int64",
 }
 
+# 単複票数情報の型定義
+VOTES_TYPES: dict[str, str] = {
+    "レースコード": "object",
+    "開催年": "object",
+    "開催月日": "object",
+    "競馬場コード": "object",
+    "開催回": "Int64",
+    "開催日目": "Int64",
+    "レース番号": "Int64",
+    "馬番": "Int64",
+    "単勝票数": "Int64",
+    "単勝票数人気": "Int64",
+    "複勝票数": "Int64",
+    "複勝票数人気": "Int64",
+    "単勝票数合計": "Int64",
+    "複勝票数合計": "Int64",
+    "データ区分": "object",
+}
+
 
 # 開催スケジュール情報テーブルの型定義辞書
 def _generate_schedule_types() -> dict[str, str]:

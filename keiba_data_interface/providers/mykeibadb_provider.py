@@ -9,9 +9,10 @@ from collections.abc import Sequence
 from datetime import date
 
 import pandas as pd
-from mykeibadb import MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
+from mykeibadb import HyosuGetter, MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
 
 from keiba_data_interface.cache import RACE_DATA_KINDS, DataKind
+from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_chakudosu,
     convert_entry,
@@ -30,6 +31,7 @@ from keiba_data_interface.providers.mykeibadb_converters import (
     convert_result_bulk,
     convert_schedule,
     convert_win_show_odds,
+    convert_win_show_votes,
 )
 
 
@@ -42,6 +44,7 @@ class MykeibaDBProvider:
         _master_getter (MasterGetter): JRA-VANマスタ取得用のMasterGetterインスタンス
         _shussobetsu_getter (ShussobetsuGetter): JRA-VAN出走別データ取得用の
             ShussobetsuGetterインスタンス
+        _hyosu_getter (HyosuGetter): JRA-VAN票数取得用のHyosuGetterインスタンス
     """
 
     # 一括取得メソッドに対応している（RaceGetter等がキーのリストを受け付けるため）
@@ -58,6 +61,7 @@ class MykeibaDBProvider:
         self._odds_getter = OddsGetter(logger=self._logger)
         self._master_getter = MasterGetter(logger=self._logger)
         self._shussobetsu_getter = ShussobetsuGetter(logger=self._logger)
+        self._hyosu_getter = HyosuGetter(logger=self._logger)
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -229,6 +233,49 @@ class MykeibaDBProvider:
         df = convert_win_show_odds(raw_tansho, raw_fukusho)
         df = df.sort_values("馬番").reset_index(drop=True)
         self._logger.debug("単複オッズの取得が完了: race_code=%s", race_code)
+        return df
+
+    def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
+        """単勝・複勝の票数を取得する.
+
+        HyosuGetter.get_hyosu1_tansho() / get_hyosu1_fukusho() で馬番ごとの票数を、
+        OddsGetter.get_odds1() で票数合計を取得し、マージして統一スキーマに変換する。
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Returns:
+            pd.DataFrame: 単複票数（出走頭数行、WIN_SHOW_VOTES_COLUMNSのカラム, 馬番順）
+
+        Raises:
+            DataNotFoundError: 該当レースの票数（単勝・複勝・合計のいずれか）が存在しない、
+                票数合計が1行でない、または登録済みの馬番が1頭も無い場合
+        """
+        self._logger.debug("HyosuGetterで単複票数を取得: race_code=%s", race_code)
+        raw_tansho = self._hyosu_getter.get_hyosu1_tansho(race_code=race_code, convert_codes=False)
+        raw_fukusho = self._hyosu_getter.get_hyosu1_fukusho(
+            race_code=race_code, convert_codes=False
+        )
+        raw_odds1 = self._odds_getter.get_odds1(race_code=race_code, convert_codes=False)
+        if len(raw_tansho) == 0 or len(raw_fukusho) == 0 or len(raw_odds1) == 0:
+            message = (
+                f"票数が存在しません: race_code={race_code}（単勝: {len(raw_tansho)}行, "
+                f"複勝: {len(raw_fukusho)}行, 合計: {len(raw_odds1)}行）"
+            )
+            self._logger.error(message)
+            raise DataNotFoundError(message)
+        if len(raw_odds1) != 1:
+            message = (
+                f"票数合計は1行である必要があります: race_code={race_code}, rows={len(raw_odds1)}"
+            )
+            self._logger.error(message)
+            raise DataNotFoundError(message)
+        df = convert_win_show_votes(raw_tansho, raw_fukusho, raw_odds1)
+        if df.empty:
+            message = f"登録済みの票数が存在しません: race_code={race_code}"
+            self._logger.error(message)
+            raise DataNotFoundError(message)
+        self._logger.debug("単複票数の取得が完了: race_code=%s", race_code)
         return df
 
     def get_result(self, race_code: str) -> pd.DataFrame:

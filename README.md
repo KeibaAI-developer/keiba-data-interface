@@ -11,6 +11,7 @@
 - レース基本情報（レース名、距離、コース、天候、馬場状態等）
 - 出馬表（枠番、馬番、馬名、騎手、斤量、馬体重等）
 - 単複オッズ（単勝・複勝オッズ）
+- 単複票数（単勝・複勝の票数と票数合計。mykeibadbのみ）
 - レース結果（確定着順、走破タイム、着差、コーナー通過順等）
 - レース結果情報（ラップタイム、コーナー通過順）
 - 払戻情報（単勝・複勝・枠連・馬連・ワイド・馬単・3連複・3連単）
@@ -131,6 +132,7 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | `clear_cache()` | なし | `None` | — |
 | `get_entry(race_code)` | 16桁レースコード | 出走頭数行 | [example_entry.py](example/example_entry.py) |
 | `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行 | [example_win_show_odds.py](example/example_win_show_odds.py) |
+| `get_win_show_votes(race_code)` | 16桁レースコード | 出走頭数行（mykeibadbのみ。scrapingは `DataNotFoundError`） | [example_win_show_votes.py](example/example_win_show_votes.py) |
 | `get_result(race_code)` | 16桁レースコード | 出走頭数行 | [example_result.py](example/example_result.py) |
 | `get_race_result_info(race_code)` | 16桁レースコード | 1行 | [example_race_result_info.py](example/example_race_result_info.py) |
 | `get_payoff(race_code)` | 16桁レースコード | 1行 | [example_payoff.py](example/example_payoff.py) |
@@ -227,6 +229,7 @@ di_b = DataInterface("mykeibadb", cache=cache)
 - [馬毎レース情報 / 出馬表・結果（RACE_INFO_BY_HORSE.md）](doc/SCHEMA/RACE_INFO_BY_HORSE.md)
 - [レース結果情報（RACE_RESULT_INFO.md）](doc/SCHEMA/RACE_RESULT_INFO.md)
 - [単複オッズ（WIN_SHOW_ODDS.md）](doc/SCHEMA/WIN_SHOW_ODDS.md)
+- [単複票数（WIN_SHOW_VOTES.md）](doc/SCHEMA/WIN_SHOW_VOTES.md)
 - [払戻情報（PAYOFF.md）](doc/SCHEMA/PAYOFF.md)
 - [競走馬情報（HORSE_MASTER.md）](doc/SCHEMA/HORSE_MASTER.md)
 - [開催スケジュール（SCHEDULE.md）](doc/SCHEMA/SCHEDULE.md)

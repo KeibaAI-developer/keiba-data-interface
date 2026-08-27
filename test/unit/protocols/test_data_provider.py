@@ -30,6 +30,7 @@ def test_mykeibadb_provider_satisfies_protocol() -> None:
         patch("keiba_data_interface.providers.mykeibadb_provider.OddsGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.MasterGetter"),
         patch("keiba_data_interface.providers.mykeibadb_provider.ShussobetsuGetter"),
+        patch("keiba_data_interface.providers.mykeibadb_provider.HyosuGetter"),
     ):
         provider = MykeibaDBProvider()
         assert isinstance(provider, DataProvider)
@@ -66,6 +67,10 @@ class _FullProvider:
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する."""
+        return pd.DataFrame()
+
+    def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
+        """単勝・複勝の票数を取得する."""
         return pd.DataFrame()
 
     def get_result(self, race_code: str) -> pd.DataFrame:

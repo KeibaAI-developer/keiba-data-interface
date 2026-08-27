@@ -149,6 +149,21 @@ class ScrapingProvider:
         self._logger.debug("単複オッズの取得が完了: race_code=%s", race_code)
         return df
 
+    def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
+        """単勝・複勝の票数を取得する.
+
+        netkeibaに票数の掲載が無いため取得できない。
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Raises:
+            DataNotFoundError: 常に送出する
+        """
+        message = "scrapingプロバイダーは票数の取得に対応していません"
+        self._logger.error(message)
+        raise DataNotFoundError(message)
+
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
 

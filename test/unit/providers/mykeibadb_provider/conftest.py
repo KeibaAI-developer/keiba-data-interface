@@ -101,11 +101,32 @@ def mock_shussobetsu_getter_cls(
 
 
 @pytest.fixture()
+def mock_hyosu_getter() -> MagicMock:
+    """HyosuGetterインスタンスのモックを返すfixture."""
+    return MagicMock()
+
+
+@pytest.fixture()
+def mock_hyosu_getter_cls(mock_hyosu_getter: MagicMock) -> Generator[MagicMock, None, None]:
+    """HyosuGetterをパッチしたモッククラスを返すfixture.
+
+    Yields:
+        MagicMock: HyosuGetterクラスのパッチモック。
+    """
+    with patch(
+        "keiba_data_interface.providers.mykeibadb_provider.HyosuGetter",
+        return_value=mock_hyosu_getter,
+    ) as mock_cls:
+        yield mock_cls
+
+
+@pytest.fixture()
 def provider(
     mock_race_getter_cls: MagicMock,
     mock_odds_getter_cls: MagicMock,
     mock_master_getter_cls: MagicMock,
     mock_shussobetsu_getter_cls: MagicMock,
+    mock_hyosu_getter_cls: MagicMock,
 ) -> MykeibaDBProvider:
     """テスト用MykeibaDBProviderインスタンス."""
     return MykeibaDBProvider()
@@ -986,3 +1007,45 @@ def create_kaisai_schedule_df() -> pd.DataFrame:
             },
         ]
     )
+
+
+def create_hyosu1_tansho_df() -> pd.DataFrame:
+    """mykeibadb HYOSU1_TANSHO出力の典型データを生成する（馬番1・3の2頭）."""
+    return pd.DataFrame({
+        "record_shubetsu_id": ["H1", "H1"],
+        "data_kubun": ["5", "5"],
+        "race_code": [RACE_CODE, RACE_CODE],
+        "kaisai_nen": ["2025", "2025"],
+        "kaisai_gappi": ["0502", "0502"],
+        "keibajo_code": ["06", "06"],
+        "kaisai_kaiji": ["05", "05"],
+        "kaisai_nichiji": ["08", "08"],
+        "race_bango": ["11", "11"],
+        "umaban": ["01", "03"],
+        "hyosu": ["00001523983", "00000075472"],
+        "ninki": ["02", "08"],
+    })
+
+
+def create_hyosu1_fukusho_df() -> pd.DataFrame:
+    """mykeibadb HYOSU1_FUKUSHO出力の典型データを生成する（馬番1・3の2頭）."""
+    return pd.DataFrame({
+        "record_shubetsu_id": ["H1", "H1"],
+        "data_kubun": ["5", "5"],
+        "race_code": [RACE_CODE, RACE_CODE],
+        "umaban": ["01", "03"],
+        "hyosu": ["00000856120", "00000042300"],
+        "ninki": ["03", "07"],
+    })
+
+
+def create_odds1_df() -> pd.DataFrame:
+    """mykeibadb ODDS1（ベース情報）出力の典型データを生成する（1行）."""
+    return pd.DataFrame({
+        "record_shubetsu_id": ["O1"],
+        "data_kubun": ["5"],
+        "race_code": [RACE_CODE],
+        "tansho_hyosu_gokei": ["00065620306"],
+        "fukusho_hyosu_gokei": ["00031752716"],
+        "wakuren_hyosu_gokei": ["00015738994"],
+    })
