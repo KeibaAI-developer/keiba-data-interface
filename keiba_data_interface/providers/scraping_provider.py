@@ -330,9 +330,14 @@ class ScrapingProvider:
         """
         target = datetime.strptime(date_str, "%Y%m%d").date()
         self._logger.debug("RaceScheduleScraperでレース時刻表をスクレイピング: date=%s", date_str)
-        scraper = RaceScheduleScraper(target.year, target.month, target.day, logger=self._logger)
+        scraper = RaceScheduleScraper(
+            target.year,
+            target.month,
+            target.day,
+            logger=self._logger.getChild("race_schedule_scraper"),
+        )
         raw = scraper.get_race_schedule()
-        result = convert_race_schedule(raw, date_str)
+        result = convert_race_schedule(raw, date_str, self._logger)
         self._logger.debug("レース時刻表の取得が完了: date=%s, レース数=%d", date_str, len(result))
         return result
 

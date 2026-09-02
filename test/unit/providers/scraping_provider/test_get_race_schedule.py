@@ -35,7 +35,9 @@ def test_scraper_created_for_target_date(
 
     provider_full.get_race_schedule("20250105")
 
-    mock_schedule_scraper_cls.assert_called_once_with(2025, 1, 5, logger=provider_full._logger)
+    mock_schedule_scraper_cls.assert_called_once_with(
+        2025, 1, 5, logger=provider_full._logger.getChild("race_schedule_scraper")
+    )
 
 
 def test_race_code_built_from_race_id_and_date(
