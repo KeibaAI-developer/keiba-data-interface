@@ -109,6 +109,10 @@ class _FullProvider:
         """開催スケジュールを取得する."""
         return pd.DataFrame()
 
+    def get_race_schedule(self, date: str) -> pd.DataFrame:
+        """レース時刻表を取得する."""
+        return pd.DataFrame()
+
 
 class _IncompleteProvider:
     """一部メソッドが欠けたProvider."""

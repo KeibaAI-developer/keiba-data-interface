@@ -160,3 +160,11 @@ class DataProvider(Protocol):
             end_date: 終了日（YYYY-MM-DD形式）
         """
         ...
+
+    def get_race_schedule(self, date: str) -> pd.DataFrame:
+        """指定日のレース時刻表を取得する.
+
+        Args:
+            date: 日付（YYYYMMDD形式）
+        """
+        ...

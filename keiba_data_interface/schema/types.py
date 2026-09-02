@@ -453,3 +453,13 @@ def _generate_chakudosu_types() -> dict[str, str]:
 
 
 CHAKUDOSU_TYPES: dict[str, str] = _generate_chakudosu_types()
+
+
+# レース時刻表の型定義辞書
+RACE_SCHEDULE_TYPES: dict[str, str] = {
+    "レースコード": "object",
+    "競馬場コード": "object",
+    "レース番号": "Int64",
+    "発走時刻": "object",
+    "競走名": "object",
+}

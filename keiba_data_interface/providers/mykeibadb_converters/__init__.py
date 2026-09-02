@@ -25,6 +25,9 @@ from keiba_data_interface.providers.mykeibadb_converters.convert_race_result_inf
     convert_race_result_info,
     convert_race_result_info_bulk,
 )
+from keiba_data_interface.providers.mykeibadb_converters.convert_race_schedule import (
+    convert_race_schedule,
+)
 from keiba_data_interface.providers.mykeibadb_converters.convert_result import (
     convert_result,
     convert_result_bulk,
@@ -53,6 +56,7 @@ __all__ = [
     "convert_race_result_info_bulk",
     "convert_result",
     "convert_result_bulk",
+    "convert_race_schedule",
     "convert_schedule",
     "convert_win_show_odds",
     "convert_win_show_votes",
