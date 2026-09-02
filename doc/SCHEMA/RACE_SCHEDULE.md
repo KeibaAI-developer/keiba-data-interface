@@ -6,7 +6,7 @@
 
 対応元:
 - mykeibadb: `RACE_SHOSAI`（データ区分が9のレース中止は含めない）
-- scraping: `RaceScheduleScraper.get_race_schedule()`（netkeibaのレース一覧ページに載っているレース）
+- scraping: `RaceScheduleScraper.get_race_schedule()`（netkeibaのレース一覧ページに載っているレースをそのまま返す。中止の判定はしない）
 
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
 |----------|----|----------|-----------|------|----|------|------|
@@ -19,6 +19,7 @@
 ## 差分A: プロバイダー間の既知差分
 
 - A1: 競走名の表記が異なる。mykeibadbは競走名本題（全角30文字）、scrapingはレース一覧ページの表記
+- A2: 中止レースの扱いが異なる。mykeibadbはデータ区分が9のレースを含めない。scrapingはレース一覧ページに載っているレースをそのまま返す
 
 ## 差分B: mykeibadbテーブルとの差分
 
