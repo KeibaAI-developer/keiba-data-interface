@@ -41,6 +41,26 @@ def test_scraping_provider_receives_odds_source() -> None:
     assert interface._provider.odds_source is OddsSource.NETKEIBA
 
 
+def test_shared_cache_separates_odds_sources(mock_provider: _MockProvider) -> None:
+    """DataCache を共有しても、取得元が異なる単複オッズは混ざらない."""
+    from keiba_data_interface.cache import DataCache
+
+    cache = DataCache()
+    jra_provider = _MockProvider()
+    netkeiba_provider = _MockProvider()
+    with patch("keiba_data_interface.interface._create_provider", return_value=jra_provider):
+        jra = DataInterface(provider="scraping", cache=cache, odds_source=OddsSource.JRA)
+    with patch("keiba_data_interface.interface._create_provider", return_value=netkeiba_provider):
+        netkeiba = DataInterface(provider="scraping", cache=cache, odds_source=OddsSource.NETKEIBA)
+    race_code = "2022010105010101"
+
+    jra.get_win_show_odds(race_code)
+    netkeiba.get_win_show_odds(race_code)
+
+    jra_provider.get_win_show_odds.assert_called_once_with(race_code)
+    netkeiba_provider.get_win_show_odds.assert_called_once_with(race_code)
+
+
 def test_odds_source_for_mykeibadb_raises() -> None:
     """mykeibadb プロバイダーで odds_source を指定すると KeibaDataInterfaceError."""
     with pytest.raises(KeibaDataInterfaceError, match="odds_source"):

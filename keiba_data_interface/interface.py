@@ -58,7 +58,15 @@ class DataInterface:
         """
         self._logger = logger or logging.getLogger(__name__)
         provider_logger = self._logger.getChild(provider)
+        if provider == _SCRAPING_PROVIDER and odds_source is None:
+            odds_source = OddsSource.JRA
         self._provider: DataProvider = _create_provider(provider, provider_logger, odds_source)
+        # 単複オッズは取得元によって値が異なるため、キャッシュの種別に取得元を含める
+        self._odds_cache_kind = (
+            DataKind.WIN_SHOW_ODDS
+            if odds_source is None
+            else f"{DataKind.WIN_SHOW_ODDS}:{odds_source.value}"
+        )
         self._cache = (
             cache if cache is not None else DataCache(logger=self._logger.getChild("cache"))
         )
@@ -236,7 +244,7 @@ class DataInterface:
             DataNotFoundError: scrapingプロバイダーで取得元がJRAのとき、JRAに該当する開催の
                 オッズページが無い場合
         """
-        return self._get_cached(DataKind.WIN_SHOW_ODDS, race_code, self._provider.get_win_show_odds)
+        return self._get_cached(self._odds_cache_kind, race_code, self._provider.get_win_show_odds)
 
     def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
         """単勝・複勝の票数を取得する.
