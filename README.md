@@ -110,7 +110,9 @@ di = DataInterface("scraping")
 di = DataInterface("scraping", odds_source=OddsSource.NETKEIBA)
 ```
 
-取得元は指定したものだけを使い、失敗しても他方へは切り替えません。JRAに該当する開催のオッズページが無い場合は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
+取得元は指定したものだけを使い、失敗しても他方へは切り替えません。オッズが無い場合（JRAに該当する開催のオッズページが無い、netkeibaが発売前で0行）は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
+
+馬券発売前は netkeiba の予想単勝オッズを `get_expected_win_show_odds` で取得できます（単複オッズと同じスキーマ。複勝のカラムは NaN）。現在のオッズと予想オッズは切り替えないので、どちらを使うかは呼び出し側で決めます。
 
 ### プロバイダーの切り替え
 
@@ -145,7 +147,8 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | `prefetch_races(race_codes)` | 16桁レースコードのリスト | `None` | — |
 | `clear_cache()` | なし | `None` | — |
 | `get_entry(race_code)` | 16桁レースコード | 出走頭数行 | [example_entry.py](example/example_entry.py) |
-| `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行（scrapingは `odds_source` の取得元だけを使う。JRAに該当開催が無ければ `DataNotFoundError`） | [example_win_show_odds.py](example/example_win_show_odds.py) |
+| `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行（scrapingは `odds_source` の取得元だけを使う。オッズが無ければ `DataNotFoundError`） | [example_win_show_odds.py](example/example_win_show_odds.py) |
+| `get_expected_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行（発売前の予想オッズ。scrapingのみ。複勝はNaN） | [example_expected_win_show_odds.py](example/example_expected_win_show_odds.py) |
 | `get_win_show_votes(race_code)` | 16桁レースコード | 出走頭数行（mykeibadbのみ。scrapingは `UnsupportedOperationError`） | [example_win_show_votes.py](example/example_win_show_votes.py) |
 | `get_result(race_code)` | 16桁レースコード | 出走頭数行 | [example_result.py](example/example_result.py) |
 | `get_race_result_info(race_code)` | 16桁レースコード | 1行 | [example_race_result_info.py](example/example_race_result_info.py) |
@@ -235,6 +238,7 @@ di_b = DataInterface("mykeibadb", cache=cache)
 | `get_race_basic_info_bulk` | 非対応（`UnsupportedOperationError`） | 対応 |
 | `prefetch_races` | 何もしない | 対応 |
 | `get_win_show_odds` | JRA公式サイト（既定）または netkeiba。`odds_source` で選ぶ | mykeibadb のオッズテーブル |
+| `get_expected_win_show_odds` | netkeiba の予想単勝オッズ | 非対応（`UnsupportedOperationError`） |
 | 取得できないカラム | `schema.RACE_BASIC_INFO_COLUMNS_UNAVAILABLE_IN_SCRAPING`・`schema.RACE_INFO_BY_HORSE_COLUMNS_UNAVAILABLE_IN_SCRAPING` のカラムは常にNaN | なし |
 
 

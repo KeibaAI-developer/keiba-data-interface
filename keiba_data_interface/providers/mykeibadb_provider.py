@@ -12,7 +12,7 @@ import pandas as pd
 from mykeibadb import HyosuGetter, MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
 
 from keiba_data_interface.cache import RACE_DATA_KINDS, DataKind
-from keiba_data_interface.exceptions import DataNotFoundError
+from keiba_data_interface.exceptions import DataNotFoundError, UnsupportedOperationError
 from keiba_data_interface.providers.mykeibadb_converters import (
     convert_chakudosu,
     convert_entry,
@@ -100,12 +100,8 @@ class MykeibaDBProvider:
             self._logger.debug("レースコードが空のためクエリを発行しません")
             return convert_race_basic_info_bulk(pd.DataFrame())
 
-        self._logger.debug(
-            "RaceGetterでレース基本情報を一括取得: 件数=%d", len(unique_race_codes)
-        )
-        raw = self._race_getter.get_race_shosai(
-            race_code=unique_race_codes, convert_codes=False
-        )
+        self._logger.debug("RaceGetterでレース基本情報を一括取得: 件数=%d", len(unique_race_codes))
+        raw = self._race_getter.get_race_shosai(race_code=unique_race_codes, convert_codes=False)
         result = convert_race_basic_info_bulk(raw)
         self._logger.debug(
             "レース基本情報の一括取得が完了: 指定=%d件, 取得=%d件",
@@ -278,6 +274,21 @@ class MykeibaDBProvider:
             raise DataNotFoundError(message)
         self._logger.debug("単複票数の取得が完了: race_code=%s", race_code)
         return df
+
+    def get_expected_win_show_odds(self, race_code: str) -> pd.DataFrame:
+        """馬券発売前の予想オッズを取得する.
+
+        mykeibadbは予想オッズを持たないため取得できない。
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Raises:
+            UnsupportedOperationError: 常に送出する
+        """
+        message = "mykeibadbプロバイダーは予想オッズの取得に対応していません"
+        self._logger.error(message)
+        raise UnsupportedOperationError(message)
 
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.

@@ -88,6 +88,14 @@ class DataProvider(Protocol):
         """
         ...
 
+    def get_expected_win_show_odds(self, race_code: str) -> pd.DataFrame:
+        """馬券発売前の予想オッズを単複オッズのスキーマで取得する.
+
+        Args:
+            race_code: 16桁レースコード
+        """
+        ...
+
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果（馬毎）を取得する.
 
