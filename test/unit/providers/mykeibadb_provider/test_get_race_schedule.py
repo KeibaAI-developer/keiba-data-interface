@@ -12,7 +12,8 @@ from keiba_data_interface.schema.columns import RACE_SCHEDULE_COLUMNS
 def create_race_shosai_schedule_df() -> pd.DataFrame:
     """mykeibadb RACE_SHOSAI出力の時刻表向けデータを生成する.
 
-    東京2レース（うち1レースは中止）と中山1レースを、レースコード順と異なる並びで返す。
+    東京2レース（うち1レースは中止）と中山1レース、地方競馬1レースを、レースコード順と
+    異なる並びで返す。
     """
     return pd.DataFrame(
         [
@@ -48,6 +49,14 @@ def create_race_shosai_schedule_df() -> pd.DataFrame:
                 "hasso_jikoku": "",
                 "kyosomei_hondai": "3歳未勝利",
             },
+            {
+                "data_kubun": "A",
+                "race_code": "2025050244010101",
+                "keibajo_code": "44",
+                "race_bango": 1,
+                "hasso_jikoku": "1500",
+                "kyosomei_hondai": "地方競馬のレース",
+            },
         ]
     )
 
@@ -75,6 +84,18 @@ def test_race_getter_called_with_target_date(
     mock_race_getter.get_race_shosai.assert_called_once_with(
         start_date=date(2025, 5, 2), end_date=date(2025, 5, 2), convert_codes=False
     )
+
+
+def test_non_central_race_excluded(
+    provider: MykeibaDBProvider, mock_race_getter: MagicMock
+) -> None:
+    """中央競馬以外（競馬場コードが01〜10以外）のレースは含まれない."""
+    mock_race_getter.get_race_shosai.return_value = create_race_shosai_schedule_df()
+
+    result = provider.get_race_schedule("20250502")
+
+    assert "2025050244010101" not in result["レースコード"].tolist()
+    assert result["競馬場コード"].isin(["05", "06"]).all()
 
 
 def test_cancelled_race_excluded(provider: MykeibaDBProvider, mock_race_getter: MagicMock) -> None:

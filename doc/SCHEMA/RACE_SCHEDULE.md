@@ -5,7 +5,7 @@
 関数: `DataInterface.get_race_schedule()`
 
 対応元:
-- mykeibadb: `RACE_SHOSAI`（データ区分が9のレース中止は含めない）
+- mykeibadb: `RACE_SHOSAI`（データ区分が9のレース中止と、中央競馬以外（競馬場コードが01〜10以外）のレースは含めない）
 - scraping: `RaceScheduleScraper.get_race_schedule()`（netkeibaのレース一覧ページに載っているレースをそのまま返す。中止の判定はしない）
 
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
