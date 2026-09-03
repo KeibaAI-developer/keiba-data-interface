@@ -95,3 +95,11 @@ def test_missing_uma_ban_raises(mock_yoso_func: MagicMock, race_code: str) -> No
 
     with pytest.raises(DataNotFoundError, match="枠順確定前"):
         ScrapingProvider().get_expected_win_show_odds(race_code)
+
+
+def test_all_odds_missing_raises(mock_yoso_func: MagicMock, race_code: str) -> None:
+    """出馬表の行はあるが予想オッズが全馬空ならDataNotFoundError."""
+    mock_yoso_func.return_value = _yoso_df(odds=[np.nan, np.nan, np.nan])
+
+    with pytest.raises(DataNotFoundError, match="予想オッズがありません"):
+        ScrapingProvider().get_expected_win_show_odds(race_code)

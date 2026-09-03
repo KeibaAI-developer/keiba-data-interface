@@ -210,12 +210,13 @@ class ScrapingProvider:
                 出走取消の馬は単勝オッズ・単勝人気がNaN
 
         Raises:
-            DataNotFoundError: 予想オッズが無い、または枠順確定前で馬番が無い場合
+            DataNotFoundError: 予想オッズが無い（0行、または全馬のオッズが空）、
+                または枠順確定前で馬番が無い場合
         """
         race_id = race_code_to_race_id(race_code)
         self._logger.debug("netkeibaから予想オッズをスクレイピング: race_id=%s", race_id)
         raw = scrape_yoso_odds_from_netkeiba(race_id, logger=self._logger)
-        if raw.empty:
+        if raw.empty or raw["予想単勝オッズ"].isna().all():
             message = f"netkeibaに予想オッズがありません: race_code={race_code}"
             self._logger.error(message)
             raise DataNotFoundError(message)
