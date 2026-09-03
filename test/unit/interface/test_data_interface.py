@@ -61,6 +61,12 @@ def test_shared_cache_separates_odds_sources(mock_provider: _MockProvider) -> No
     netkeiba_provider.get_win_show_odds.assert_called_once_with(race_code)
 
 
+def test_invalid_odds_source_raises() -> None:
+    """OddsSource 以外の取得元（空文字など）は既定値にせず ValueError."""
+    with pytest.raises(ValueError, match="odds_source"):
+        DataInterface(provider="scraping", odds_source="")  # type: ignore[arg-type]
+
+
 def test_odds_source_for_mykeibadb_raises() -> None:
     """mykeibadb プロバイダーで odds_source を指定すると KeibaDataInterfaceError."""
     with pytest.raises(KeibaDataInterfaceError, match="odds_source"):

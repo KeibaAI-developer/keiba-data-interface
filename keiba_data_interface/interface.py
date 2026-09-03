@@ -474,5 +474,7 @@ def _create_provider(
     module = importlib.import_module(module_path)
     provider_class = getattr(module, class_name)
     if provider == _SCRAPING_PROVIDER:
-        return provider_class(logger=logger, odds_source=odds_source or OddsSource.JRA)
+        return provider_class(
+            logger=logger, odds_source=OddsSource.JRA if odds_source is None else odds_source
+        )
     return provider_class(logger=logger)
