@@ -87,31 +87,6 @@ class ScrapingProvider:
         """単複オッズの取得元."""
         return self._odds_source
 
-    def _entry_page_scraper(self, race_id: str) -> EntryPageScraper:
-        """出馬表ページのスクレイパーを返す.
-
-        同じレースのページを `entry_page_reuse_seconds` 秒以内に取得していればそれを再利用し、
-        そうでなければ取得し直す。保持するのは直近の1レース分だけ。
-
-        Args:
-            race_id (str): 12桁レースID
-
-        Returns:
-            EntryPageScraper: 出馬表ページを取得済みのスクレイパー
-        """
-        if self._entry_page is not None:
-            cached_race_id, fetched_at, scraper = self._entry_page
-            if (
-                cached_race_id == race_id
-                and time.monotonic() - fetched_at < self._entry_page_reuse_seconds
-            ):
-                self._logger.debug("取得済みの出馬表ページを再利用: race_id=%s", race_id)
-                return scraper
-        self._logger.debug("EntryPageScraperで出馬表ページを取得: race_id=%s", race_id)
-        scraper = EntryPageScraper(race_id, logger=self._logger)
-        self._entry_page = (race_id, time.monotonic(), scraper)
-        return scraper
-
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
 
@@ -441,6 +416,31 @@ class ScrapingProvider:
             "開催スケジュールの取得が完了: start_date=%s, end_date=%s", start_date, end_date
         )
         return result
+
+    def _entry_page_scraper(self, race_id: str) -> EntryPageScraper:
+        """出馬表ページのスクレイパーを返す.
+
+        同じレースのページを `entry_page_reuse_seconds` 秒以内に取得していればそれを再利用し、
+        そうでなければ取得し直す。保持するのは直近の1レース分だけ。
+
+        Args:
+            race_id (str): 12桁レースID
+
+        Returns:
+            EntryPageScraper: 出馬表ページを取得済みのスクレイパー
+        """
+        if self._entry_page is not None:
+            cached_race_id, fetched_at, scraper = self._entry_page
+            if (
+                cached_race_id == race_id
+                and time.monotonic() - fetched_at < self._entry_page_reuse_seconds
+            ):
+                self._logger.debug("取得済みの出馬表ページを再利用: race_id=%s", race_id)
+                return scraper
+        self._logger.debug("EntryPageScraperで出馬表ページを取得: race_id=%s", race_id)
+        scraper = EntryPageScraper(race_id, logger=self._logger)
+        self._entry_page = (race_id, time.monotonic(), scraper)
+        return scraper
 
 
 _T = TypeVar("_T")
