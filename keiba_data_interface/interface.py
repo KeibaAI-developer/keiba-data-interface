@@ -18,10 +18,12 @@ from keiba_data_interface.cache import (
     is_future_race_code,
 )
 from keiba_data_interface.exceptions import KeibaDataInterfaceError, RaceCodeError
+from keiba_data_interface.odds_source import OddsSource
 from keiba_data_interface.protocols import DataProvider
 
+_SCRAPING_PROVIDER = "scraping"
 _PROVIDER_MAP: dict[str, str] = {
-    "scraping": "keiba_data_interface.providers.scraping_provider.ScrapingProvider",
+    _SCRAPING_PROVIDER: "keiba_data_interface.providers.scraping_provider.ScrapingProvider",
     "mykeibadb": "keiba_data_interface.providers.mykeibadb_provider.MykeibaDBProvider",
 }
 
@@ -37,6 +39,8 @@ class DataInterface:
         provider: str,
         logger: logging.Logger | None = None,
         cache: DataCache | None = None,
+        *,
+        odds_source: OddsSource | None = None,
     ) -> None:
         """コンストラクタ.
 
@@ -45,13 +49,16 @@ class DataInterface:
             logger: ロガーインスタンス
             cache: 取得結果のキャッシュ。複数のDataInterfaceで共有したい場合に渡す。
                 省略時はインスタンス専用のキャッシュを持つ
+            odds_source: scrapingプロバイダーの単複オッズの取得元。省略時は `OddsSource.JRA`。
+                scraping以外のプロバイダーでは指定できない
 
         Raises:
-            KeibaDataInterfaceError: 不正なprovider名が指定された場合
+            KeibaDataInterfaceError: 不正なprovider名が指定された場合、または
+                scraping以外のプロバイダーで odds_source を指定した場合
         """
         self._logger = logger or logging.getLogger(__name__)
         provider_logger = self._logger.getChild(provider)
-        self._provider: DataProvider = _create_provider(provider, provider_logger)
+        self._provider: DataProvider = _create_provider(provider, provider_logger, odds_source)
         self._cache = (
             cache if cache is not None else DataCache(logger=self._logger.getChild("cache"))
         )
@@ -107,9 +114,7 @@ class DataInterface:
         """
         return self._provider.get_race_basic_info_bulk(race_codes)
 
-    def prefetch_races(
-        self, race_codes: Sequence[str], kinds: Sequence[str] | None = None
-    ) -> None:
+    def prefetch_races(self, race_codes: Sequence[str], kinds: Sequence[str] | None = None) -> None:
         """指定したレースコードのデータを一括取得してキャッシュへ格納する.
 
         レースコードごとに取得するとレース数だけクエリが発行される。これから使う
@@ -214,22 +219,24 @@ class DataInterface:
         Returns:
             出馬表のDataFrame（出走頭数行）
         """
-        return self._get_cached(
-            DataKind.ENTRY, race_code, self._provider.get_entry
-        )
+        return self._get_cached(DataKind.ENTRY, race_code, self._provider.get_entry)
 
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
+
+        scrapingプロバイダーは `odds_source` で指定した取得元だけを使う。
 
         Args:
             race_code: 16桁レースコード
 
         Returns:
             単複オッズのDataFrame
+
+        Raises:
+            DataNotFoundError: scrapingプロバイダーで取得元がJRAのとき、JRAに該当する開催の
+                オッズページが無い場合
         """
-        return self._get_cached(
-            DataKind.WIN_SHOW_ODDS, race_code, self._provider.get_win_show_odds
-        )
+        return self._get_cached(DataKind.WIN_SHOW_ODDS, race_code, self._provider.get_win_show_odds)
 
     def get_win_show_votes(self, race_code: str) -> pd.DataFrame:
         """単勝・複勝の票数を取得する.
@@ -258,9 +265,7 @@ class DataInterface:
         Returns:
             レース結果のDataFrame（出走頭数行）
         """
-        return self._get_cached(
-            DataKind.RESULT, race_code, self._provider.get_result
-        )
+        return self._get_cached(DataKind.RESULT, race_code, self._provider.get_result)
 
     def get_race_result_info(self, race_code: str) -> pd.DataFrame:
         """レース結果情報（ラップ・コーナー通過順）を取得する.
@@ -290,9 +295,7 @@ class DataInterface:
         Raises:
             DataNotFoundError: レースが存在しない場合
         """
-        return self._get_cached(
-            DataKind.PAYOFF, race_code, self._provider.get_payoff
-        )
+        return self._get_cached(DataKind.PAYOFF, race_code, self._provider.get_payoff)
 
     def get_past_performances(self, horse_id: str) -> pd.DataFrame:
         """過去成績（馬柱）を取得する.
@@ -434,24 +437,34 @@ class DataInterface:
             raise RaceCodeError(message) from exc
 
 
-def _create_provider(provider: str, logger: logging.Logger) -> DataProvider:
+def _create_provider(
+    provider: str, logger: logging.Logger, odds_source: OddsSource | None = None
+) -> DataProvider:
     """Provider名に対応するProviderインスタンスを生成する.
 
     Args:
         provider: データソース名
         logger: ロガーインスタンス
+        odds_source: scrapingプロバイダーの単複オッズの取得元。省略時は `OddsSource.JRA`
 
     Returns:
         DataProviderインスタンス
 
     Raises:
-        KeibaDataInterfaceError: 不正なprovider名が指定された場合
+        KeibaDataInterfaceError: 不正なprovider名が指定された場合、または
+            scraping以外のプロバイダーで odds_source を指定した場合
     """
     if provider not in _PROVIDER_MAP:
         valid = ", ".join(_PROVIDER_MAP)
         logger.error("不正なprovider名です: '%s' （有効な値: %s）", provider, valid)
         raise KeibaDataInterfaceError(f"不正なprovider名です: '{provider}' （有効な値: {valid}）")
+    if provider != _SCRAPING_PROVIDER and odds_source is not None:
+        message = f"odds_source は scraping プロバイダーでのみ指定できます: provider='{provider}'"
+        logger.error(message)
+        raise KeibaDataInterfaceError(message)
     module_path, class_name = _PROVIDER_MAP[provider].rsplit(".", 1)
     module = importlib.import_module(module_path)
     provider_class = getattr(module, class_name)
+    if provider == _SCRAPING_PROVIDER:
+        return provider_class(logger=logger, odds_source=odds_source or OddsSource.JRA)
     return provider_class(logger=logger)
