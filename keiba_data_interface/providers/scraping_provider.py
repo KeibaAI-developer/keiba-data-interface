@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import time
 from collections.abc import Coroutine, Sequence
 from datetime import date, datetime, timedelta
 from typing import TypeVar
@@ -17,7 +18,8 @@ from scraping import (
 )
 from scraping.exceptions import PageNotFoundError
 
-from keiba_data_interface.exceptions import UnsupportedOperationError
+from keiba_data_interface.exceptions import DataNotFoundError, UnsupportedOperationError
+from keiba_data_interface.odds_source import OddsSource
 from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
     convert_chakudosu,
@@ -37,6 +39,9 @@ from keiba_data_interface.schema.types import SCHEDULE_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
 from keiba_data_interface.utils.race_code import race_code_to_race_id
 
+# 同じレースの出馬表ページを取得し直さずに再利用する秒数の既定値
+ENTRY_PAGE_REUSE_SECONDS: float = 60.0
+
 
 class ScrapingProvider:
     """keiba-scrapingを使用したデータ取得Provider."""
@@ -44,13 +49,43 @@ class ScrapingProvider:
     # 一括取得メソッドに未対応（netkeibaに複数件をまとめて取得する手段がないため）
     supports_bulk = False
 
-    def __init__(self, logger: logging.Logger | None = None) -> None:
+    def __init__(
+        self,
+        logger: logging.Logger | None = None,
+        odds_source: OddsSource = OddsSource.JRA,
+        entry_page_reuse_seconds: float = ENTRY_PAGE_REUSE_SECONDS,
+    ) -> None:
         """コンストラクタ.
 
         Args:
             logger: ロガーインスタンス
+            odds_source: 単複オッズの取得元
+            entry_page_reuse_seconds: 同じレースの出馬表ページを取得し直さずに再利用する秒数
+
+        Raises:
+            ValueError: odds_source が `OddsSource` でない、または
+                entry_page_reuse_seconds が負の場合
         """
         self._logger = logger or logging.getLogger(__name__)
+        if not isinstance(odds_source, OddsSource):
+            message = f"odds_source は OddsSource で指定してください: {odds_source!r}"
+            self._logger.error(message)
+            raise ValueError(message)
+        if entry_page_reuse_seconds < 0:
+            message = (
+                f"entry_page_reuse_seconds は 0 以上で指定してください: {entry_page_reuse_seconds}"
+            )
+            self._logger.error(message)
+            raise ValueError(message)
+        self._odds_source = odds_source
+        self._entry_page_reuse_seconds = entry_page_reuse_seconds
+        # 直近に取得した出馬表ページ（race_id, 取得時刻（monotonic）, スクレイパー）
+        self._entry_page: tuple[str, float, EntryPageScraper] | None = None
+
+    @property
+    def odds_source(self) -> OddsSource:
+        """単複オッズの取得元."""
+        return self._odds_source
 
     def get_race_basic_info(self, race_code: str) -> pd.DataFrame:
         """レース基本情報を取得する.
@@ -65,8 +100,7 @@ class ScrapingProvider:
             pd.DataFrame: レース基本情報（1行、RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        self._logger.debug("EntryPageScraperでレース情報をスクレイピング: race_id=%s", race_id)
-        scraper = EntryPageScraper(race_id, logger=self._logger)
+        scraper = self._entry_page_scraper(race_id)
         raw = scraper.get_race_info()
         result = convert_race_basic_info(raw, race_code)
         self._logger.debug("レース基本情報の取得が完了: race_code=%s", race_code)
@@ -117,8 +151,7 @@ class ScrapingProvider:
             pd.DataFrame: 出馬表（出走頭数行、HORSE_RACE_INFO_COLUMNSのカラム）
         """
         race_id = race_code_to_race_id(race_code)
-        self._logger.debug("EntryPageScraperで出馬表をスクレイピング: race_id=%s", race_id)
-        scraper = EntryPageScraper(race_id, logger=self._logger)
+        scraper = self._entry_page_scraper(race_id)
         raw = scraper.get_entry()
         result = convert_entry(raw, race_code)
         self._logger.debug("出馬表の取得が完了: race_code=%s", race_code)
@@ -127,23 +160,30 @@ class ScrapingProvider:
     def get_win_show_odds(self, race_code: str) -> pd.DataFrame:
         """単複オッズを取得する.
 
-        JRA公式サイトから取得を試み、失敗した場合はnetkeibaから取得する。
+        コンストラクタで指定した取得元（`odds_source`）だけを使う。
 
         Args:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム, 馬番順）
+            pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム, 馬番順）。
+                取得元がJRAのとき、オッズ表の値が数値でない馬（発売前・取消など）はNaN。
+                取得元がnetkeibaのとき、発売前は0行
+
+        Raises:
+            DataNotFoundError: 取得元がJRAのとき、JRAに該当する開催のオッズページが無い場合
         """
         race_id = race_code_to_race_id(race_code)
-        # JRAにオッズページがない場合（レース翌日以降など）はnetkeibaにフォールバックする
-        try:
+        if self._odds_source is OddsSource.JRA:
             self._logger.debug("JRAから単複オッズをスクレイピング: race_id=%s", race_id)
-            raw = _run_async(scrape_odds_from_jra(race_id, logger=self._logger))
-        except PageNotFoundError:
-            self._logger.debug(
-                "JRAでオッズページが見つからないためnetkeibaから取得: race_id=%s", race_id
-            )
+            try:
+                raw = _run_async(scrape_odds_from_jra(race_id, logger=self._logger))
+            except PageNotFoundError as e:
+                message = f"JRAに該当する開催のオッズページがありません: race_code={race_code}"
+                self._logger.error(message)
+                raise DataNotFoundError(message) from e
+        else:
+            self._logger.debug("netkeibaから単複オッズを取得: race_id=%s", race_id)
             raw = scrape_odds_from_netkeiba(race_id, logger=self._logger)
         df = convert_odds(raw, race_code)
         df = df.sort_values("馬番").reset_index(drop=True)
@@ -177,8 +217,7 @@ class ScrapingProvider:
         race_id = race_code_to_race_id(race_code)
 
         # 賞金情報を取得して着順→獲得本賞金マッピングを構築
-        self._logger.debug("EntryPageScraperで賞金情報をスクレイピング: race_id=%s", race_id)
-        scraper_entry = EntryPageScraper(race_id, logger=self._logger)
+        scraper_entry = self._entry_page_scraper(race_id)
         raw_race_info = scraper_entry.get_race_info()
         prize_map = build_prize_map(raw_race_info)
 
@@ -377,6 +416,31 @@ class ScrapingProvider:
             "開催スケジュールの取得が完了: start_date=%s, end_date=%s", start_date, end_date
         )
         return result
+
+    def _entry_page_scraper(self, race_id: str) -> EntryPageScraper:
+        """出馬表ページのスクレイパーを返す.
+
+        同じレースのページを `entry_page_reuse_seconds` 秒以内に取得していればそれを再利用し、
+        そうでなければ取得し直す。保持するのは直近の1レース分だけ。
+
+        Args:
+            race_id (str): 12桁レースID
+
+        Returns:
+            EntryPageScraper: 出馬表ページを取得済みのスクレイパー
+        """
+        if self._entry_page is not None:
+            cached_race_id, fetched_at, scraper = self._entry_page
+            if (
+                cached_race_id == race_id
+                and time.monotonic() - fetched_at < self._entry_page_reuse_seconds
+            ):
+                self._logger.debug("取得済みの出馬表ページを再利用: race_id=%s", race_id)
+                return scraper
+        self._logger.debug("EntryPageScraperで出馬表ページを取得: race_id=%s", race_id)
+        scraper = EntryPageScraper(race_id, logger=self._logger)
+        self._entry_page = (race_id, time.monotonic(), scraper)
+        return scraper
 
 
 _T = TypeVar("_T")
