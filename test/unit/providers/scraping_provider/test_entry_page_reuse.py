@@ -83,7 +83,7 @@ def test_zero_seconds_disables_reuse(
     assert mock_scraper_cls.call_count == 2
 
 
-# 異常系
+# 準正常系
 def test_negative_seconds_raises() -> None:
     """再利用する秒数が負なら ValueError."""
     with pytest.raises(ValueError, match="entry_page_reuse_seconds"):
