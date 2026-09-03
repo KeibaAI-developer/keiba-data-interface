@@ -149,7 +149,7 @@ def test_netkeiba_source_uses_netkeiba_only(
     assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
 
 
-# 異常系
+# 準正常系
 def test_jra_page_not_found_raises_without_fallback(
     provider_full: ScrapingProvider, mock_odds_func: MagicMock, race_code: str
 ) -> None:
