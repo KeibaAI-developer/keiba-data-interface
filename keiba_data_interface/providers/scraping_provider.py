@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from collections.abc import Coroutine, Sequence
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import TypeVar
 
 import pandas as pd
@@ -28,6 +28,7 @@ from keiba_data_interface.providers.scraping_converters import (
     convert_payoff,
     convert_race_basic_info,
     convert_race_result_info,
+    convert_race_schedule,
     convert_result,
     convert_schedule,
 )
@@ -312,6 +313,32 @@ class ScrapingProvider:
             past_performances_map[horse_id] = scraper.get_past_performances()
         result = convert_chakudosu(race_code, entry_df, past_performances_map)
         self._logger.debug("出走別着度数の取得が完了: race_code=%s", race_code)
+        return result
+
+    def get_race_schedule(self, date_str: str) -> pd.DataFrame:
+        """指定日のレース時刻表を取得する.
+
+        RaceScheduleScraperで該当日のレース一覧ページを取得し、統一スキーマに変換する。
+        レース一覧ページに載っているレースを返す。
+
+        Args:
+            date_str (str): 日付（YYYYMMDD形式）
+
+        Returns:
+            pd.DataFrame: レース時刻表（レース数行、RACE_SCHEDULE_COLUMNSのカラム、
+                レースコード昇順）。開催が無い日は0行
+        """
+        target = datetime.strptime(date_str, "%Y%m%d").date()
+        self._logger.debug("RaceScheduleScraperでレース時刻表をスクレイピング: date=%s", date_str)
+        scraper = RaceScheduleScraper(
+            target.year,
+            target.month,
+            target.day,
+            logger=self._logger.getChild("race_schedule_scraper"),
+        )
+        raw = scraper.get_race_schedule()
+        result = convert_race_schedule(raw, date_str, self._logger)
+        self._logger.debug("レース時刻表の取得が完了: date=%s, レース数=%d", date_str, len(result))
         return result
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:

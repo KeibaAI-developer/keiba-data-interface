@@ -139,6 +139,7 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | `get_past_performances(horse_id)` | 血統登録番号 | 出走回数行 | [example_past_performances.py](example/example_past_performances.py) |
 | `get_horse_master(horse_id)` | 血統登録番号 | 1行 | [example_horse_master.py](example/example_horse_master.py) |
 | `get_schedule(start_date, end_date)` | 開始日・終了日（YYYY-MM-DD） | 開催レース数行 | [example_schedule.py](example/example_schedule.py) |
+| `get_race_schedule(date)` | 日付（YYYYMMDD） | レース数行（開催なしは0行。mykeibadb は中止レースを含めない） | [example_race_schedule.py](example/example_race_schedule.py) |
 
 
 ### 複数レースの一括取得

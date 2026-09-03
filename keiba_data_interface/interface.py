@@ -4,6 +4,7 @@
 Provider名を指定することで、データソースを切り替えてデータを取得できる。
 """
 
+import datetime
 import importlib
 import logging
 from collections.abc import Callable, Sequence
@@ -16,7 +17,7 @@ from keiba_data_interface.cache import (
     DataKind,
     is_future_race_code,
 )
-from keiba_data_interface.exceptions import KeibaDataInterfaceError
+from keiba_data_interface.exceptions import KeibaDataInterfaceError, RaceCodeError
 from keiba_data_interface.protocols import DataProvider
 
 _PROVIDER_MAP: dict[str, str] = {
@@ -393,6 +394,44 @@ class DataInterface:
         """
         result = self._provider.get_schedule(start_date, end_date)
         return result
+
+    def get_race_schedule(self, date_str: str) -> pd.DataFrame:
+        """指定日の全レースの時刻表を取得する.
+
+        レースコード・競馬場コード・レース番号・発走時刻・競走名をレースコード昇順で返す。
+        mykeibadb はデータ区分が9（レース中止）のレースと中央競馬以外のレースを含めない。
+        scraping はレース一覧ページに載っているレースをそのまま返す。発走時刻は当日に変わるため
+        キャッシュしない。
+
+        Args:
+            date_str (str): 日付（YYYYMMDD形式）
+
+        Returns:
+            pd.DataFrame: レース時刻表（RACE_SCHEDULE_COLUMNSのカラム）。開催が無い日は0行
+
+        Raises:
+            RaceCodeError: date_str が8桁の数字でない、または実在しない日付の場合
+        """
+        self._validate_date(date_str)
+        result = self._provider.get_race_schedule(date_str)
+        return result
+
+    def _validate_date(self, date_str: str) -> None:
+        """日付文字列（YYYYMMDD）を検証する.
+
+        Raises:
+            RaceCodeError: 8桁の数字でない、または実在しない日付の場合
+        """
+        if len(date_str) != 8 or not date_str.isdigit():
+            message = f"日付は8桁の数字である必要があります: {date_str!r}"
+            self._logger.error(message)
+            raise RaceCodeError(message)
+        try:
+            datetime.date(int(date_str[:4]), int(date_str[4:6]), int(date_str[6:8]))
+        except ValueError as exc:
+            message = f"実在しない日付です: {date_str!r}"
+            self._logger.error(message)
+            raise RaceCodeError(message) from exc
 
 
 def _create_provider(provider: str, logger: logging.Logger) -> DataProvider:

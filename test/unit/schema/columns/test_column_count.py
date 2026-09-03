@@ -10,6 +10,7 @@ from keiba_data_interface.schema.columns import (
     RACE_BASIC_INFO_COLUMNS,
     RACE_INFO_BY_HORSE_COLUMNS,
     RACE_RESULT_INFO_COLUMNS,
+    RACE_SCHEDULE_COLUMNS,
     SCHEDULE_COLUMNS,
     WIN_SHOW_ODDS_COLUMNS,
 )
@@ -21,6 +22,7 @@ _TABLE_PARAMS = [
     (PAYOFF_COLUMNS, 222, "払戻情報"),
     (WIN_SHOW_ODDS_COLUMNS, 13, "単複オッズ情報"),
     (SCHEDULE_COLUMNS, 43, "開催スケジュール情報"),
+    (RACE_SCHEDULE_COLUMNS, 5, "レース時刻表"),
     (CHAKUDOSU_COLUMNS, 405, "出走別着度数"),
 ]
 

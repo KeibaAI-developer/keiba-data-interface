@@ -9,6 +9,7 @@ from keiba_data_interface.schema.columns import (
     RACE_BASIC_INFO_COLUMNS,
     RACE_INFO_BY_HORSE_COLUMNS,
     RACE_RESULT_INFO_COLUMNS,
+    RACE_SCHEDULE_COLUMNS,
     SCHEDULE_COLUMNS,
     WIN_SHOW_ODDS_COLUMNS,
     WIN_SHOW_VOTES_COLUMNS,
@@ -20,6 +21,7 @@ from keiba_data_interface.schema.types import (
     PAYOFF_TYPES,
     RACE_INFO_TYPES,
     RACE_RESULT_INFO_TYPES,
+    RACE_SCHEDULE_TYPES,
     SCHEDULE_TYPES,
     VOTES_TYPES,
 )
@@ -33,6 +35,7 @@ __all__ = [
     "WIN_SHOW_ODDS_COLUMNS",
     "WIN_SHOW_VOTES_COLUMNS",
     "SCHEDULE_COLUMNS",
+    "RACE_SCHEDULE_COLUMNS",
     "RACE_INFO_TYPES",
     "RACE_RESULT_INFO_TYPES",
     "HORSE_RACE_INFO_TYPES",
@@ -41,4 +44,5 @@ __all__ = [
     "ODDS_TYPES",
     "VOTES_TYPES",
     "SCHEDULE_TYPES",
+    "RACE_SCHEDULE_TYPES",
 ]
