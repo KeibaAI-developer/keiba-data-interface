@@ -169,3 +169,15 @@ def test_invalid_odds_source_raises() -> None:
     """OddsSource 以外の取得元は ValueError."""
     with pytest.raises(ValueError, match="odds_source"):
         ScrapingProvider(odds_source="jra")  # type: ignore[arg-type]
+
+
+def test_netkeiba_empty_raises(
+    mock_odds_func: MagicMock, mock_scraper_cls: MagicMock, race_code: str
+) -> None:
+    """netkeibaのオッズが0行（発売前）ならDataNotFoundError."""
+    provider = ScrapingProvider(odds_source=OddsSource.NETKEIBA)
+    with (
+        patch(_NETKEIBA_FUNC, return_value=pd.DataFrame(columns=["馬番", "単勝オッズ"])),
+        pytest.raises(DataNotFoundError, match="発売前"),
+    ):
+        provider.get_win_show_odds(race_code)

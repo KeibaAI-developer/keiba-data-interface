@@ -8,7 +8,9 @@
 - mykeibadb: `ODDS1_TANSHO` + `ODDS1_FUKUSHO`
 - scraping:
   - JRA（`OddsSource.JRA`）: `scrape_odds_from_jra()`。該当する開催のオッズページが無ければ `DataNotFoundError`。オッズ表の値が数値でない馬（発売前・取消など）はNaN
-  - netkeiba（`OddsSource.NETKEIBA`）: `scrape_odds_from_netkeiba()`。発売前は0行
+  - netkeiba（`OddsSource.NETKEIBA`）: `scrape_odds_from_netkeiba()`。発売前（0行）は `DataNotFoundError`
+
+発売前の予想オッズは `DataInterface.get_expected_win_show_odds()` で取得する（下記）。
 
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
 |----------|----|----------|-----------|------|----|------|------|
@@ -42,3 +44,19 @@
 | 複勝最高オッズ | 単位0.1倍 → 倍（÷10）に変換。0・取消・除外はNaN |
 | 単勝人気 | 取消（`**`）・除外（`--`）はNaN |
 | 複勝人気 | 取消（`**`）・除外（`--`）はNaN |
+
+## 予想オッズ（`get_expected_win_show_odds`）
+
+馬券発売前の予想オッズを同じスキーマで返す。現在のオッズとは切り替えず、どちらを使うかは呼び出し側が決める。
+
+対応元:
+- mykeibadb: なし（`UnsupportedOperationError`）
+- scraping: `scrape_yoso_odds_from_netkeiba()`（netkeibaの出馬表ページの予想単勝オッズ）
+
+| カラム名 | 値 |
+|----------|----|
+| 単勝オッズ | 予想単勝オッズ。出走取消はNaN |
+| 単勝人気 | 予想単勝オッズの昇順の順位。オッズがNaNの馬はNaN |
+| 複勝最低オッズ・複勝最高オッズ・複勝人気 | NaN（予想オッズに複勝は無い） |
+
+予想オッズが無い場合、または枠順確定前で馬番が無い場合は `DataNotFoundError`。
