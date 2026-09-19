@@ -121,7 +121,7 @@ di = DataInterface("scraping", odds_source=OddsSource.NETKEIBA)
 
 前日の複勝オッズが必要な場合は `OddsSource.JRA` を使います。
 
-馬券発売前は netkeiba の予想単勝オッズを `get_expected_win_show_odds` で取得できます（単複オッズと同じスキーマ。複勝のカラムは NaN）。現在のオッズと予想オッズは切り替えないので、どちらを使うかは呼び出し側で決めます。
+馬券発売前は netkeiba の予想単勝オッズを `get_expected_win_show_odds` で取得できます（単複オッズのカラムに馬名を加えた構成。複勝のカラムは NaN）。枠順確定前は馬番が欠損するため、馬名で馬を識別します。馬券発売が始まると予想オッズは掲載されなくなるため `DataNotFoundError` になります。現在のオッズと予想オッズは切り替えないので、どちらを使うかは呼び出し側で決めます。
 
 ### プロバイダーの切り替え
 
@@ -157,7 +157,7 @@ assert list(df_scraping.columns) == list(df_mydb.columns)
 | `clear_cache()` | なし | `None` | — |
 | `get_entry(race_code)` | 16桁レースコード | 出走頭数行 | [example_entry.py](example/example_entry.py) |
 | `get_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行（scrapingは `odds_source` の取得元だけを使う。オッズが無ければ `DataNotFoundError`） | [example_win_show_odds.py](example/example_win_show_odds.py) |
-| `get_expected_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行（発売前の予想オッズ。scrapingのみ。複勝はNaN） | [example_expected_win_show_odds.py](example/example_expected_win_show_odds.py) |
+| `get_expected_win_show_odds(race_code)` | 16桁レースコード | 出走頭数行（発売前の予想オッズ。scrapingのみ。馬名を含み複勝はNaN。枠順確定前は馬番がNaN） | [example_expected_win_show_odds.py](example/example_expected_win_show_odds.py) |
 | `get_win_show_votes(race_code)` | 16桁レースコード | 出走頭数行（mykeibadbのみ。scrapingは `UnsupportedOperationError`） | [example_win_show_votes.py](example/example_win_show_votes.py) |
 | `get_result(race_code)` | 16桁レースコード | 出走頭数行 | [example_result.py](example/example_result.py) |
 | `get_race_result_info(race_code)` | 16桁レースコード | 1行 | [example_race_result_info.py](example/example_race_result_info.py) |

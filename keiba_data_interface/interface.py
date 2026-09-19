@@ -247,19 +247,22 @@ class DataInterface:
         return self._get_cached(self._odds_cache_kind, race_code, self._provider.get_win_show_odds)
 
     def get_expected_win_show_odds(self, race_code: str) -> pd.DataFrame:
-        """馬券発売前の予想オッズを単複オッズのスキーマで取得する.
+        """馬券発売前の予想オッズを取得する.
 
         scrapingプロバイダーはnetkeibaの予想単勝オッズを返す（複勝のカラムはNaN）。
         現在のオッズ（get_win_show_odds）とは切り替えず、どちらを使うかは呼び出し側が決める。
+
+        単複オッズのカラムに馬名を加えた構成（`EXPECTED_WIN_SHOW_ODDS_COLUMNS`）で返す。
+        枠順確定前は馬番が欠損するため、馬名で馬を識別する。
 
         Args:
             race_code: 16桁レースコード
 
         Returns:
-            予想オッズのDataFrame（出走頭数行、馬番順）
+            予想オッズのDataFrame（出走頭数行。馬番が確定していれば馬番順）
 
         Raises:
-            DataNotFoundError: 予想オッズが無い、または枠順確定前の場合
+            DataNotFoundError: 予想オッズが無い、または馬券発売が始まっている場合
             UnsupportedOperationError: 予想オッズに対応していないプロバイダー（mykeibadb）の場合
         """
         return self._get_cached(

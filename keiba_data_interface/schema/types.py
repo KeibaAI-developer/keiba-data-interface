@@ -303,6 +303,9 @@ ODDS_TYPES: dict[str, str] = {
     "複勝人気": "Int64",
 }
 
+# 予想オッズの型定義
+EXPECTED_ODDS_TYPES: dict[str, str] = {**ODDS_TYPES, "馬名": "object"}
+
 # 単複票数情報の型定義
 VOTES_TYPES: dict[str, str] = {
     "レースコード": "object",

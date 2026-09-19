@@ -17,7 +17,7 @@ from scraping import (
     scrape_odds_from_netkeiba,
     scrape_yoso_odds_from_netkeiba,
 )
-from scraping.exceptions import PageNotFoundError
+from scraping.exceptions import ExpectedOddsUnavailableError, PageNotFoundError
 
 from keiba_data_interface.exceptions import DataNotFoundError, UnsupportedOperationError
 from keiba_data_interface.odds_source import OddsSource
@@ -198,30 +198,32 @@ class ScrapingProvider:
         return df
 
     def get_expected_win_show_odds(self, race_code: str) -> pd.DataFrame:
-        """馬券発売前の予想オッズを単複オッズのスキーマで取得する.
+        """馬券発売前の予想オッズを取得する.
 
         netkeibaの出馬表ページの予想単勝オッズを使う。複勝のカラムはNaN。
+        枠順確定前は馬番が欠損するため、馬名で馬を識別する。
 
         Args:
             race_code (str): 16桁レースコード
 
         Returns:
-            pd.DataFrame: 予想オッズ（出走頭数行、WIN_SHOW_ODDS_COLUMNSのカラム、馬番順）。
-                出走取消の馬は単勝オッズ・単勝人気がNaN
+            pd.DataFrame: 予想オッズ（出走頭数行、EXPECTED_WIN_SHOW_ODDS_COLUMNSのカラム）。
+                馬番が確定していれば馬番順。出走取消の馬は単勝オッズ・単勝人気がNaN
 
         Raises:
-            DataNotFoundError: 予想オッズが無い（0行、または全馬のオッズが空）、
-                または枠順確定前で馬番が無い場合
+            DataNotFoundError: 予想オッズが無い（0行、または全馬のオッズが空）場合、
+                または馬券発売が始まって予想オッズが掲載されていない場合
         """
         race_id = race_code_to_race_id(race_code)
         self._logger.debug("netkeibaから予想オッズをスクレイピング: race_id=%s", race_id)
-        raw = scrape_yoso_odds_from_netkeiba(race_id, logger=self._logger)
+        try:
+            raw = scrape_yoso_odds_from_netkeiba(race_id, logger=self._logger)
+        except ExpectedOddsUnavailableError as e:
+            message = f"馬券発売後のため予想オッズがありません: race_code={race_code}"
+            self._logger.error(message)
+            raise DataNotFoundError(message) from e
         if raw.empty or raw["予想単勝オッズ"].isna().all():
             message = f"netkeibaに予想オッズがありません: race_code={race_code}"
-            self._logger.error(message)
-            raise DataNotFoundError(message)
-        if raw["馬番"].isna().any():
-            message = f"枠順確定前のため予想オッズを馬番に対応づけられません: race_code={race_code}"
             self._logger.error(message)
             raise DataNotFoundError(message)
         df = convert_expected_odds(raw, race_code)

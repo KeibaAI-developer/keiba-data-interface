@@ -289,6 +289,15 @@ WIN_SHOW_ODDS_COLUMNS: list[str] = [
 ]
 
 
+# 予想オッズのカラム名リスト（14カラム）。
+# 枠順確定前は馬番が欠損するため、馬名で馬を識別する
+EXPECTED_WIN_SHOW_ODDS_COLUMNS: list[str] = [
+    *WIN_SHOW_ODDS_COLUMNS[: WIN_SHOW_ODDS_COLUMNS.index("馬番") + 1],
+    "馬名",
+    *WIN_SHOW_ODDS_COLUMNS[WIN_SHOW_ODDS_COLUMNS.index("馬番") + 1 :],
+]
+
+
 # 単複票数情報テーブルのカラム名リスト（15カラム）
 WIN_SHOW_VOTES_COLUMNS: list[str] = [
     "レースコード",

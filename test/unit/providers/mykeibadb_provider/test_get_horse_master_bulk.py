@@ -64,9 +64,7 @@ def master_getter(mock_master_getter: MagicMock) -> MagicMock:
 
 
 # 正常系
-def test_result_matches_single_fetch(
-    provider: MykeibaDBProvider, master_getter: MagicMock
-) -> None:
+def test_result_matches_single_fetch(provider: MykeibaDBProvider, master_getter: MagicMock) -> None:
     """戻り値が、馬ごとに1件取得した結果と一致する.
 
     値・カラム構成・dtype・indexのすべてを比較する。
@@ -77,9 +75,7 @@ def test_result_matches_single_fetch(
         pd.testing.assert_frame_equal(result[horse_id], provider.get_horse_master(horse_id))
 
 
-def test_output_columns_match_schema(
-    provider: MykeibaDBProvider, master_getter: MagicMock
-) -> None:
+def test_output_columns_match_schema(provider: MykeibaDBProvider, master_getter: MagicMock) -> None:
     """各馬の出力カラム構成がHORSE_MASTER_COLUMNSと一致する."""
     result = provider.get_horse_master_bulk(_HORSE_IDS)
 
@@ -88,9 +84,7 @@ def test_output_columns_match_schema(
         assert len(result[horse_id]) == 1
 
 
-def test_query_is_issued_once(
-    provider: MykeibaDBProvider, master_getter: MagicMock
-) -> None:
+def test_query_is_issued_once(provider: MykeibaDBProvider, master_getter: MagicMock) -> None:
     """頭数によらずクエリが1回で済む."""
     provider.get_horse_master_bulk(_HORSE_IDS)
 

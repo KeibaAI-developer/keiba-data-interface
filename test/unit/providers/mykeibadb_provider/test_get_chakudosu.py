@@ -17,9 +17,7 @@ from .conftest import (
 
 def _setup_mock(mock_shussobetsu_getter: MagicMock) -> None:
     """ShussobetsuGetterモックに3テーブルの典型データを設定する."""
-    mock_shussobetsu_getter.get_shussobetsu_keibajo.return_value = (
-        create_shussobetsu_keibajo_df()
-    )
+    mock_shussobetsu_getter.get_shussobetsu_keibajo.return_value = create_shussobetsu_keibajo_df()
     mock_shussobetsu_getter.get_shussobetsu_kyori.return_value = create_shussobetsu_kyori_df()
     mock_shussobetsu_getter.get_shussobetsu_baba.return_value = create_shussobetsu_baba_df()
 

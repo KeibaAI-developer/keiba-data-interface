@@ -74,9 +74,7 @@ def test_new_horse_all_zero() -> None:
 def test_keibajo_kyori_baba_columns_mapped() -> None:
     """競馬場別・距離別・馬場別・馬場状態別カラムが正しく集計される."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "中山", "ダ", 1800, "良", 1.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "中山", "ダ", 1800, "良", 1.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
@@ -114,9 +112,7 @@ def test_keibajo_kyori_baba_columns_mapped() -> None:
 def test_kyori_kubun_boundary(kyori: int, expected_kubun: str) -> None:
     """距離区分の境界値が正しく判定される."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "東京", "芝", kyori, "良", 1.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "東京", "芝", kyori, "良", 1.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
@@ -127,9 +123,7 @@ def test_kyori_kubun_boundary(kyori: int, expected_kubun: str) -> None:
 def test_sixth_or_lower_is_chakugai() -> None:
     """着順6以上は着外として集計される."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "東京", "芝", 2000, "良", 8.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "東京", "芝", 2000, "良", 8.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
@@ -142,9 +136,7 @@ def test_kourakuchaku_uses_confirmed_numeric_order() -> None:
     """降着の場合は確定着順（数値）で集計される."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
     # 降着により1着→4着に確定したケースを想定（rawでは確定着順の数値が入る）
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "東京", "芝", 2000, "良", 4.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "東京", "芝", 2000, "良", 4.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
@@ -228,9 +220,7 @@ def test_date_filter_excludes_same_or_after_race_date() -> None:
 def test_niigata_shiba_1000_is_chokusen() -> None:
     """新潟芝1000mは回り「直」として集計される."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "新潟", "芝", 1000, "良", 1.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "新潟", "芝", 1000, "良", 1.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
@@ -242,9 +232,7 @@ def test_niigata_shiba_1000_is_chokusen() -> None:
 def test_niigata_shiba_other_distance_is_hidari() -> None:
     """新潟芝1000m以外は左回りとして集計される."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "新潟", "芝", 1200, "良", 1.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "新潟", "芝", 1200, "良", 1.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 
@@ -256,9 +244,7 @@ def test_niigata_shiba_other_distance_is_hidari() -> None:
 def test_jump_race_columns_mapped() -> None:
     """障害レースは障害・馬場状態別カラムに集計され距離別・馬場別は集計されない."""
     entry_df = _entry_df([("2021105001", "テスト馬1")])
-    past = _past_performances(
-        [_performance_row(date(2025, 4, 1), "中山", "障", 3200, "良", 1.0)]
-    )
+    past = _past_performances([_performance_row(date(2025, 4, 1), "中山", "障", 3200, "良", 1.0)])
 
     result = convert_chakudosu(RACE_CODE, entry_df, {"2021105001": past})
 

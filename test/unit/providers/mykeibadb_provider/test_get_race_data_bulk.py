@@ -199,9 +199,7 @@ def multi_race_getters(
     return mock_race_getter, mock_odds_getter
 
 
-def _make_multi_race(
-    factory: Callable[[], pd.DataFrame], race_codes: list[str]
-) -> pd.DataFrame:
+def _make_multi_race(factory: Callable[[], pd.DataFrame], race_codes: list[str]) -> pd.DataFrame:
     """1レース分のフィクスチャを複製して複数レース分のDataFrameを作る.
 
     Args:

@@ -6,10 +6,11 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
+from scraping.exceptions import ExpectedOddsUnavailableError
 
 from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
-from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
+from keiba_data_interface.schema.columns import EXPECTED_WIN_SHOW_ODDS_COLUMNS
 
 
 def _yoso_df(uma_bans: list[float] | None = None, odds: list[float] | None = None) -> pd.DataFrame:
@@ -43,7 +44,7 @@ def test_output_matches_schema_sorted_by_uma_ban(mock_yoso_func: MagicMock, race
 
     result = ScrapingProvider().get_expected_win_show_odds(race_code)
 
-    assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
+    assert list(result.columns) == EXPECTED_WIN_SHOW_ODDS_COLUMNS
     assert list(result["馬番"]) == [1, 2, 3]
     assert result["レースコード"].iloc[0] == race_code
 
@@ -80,6 +81,30 @@ def test_passes_race_id(mock_yoso_func: MagicMock, race_code: str) -> None:
     assert mock_yoso_func.call_args.args[0] == race_code[:4] + race_code[8:]
 
 
+def test_before_draw_returns_rows_with_horse_name(
+    mock_yoso_func: MagicMock, race_code: str
+) -> None:
+    """枠順確定前は馬番が欠損したまま馬名付きで返す（登録順）."""
+    mock_yoso_func.return_value = _yoso_df(uma_bans=[np.nan, np.nan, np.nan])
+
+    result = ScrapingProvider().get_expected_win_show_odds(race_code)
+
+    assert len(result) == 3
+    assert result["馬番"].isna().all()
+    assert result["馬名"].tolist() == ["馬3", "馬1", "馬2"]
+    assert result["単勝オッズ"].tolist()[:2] == [12.5, 2.5]
+
+
+def test_horse_name_is_included(mock_yoso_func: MagicMock, race_code: str) -> None:
+    """馬番が確定していれば馬番順で馬名も返す."""
+    mock_yoso_func.return_value = _yoso_df()
+
+    result = ScrapingProvider().get_expected_win_show_odds(race_code).set_index("馬番")
+
+    assert result.loc[1, "馬名"] == "馬1"
+    assert result.loc[3, "馬名"] == "馬3"
+
+
 # 準正常系
 def test_empty_raises(mock_yoso_func: MagicMock, race_code: str) -> None:
     """予想オッズが0行ならDataNotFoundError."""
@@ -89,11 +114,11 @@ def test_empty_raises(mock_yoso_func: MagicMock, race_code: str) -> None:
         ScrapingProvider().get_expected_win_show_odds(race_code)
 
 
-def test_missing_uma_ban_raises(mock_yoso_func: MagicMock, race_code: str) -> None:
-    """枠順確定前（馬番がNaN）ならDataNotFoundError."""
-    mock_yoso_func.return_value = _yoso_df(uma_bans=[np.nan, np.nan, np.nan])
+def test_sold_raises_data_not_found(mock_yoso_func: MagicMock, race_code: str) -> None:
+    """馬券発売後（予想オッズが掲載されていない）ならDataNotFoundError."""
+    mock_yoso_func.side_effect = ExpectedOddsUnavailableError("オッズ更新")
 
-    with pytest.raises(DataNotFoundError, match="枠順確定前"):
+    with pytest.raises(DataNotFoundError, match="馬券発売後"):
         ScrapingProvider().get_expected_win_show_odds(race_code)
 
 

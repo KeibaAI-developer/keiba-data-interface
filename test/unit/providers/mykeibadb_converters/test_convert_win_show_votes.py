@@ -12,38 +12,44 @@ _RACE_CODE = "2025050206050811"
 def _tansho(umaban: list[str], hyosu: list[str], ninki: list[str]) -> pd.DataFrame:
     """HYOSU1_TANSHO相当のDataFrameを生成する."""
     n = len(umaban)
-    return pd.DataFrame({
-        "data_kubun": ["2"] * n,
-        "race_code": [_RACE_CODE] * n,
-        "kaisai_nen": ["2025"] * n,
-        "kaisai_gappi": ["0502"] * n,
-        "keibajo_code": ["06"] * n,
-        "kaisai_kaiji": ["05"] * n,
-        "kaisai_nichiji": ["08"] * n,
-        "race_bango": ["11"] * n,
-        "umaban": umaban,
-        "hyosu": hyosu,
-        "ninki": ninki,
-    })
+    return pd.DataFrame(
+        {
+            "data_kubun": ["2"] * n,
+            "race_code": [_RACE_CODE] * n,
+            "kaisai_nen": ["2025"] * n,
+            "kaisai_gappi": ["0502"] * n,
+            "keibajo_code": ["06"] * n,
+            "kaisai_kaiji": ["05"] * n,
+            "kaisai_nichiji": ["08"] * n,
+            "race_bango": ["11"] * n,
+            "umaban": umaban,
+            "hyosu": hyosu,
+            "ninki": ninki,
+        }
+    )
 
 
 def _fukusho(umaban: list[str], hyosu: list[str], ninki: list[str]) -> pd.DataFrame:
     """HYOSU1_FUKUSHO相当のDataFrameを生成する."""
-    return pd.DataFrame({
-        "race_code": [_RACE_CODE] * len(umaban),
-        "umaban": umaban,
-        "hyosu": hyosu,
-        "ninki": ninki,
-    })
+    return pd.DataFrame(
+        {
+            "race_code": [_RACE_CODE] * len(umaban),
+            "umaban": umaban,
+            "hyosu": hyosu,
+            "ninki": ninki,
+        }
+    )
 
 
 def _odds1(tansho_total: str = "00000300000", fukusho_total: str = "00000200000") -> pd.DataFrame:
     """ODDS1相当のDataFrame（1行）を生成する."""
-    return pd.DataFrame({
-        "race_code": [_RACE_CODE],
-        "tansho_hyosu_gokei": [tansho_total],
-        "fukusho_hyosu_gokei": [fukusho_total],
-    })
+    return pd.DataFrame(
+        {
+            "race_code": [_RACE_CODE],
+            "tansho_hyosu_gokei": [tansho_total],
+            "fukusho_hyosu_gokei": [fukusho_total],
+        }
+    )
 
 
 # 正常系

@@ -1,6 +1,5 @@
 """get_race_basic_info: 両Providerの出力一致テスト."""
 
-
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
