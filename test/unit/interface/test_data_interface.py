@@ -7,6 +7,7 @@ import pytest
 
 from keiba_data_interface.exceptions import KeibaDataInterfaceError, RaceCodeError
 from keiba_data_interface.interface import DataInterface
+from keiba_data_interface.odds_source import OddsSource
 from keiba_data_interface.protocols import DataProvider
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
@@ -24,6 +25,52 @@ def test_create_scraping_provider() -> None:
     """provider='scraping'でScrapingProviderが生成される."""
     interface = DataInterface(provider="scraping")
     assert isinstance(interface._provider, ScrapingProvider)
+
+
+def test_scraping_provider_odds_source_defaults_to_jra() -> None:
+    """odds_source を省略すると scraping プロバイダーの取得元は JRA."""
+    interface = DataInterface(provider="scraping")
+    assert isinstance(interface._provider, ScrapingProvider)
+    assert interface._provider.odds_source is OddsSource.JRA
+
+
+def test_scraping_provider_receives_odds_source() -> None:
+    """odds_source が scraping プロバイダーへ渡される."""
+    interface = DataInterface(provider="scraping", odds_source=OddsSource.NETKEIBA)
+    assert isinstance(interface._provider, ScrapingProvider)
+    assert interface._provider.odds_source is OddsSource.NETKEIBA
+
+
+def test_shared_cache_separates_odds_sources(mock_provider: _MockProvider) -> None:
+    """DataCache を共有しても、取得元が異なる単複オッズは混ざらない."""
+    from keiba_data_interface.cache import DataCache
+
+    cache = DataCache()
+    jra_provider = _MockProvider()
+    netkeiba_provider = _MockProvider()
+    with patch("keiba_data_interface.interface._create_provider", return_value=jra_provider):
+        jra = DataInterface(provider="scraping", cache=cache, odds_source=OddsSource.JRA)
+    with patch("keiba_data_interface.interface._create_provider", return_value=netkeiba_provider):
+        netkeiba = DataInterface(provider="scraping", cache=cache, odds_source=OddsSource.NETKEIBA)
+    race_code = "2022010105010101"
+
+    jra.get_win_show_odds(race_code)
+    netkeiba.get_win_show_odds(race_code)
+
+    jra_provider.get_win_show_odds.assert_called_once_with(race_code)
+    netkeiba_provider.get_win_show_odds.assert_called_once_with(race_code)
+
+
+def test_invalid_odds_source_raises() -> None:
+    """OddsSource 以外の取得元（空文字など）は既定値にせず ValueError."""
+    with pytest.raises(ValueError, match="odds_source"):
+        DataInterface(provider="scraping", odds_source="")  # type: ignore[arg-type]
+
+
+def test_odds_source_for_mykeibadb_raises() -> None:
+    """mykeibadb プロバイダーで odds_source を指定すると KeibaDataInterfaceError."""
+    with pytest.raises(KeibaDataInterfaceError, match="odds_source"):
+        DataInterface(provider="mykeibadb", odds_source=OddsSource.JRA)
 
 
 def test_create_mykeibadb_provider() -> None:
@@ -178,9 +225,7 @@ def test_get_past_performances_bulk_fetches_one_by_one_when_not_supported(
     result = interface.get_past_performances_bulk(["2022105102", "2022105081"])
 
     mock_provider.get_past_performances_bulk.assert_not_called()
-    mock_provider.get_past_performances.assert_has_calls(
-        [call("2022105102"), call("2022105081")]
-    )
+    mock_provider.get_past_performances.assert_has_calls([call("2022105102"), call("2022105081")])
     assert set(result) == set(by_horse)
     for horse_id, expected in by_horse.items():
         pd.testing.assert_frame_equal(result[horse_id], expected)
@@ -239,9 +284,7 @@ def test_get_horse_master_bulk_fetches_one_by_one_when_not_supported(
     result = interface.get_horse_master_bulk(["2022105081", "2022105102"])
 
     mock_provider.get_horse_master_bulk.assert_not_called()
-    mock_provider.get_horse_master.assert_has_calls(
-        [call("2022105081"), call("2022105102")]
-    )
+    mock_provider.get_horse_master.assert_has_calls([call("2022105081"), call("2022105102")])
     assert set(result) == set(by_horse)
     for horse_id, expected in by_horse.items():
         pd.testing.assert_frame_equal(result[horse_id], expected)

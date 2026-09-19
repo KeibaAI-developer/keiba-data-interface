@@ -14,6 +14,8 @@
   - レース結果: `ResultPageScraper.get_result()`
   - 過去戦績: `HorsePageScraper.get_past_performances()` + `HorsePageScraper.get_horse_basic_info()`
 
+scraping で取得できないカラム（表の scraping が ×。出馬表・レース結果・過去戦績に共通）は `keiba_data_interface.schema.RACE_INFO_BY_HORSE_COLUMNS_UNAVAILABLE_IN_SCRAPING` と一致させる。
+
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
 |----------|----|----------|-----------|------|----|------|------|
 | レースコード | str | ○ | ○ | 開催年+月日+競馬場コード+回次+日次+レース番号 | "2023112605050812" | | |

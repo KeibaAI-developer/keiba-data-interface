@@ -1,11 +1,17 @@
 """ScrapingProvider.get_win_show_odds関数のテスト."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
+import pytest
+from scraping.exceptions import PageNotFoundError
 
+from keiba_data_interface.exceptions import DataNotFoundError
+from keiba_data_interface.odds_source import OddsSource
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
 from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
+
+_NETKEIBA_FUNC = "keiba_data_interface.providers.scraping_provider.scrape_odds_from_netkeiba"
 
 
 # 正常系
@@ -121,3 +127,45 @@ def test_torikeshi_odds_nan(
     assert pd.isna(row["複勝最低オッズ"])
     assert pd.isna(row["複勝最高オッズ"])
     assert pd.isna(row["複勝人気"])
+
+
+def test_default_odds_source_is_jra() -> None:
+    """取得元の既定は JRA."""
+    assert ScrapingProvider().odds_source is OddsSource.JRA
+
+
+def test_netkeiba_source_uses_netkeiba_only(
+    mock_odds_func: MagicMock, mock_scraper_cls: MagicMock, race_code: str
+) -> None:
+    """取得元が netkeiba なら netkeiba だけを使い、JRA は呼ばない."""
+    from .conftest import create_scraping_odds
+
+    provider = ScrapingProvider(odds_source=OddsSource.NETKEIBA)
+    with patch(_NETKEIBA_FUNC, return_value=create_scraping_odds()) as mock_netkeiba:
+        result = provider.get_win_show_odds(race_code)
+
+    mock_netkeiba.assert_called_once()
+    mock_odds_func.assert_not_called()
+    assert list(result.columns) == WIN_SHOW_ODDS_COLUMNS
+
+
+# 準正常系
+def test_jra_page_not_found_raises_without_fallback(
+    provider_full: ScrapingProvider, mock_odds_func: MagicMock, race_code: str
+) -> None:
+    """JRA に該当開催が無ければ DataNotFoundError にし、netkeiba へは切り替えない."""
+    mock_odds_func.side_effect = PageNotFoundError("not found")
+
+    with (
+        patch(_NETKEIBA_FUNC) as mock_netkeiba,
+        pytest.raises(DataNotFoundError, match=race_code),
+    ):
+        provider_full.get_win_show_odds(race_code)
+
+    mock_netkeiba.assert_not_called()
+
+
+def test_invalid_odds_source_raises() -> None:
+    """OddsSource 以外の取得元は ValueError."""
+    with pytest.raises(ValueError, match="odds_source"):
+        ScrapingProvider(odds_source="jra")  # type: ignore[arg-type]

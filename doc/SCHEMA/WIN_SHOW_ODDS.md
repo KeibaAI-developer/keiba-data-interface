@@ -1,14 +1,14 @@
 # 単複オッズ情報
 
-単複のオッズ情報。出走頭数分の行数のDataFrame。scrapingの場合はJRAから取得を試みて失敗した場合netkeibaから取得する。
+単複のオッズ情報。出走頭数分の行数のDataFrame。scrapingの場合は `DataInterface` の `odds_source`（既定はJRA公式サイト）で指定した取得元だけから取得し、他方へは切り替えない。
 
 関数: `DataInterface.get_win_show_odds()`
 
 対応元:
 - mykeibadb: `ODDS1_TANSHO` + `ODDS1_FUKUSHO`
 - scraping:
-  - JRA: `scrape_odds_from_jra()`
-  - netkeiba: `scrape_odds_from_netkeiba()`
+  - JRA（`OddsSource.JRA`）: `scrape_odds_from_jra()`。該当する開催のオッズページが無ければ `DataNotFoundError`。オッズ表の値が数値でない馬（発売前・取消など）はNaN
+  - netkeiba（`OddsSource.NETKEIBA`）: `scrape_odds_from_netkeiba()`。発売前は0行
 
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
 |----------|----|----------|-----------|------|----|------|------|

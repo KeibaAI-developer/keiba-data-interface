@@ -8,6 +8,8 @@
 - mykeibadb: `RACE_SHOSAI`（`RECORD_SHUBETSU_ID`〜`DIRT_BABAJOTAI_CODE`）
 - scraping: `EntryPageScraper.get_race_info()`
 
+scraping で取得できないカラム（表の scraping が ×）は `keiba_data_interface.schema.RACE_BASIC_INFO_COLUMNS_UNAVAILABLE_IN_SCRAPING` と一致させる。
+
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
 |----------|----|----------|-----------|------|----|----|----|
 | レースコード | str | ○ | ○ | 開催年+月日+競馬場コード+回次+日次+レース番号 | "2025060105021211" | | |
