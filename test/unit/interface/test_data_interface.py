@@ -150,6 +150,16 @@ def test_get_win_show_votes_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [12]}))
 
 
+def test_get_expected_win_show_odds_delegates(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """get_expected_win_show_oddsがProviderに委譲される."""
+    interface, mock_provider = interface_with_mock
+    result = interface.get_expected_win_show_odds("2025050206021211")
+    mock_provider.get_expected_win_show_odds.assert_called_once_with("2025050206021211")
+    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [14]}))
+
+
 def test_get_result_delegates(
     interface_with_mock: tuple[DataInterface, _MockProvider],
 ) -> None:

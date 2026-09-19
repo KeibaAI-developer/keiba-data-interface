@@ -73,6 +73,10 @@ class _FullProvider:
         """単勝・複勝の票数を取得する."""
         return pd.DataFrame()
 
+    def get_expected_win_show_odds(self, race_code: str) -> pd.DataFrame:
+        """予想オッズを取得する."""
+        return pd.DataFrame()
+
     def get_result(self, race_code: str) -> pd.DataFrame:
         """レース結果を取得する."""
         return pd.DataFrame()

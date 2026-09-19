@@ -24,6 +24,7 @@ class DataKind:
     RACE_RESULT_INFO = "race_result_info"
     PAYOFF = "payoff"
     WIN_SHOW_ODDS = "win_show_odds"
+    EXPECTED_WIN_SHOW_ODDS = "expected_win_show_odds"
 
 
 # レース単位でプリフェッチできるデータ種別

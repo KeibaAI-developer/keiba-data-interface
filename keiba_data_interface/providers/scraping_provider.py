@@ -15,6 +15,7 @@ from scraping import (
     ResultPageScraper,
     scrape_odds_from_jra,
     scrape_odds_from_netkeiba,
+    scrape_yoso_odds_from_netkeiba,
 )
 from scraping.exceptions import PageNotFoundError
 
@@ -24,6 +25,7 @@ from keiba_data_interface.providers.scraping_converters import (
     build_prize_map,
     convert_chakudosu,
     convert_entry,
+    convert_expected_odds,
     convert_horse_master,
     convert_odds,
     convert_past_performances,
@@ -168,10 +170,11 @@ class ScrapingProvider:
         Returns:
             pd.DataFrame: 単複オッズ（出走頭数行、ODDS_COLUMNSのカラム, 馬番順）。
                 取得元がJRAのとき、オッズ表の値が数値でない馬（発売前・取消など）はNaN。
-                取得元がnetkeibaのとき、発売前は0行
+                発売前の予想オッズは get_expected_win_show_odds で取る
 
         Raises:
-            DataNotFoundError: 取得元がJRAのとき、JRAに該当する開催のオッズページが無い場合
+            DataNotFoundError: 取得元がJRAのとき、JRAに該当する開催のオッズページが無い場合。
+                取得元がnetkeibaのとき、オッズが無い（発売前）場合
         """
         race_id = race_code_to_race_id(race_code)
         if self._odds_source is OddsSource.JRA:
@@ -185,9 +188,44 @@ class ScrapingProvider:
         else:
             self._logger.debug("netkeibaから単複オッズを取得: race_id=%s", race_id)
             raw = scrape_odds_from_netkeiba(race_id, logger=self._logger)
+            if raw.empty:
+                message = f"netkeibaに単複オッズがありません（発売前）: race_code={race_code}"
+                self._logger.error(message)
+                raise DataNotFoundError(message)
         df = convert_odds(raw, race_code)
         df = df.sort_values("馬番").reset_index(drop=True)
         self._logger.debug("単複オッズの取得が完了: race_code=%s", race_code)
+        return df
+
+    def get_expected_win_show_odds(self, race_code: str) -> pd.DataFrame:
+        """馬券発売前の予想オッズを単複オッズのスキーマで取得する.
+
+        netkeibaの出馬表ページの予想単勝オッズを使う。複勝のカラムはNaN。
+
+        Args:
+            race_code (str): 16桁レースコード
+
+        Returns:
+            pd.DataFrame: 予想オッズ（出走頭数行、WIN_SHOW_ODDS_COLUMNSのカラム、馬番順）。
+                出走取消の馬は単勝オッズ・単勝人気がNaN
+
+        Raises:
+            DataNotFoundError: 予想オッズが無い（0行、または全馬のオッズが空）、
+                または枠順確定前で馬番が無い場合
+        """
+        race_id = race_code_to_race_id(race_code)
+        self._logger.debug("netkeibaから予想オッズをスクレイピング: race_id=%s", race_id)
+        raw = scrape_yoso_odds_from_netkeiba(race_id, logger=self._logger)
+        if raw.empty or raw["予想単勝オッズ"].isna().all():
+            message = f"netkeibaに予想オッズがありません: race_code={race_code}"
+            self._logger.error(message)
+            raise DataNotFoundError(message)
+        if raw["馬番"].isna().any():
+            message = f"枠順確定前のため予想オッズを馬番に対応づけられません: race_code={race_code}"
+            self._logger.error(message)
+            raise DataNotFoundError(message)
+        df = convert_expected_odds(raw, race_code)
+        self._logger.debug("予想オッズの取得が完了: race_code=%s", race_code)
         return df
 
     def get_win_show_votes(self, race_code: str) -> pd.DataFrame:

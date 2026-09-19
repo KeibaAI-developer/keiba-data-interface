@@ -3,6 +3,9 @@
 from keiba_data_interface.providers.scraping_converters.common import build_prize_map
 from keiba_data_interface.providers.scraping_converters.convert_chakudosu import convert_chakudosu
 from keiba_data_interface.providers.scraping_converters.convert_entry import convert_entry
+from keiba_data_interface.providers.scraping_converters.convert_expected_odds import (
+    convert_expected_odds,
+)
 from keiba_data_interface.providers.scraping_converters.convert_horse_master import (
     convert_horse_master,
 )
@@ -28,6 +31,7 @@ __all__ = [
     "convert_chakudosu",
     "convert_entry",
     "convert_horse_master",
+    "convert_expected_odds",
     "convert_odds",
     "convert_past_performances",
     "convert_payoff",
