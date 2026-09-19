@@ -110,7 +110,7 @@ di = DataInterface("scraping")
 di = DataInterface("scraping", odds_source=OddsSource.NETKEIBA)
 ```
 
-取得元は指定したものだけを使い、失敗しても他方へは切り替えません。JRAに該当する開催のオッズページが無い場合は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
+JRAに該当する開催のオッズページが無い場合は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
 
 ### プロバイダーの切り替え
 
