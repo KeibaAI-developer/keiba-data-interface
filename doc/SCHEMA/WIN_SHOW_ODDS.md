@@ -10,7 +10,10 @@
   - JRA（`OddsSource.JRA`）: `scrape_odds_from_jra()`。該当する開催のオッズページが無ければ `DataNotFoundError`。オッズ表の値が数値でない馬（発売前・取消など）はNaN
   - netkeiba（`OddsSource.NETKEIBA`）: `scrape_odds_from_netkeiba()`。発売前（0行）は `DataNotFoundError`
 
-発売前の予想オッズは `DataInterface.get_expected_win_show_odds()` で取得する（下記）。
+取得元によって取得できる時期が異なる。JRAは開催日の前日から単勝・複勝ともに掲載するが、netkeibaのオッズAPIは前日のデータを持たない（`reason: result odds empty`で空が返る）ため、前日は `DataNotFoundError` になる。
+前日の複勝オッズが必要な場合はJRAを使う。
+
+馬券発売前の予想オッズは `DataInterface.get_expected_win_show_odds()` で取得する（下記）。
 
 | カラム名 | 型 | scraping | mykeibadb | 説明 | 例 | 差分A | 差分B |
 |----------|----|----------|-----------|------|----|------|------|
