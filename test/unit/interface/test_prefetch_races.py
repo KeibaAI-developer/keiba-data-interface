@@ -275,13 +275,9 @@ def test_shared_cache_separates_providers() -> None:
     cache = DataCache()
     mykeibadb_provider = _BulkProvider()
     scraping_provider = _NoBulkProvider()
-    with patch(
-        "keiba_data_interface.interface._create_provider", return_value=mykeibadb_provider
-    ):
+    with patch("keiba_data_interface.interface._create_provider", return_value=mykeibadb_provider):
         mykeibadb_interface = DataInterface("mykeibadb", cache=cache)
-    with patch(
-        "keiba_data_interface.interface._create_provider", return_value=scraping_provider
-    ):
+    with patch("keiba_data_interface.interface._create_provider", return_value=scraping_provider):
         scraping_interface = DataInterface("scraping", cache=cache)
 
     mykeibadb_interface.get_race_basic_info(_RACE_CODES[0])

@@ -274,9 +274,7 @@ def test_niigata_straight_1000m_is_judged_per_race() -> None:
     # 直線レース: 前半タイム（走破タイム-後3ハロン）の昇順で1位・2位が付く
     assert sorted(straight["4コーナー順位"].tolist()) == [1, 2]
     # 通常レース: 元の4コーナー順位が保たれる（一括判定に巻き込まれていない）
-    expected_normal = convert_result(
-        raw[raw["race_code"] == normal_code].reset_index(drop=True)
-    )
+    expected_normal = convert_result(raw[raw["race_code"] == normal_code].reset_index(drop=True))
     assert normal["4コーナー順位"].tolist() == expected_normal["4コーナー順位"].tolist()
 
 

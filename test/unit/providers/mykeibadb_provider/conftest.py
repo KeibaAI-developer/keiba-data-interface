@@ -924,9 +924,7 @@ def create_shussobetsu_baba_df() -> pd.DataFrame:
         "shogai_omo",
         "shogai_furyo",
     ]
-    zero_counts = {
-        f"{prefix}_{chaku}": 0 for prefix in baba_prefixes for chaku in chaku_list
-    }
+    zero_counts = {f"{prefix}_{chaku}": 0 for prefix in baba_prefixes for chaku in chaku_list}
     sogo_columns = {
         "heichi_honshokin_ruikei": 9281000,
         "shogai_honshokin_ruikei": 0,
@@ -1011,41 +1009,47 @@ def create_kaisai_schedule_df() -> pd.DataFrame:
 
 def create_hyosu1_tansho_df() -> pd.DataFrame:
     """mykeibadb HYOSU1_TANSHO出力の典型データを生成する（馬番1・3の2頭）."""
-    return pd.DataFrame({
-        "record_shubetsu_id": ["H1", "H1"],
-        "data_kubun": ["5", "5"],
-        "race_code": [RACE_CODE, RACE_CODE],
-        "kaisai_nen": ["2025", "2025"],
-        "kaisai_gappi": ["0502", "0502"],
-        "keibajo_code": ["06", "06"],
-        "kaisai_kaiji": ["05", "05"],
-        "kaisai_nichiji": ["08", "08"],
-        "race_bango": ["11", "11"],
-        "umaban": ["01", "03"],
-        "hyosu": ["00001523983", "00000075472"],
-        "ninki": ["02", "08"],
-    })
+    return pd.DataFrame(
+        {
+            "record_shubetsu_id": ["H1", "H1"],
+            "data_kubun": ["5", "5"],
+            "race_code": [RACE_CODE, RACE_CODE],
+            "kaisai_nen": ["2025", "2025"],
+            "kaisai_gappi": ["0502", "0502"],
+            "keibajo_code": ["06", "06"],
+            "kaisai_kaiji": ["05", "05"],
+            "kaisai_nichiji": ["08", "08"],
+            "race_bango": ["11", "11"],
+            "umaban": ["01", "03"],
+            "hyosu": ["00001523983", "00000075472"],
+            "ninki": ["02", "08"],
+        }
+    )
 
 
 def create_hyosu1_fukusho_df() -> pd.DataFrame:
     """mykeibadb HYOSU1_FUKUSHO出力の典型データを生成する（馬番1・3の2頭）."""
-    return pd.DataFrame({
-        "record_shubetsu_id": ["H1", "H1"],
-        "data_kubun": ["5", "5"],
-        "race_code": [RACE_CODE, RACE_CODE],
-        "umaban": ["01", "03"],
-        "hyosu": ["00000856120", "00000042300"],
-        "ninki": ["03", "07"],
-    })
+    return pd.DataFrame(
+        {
+            "record_shubetsu_id": ["H1", "H1"],
+            "data_kubun": ["5", "5"],
+            "race_code": [RACE_CODE, RACE_CODE],
+            "umaban": ["01", "03"],
+            "hyosu": ["00000856120", "00000042300"],
+            "ninki": ["03", "07"],
+        }
+    )
 
 
 def create_odds1_df() -> pd.DataFrame:
     """mykeibadb ODDS1（ベース情報）出力の典型データを生成する（1行）."""
-    return pd.DataFrame({
-        "record_shubetsu_id": ["O1"],
-        "data_kubun": ["5"],
-        "race_code": [RACE_CODE],
-        "tansho_hyosu_gokei": ["00065620306"],
-        "fukusho_hyosu_gokei": ["00031752716"],
-        "wakuren_hyosu_gokei": ["00015738994"],
-    })
+    return pd.DataFrame(
+        {
+            "record_shubetsu_id": ["O1"],
+            "data_kubun": ["5"],
+            "race_code": [RACE_CODE],
+            "tansho_hyosu_gokei": ["00065620306"],
+            "fukusho_hyosu_gokei": ["00031752716"],
+            "wakuren_hyosu_gokei": ["00015738994"],
+        }
+    )

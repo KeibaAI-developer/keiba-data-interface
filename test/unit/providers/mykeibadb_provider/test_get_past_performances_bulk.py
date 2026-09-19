@@ -67,9 +67,7 @@ def horse_getter(mock_race_getter: MagicMock) -> MagicMock:
 
 
 # 正常系
-def test_result_matches_single_fetch(
-    provider: MykeibaDBProvider, horse_getter: MagicMock
-) -> None:
+def test_result_matches_single_fetch(provider: MykeibaDBProvider, horse_getter: MagicMock) -> None:
     """戻り値が、馬ごとに1件取得した結果と一致する.
 
     値・カラム構成・dtype・行順・indexのすべてを比較する。
@@ -81,9 +79,7 @@ def test_result_matches_single_fetch(
         pd.testing.assert_frame_equal(result[horse_id], expected)
 
 
-def test_output_columns_match_schema(
-    provider: MykeibaDBProvider, horse_getter: MagicMock
-) -> None:
+def test_output_columns_match_schema(provider: MykeibaDBProvider, horse_getter: MagicMock) -> None:
     """各馬の出力カラム構成がHORSE_RACE_INFO_COLUMNSと一致する."""
     result = provider.get_past_performances_bulk(_HORSE_IDS)
 
@@ -135,9 +131,7 @@ def test_horse_without_history_has_empty_dataframe(
     result = provider.get_past_performances_bulk([*_HORSE_IDS, make_debut])
 
     assert make_debut in result
-    pd.testing.assert_frame_equal(
-        result[make_debut], provider.get_past_performances(make_debut)
-    )
+    pd.testing.assert_frame_equal(result[make_debut], provider.get_past_performances(make_debut))
 
 
 def test_horses_without_history_do_not_share_one_dataframe(

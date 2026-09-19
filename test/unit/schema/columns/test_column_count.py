@@ -6,6 +6,7 @@ import pytest
 
 from keiba_data_interface.schema.columns import (
     CHAKUDOSU_COLUMNS,
+    EXPECTED_WIN_SHOW_ODDS_COLUMNS,
     PAYOFF_COLUMNS,
     RACE_BASIC_INFO_COLUMNS,
     RACE_INFO_BY_HORSE_COLUMNS,
@@ -21,6 +22,7 @@ _TABLE_PARAMS = [
     (RACE_INFO_BY_HORSE_COLUMNS, 67, "馬毎レース情報"),
     (PAYOFF_COLUMNS, 222, "払戻情報"),
     (WIN_SHOW_ODDS_COLUMNS, 13, "単複オッズ情報"),
+    (EXPECTED_WIN_SHOW_ODDS_COLUMNS, 14, "予想オッズ"),
     (SCHEDULE_COLUMNS, 43, "開催スケジュール情報"),
     (RACE_SCHEDULE_COLUMNS, 5, "レース時刻表"),
     (CHAKUDOSU_COLUMNS, 405, "出走別着度数"),

@@ -137,8 +137,8 @@ class RaceFixtures:
         }
 
         # 着度数用: 血統登録番号→raw馬柱
-        self.past_performances_map: dict[str, pd.DataFrame] = (
-            _load_past_performances_map_optional(race_dir / "scraping_past_performances")
+        self.past_performances_map: dict[str, pd.DataFrame] = _load_past_performances_map_optional(
+            race_dir / "scraping_past_performances"
         )
 
 
