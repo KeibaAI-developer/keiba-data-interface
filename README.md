@@ -112,6 +112,15 @@ di = DataInterface("scraping", odds_source=OddsSource.NETKEIBA)
 
 オッズが無い場合（JRAに該当する開催のオッズページが無い、netkeibaが発売前で0行）は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
 
+取得元によって取得できる時期が異なります。
+
+| 取得元 | 前日 | 開催日 |
+|---|---|---|
+| `OddsSource.JRA` | 単勝・複勝ともに取得できる | 取得できる |
+| `OddsSource.NETKEIBA` | 取得できない（オッズAPIがデータを持たず `DataNotFoundError`） | 取得できる |
+
+前日の複勝オッズが必要な場合は `OddsSource.JRA` を使います。
+
 馬券発売前は netkeiba の予想単勝オッズを `get_expected_win_show_odds` で取得できます（単複オッズと同じスキーマ。複勝のカラムは NaN）。現在のオッズと予想オッズは切り替えないので、どちらを使うかは呼び出し側で決めます。
 
 ### プロバイダーの切り替え
