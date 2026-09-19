@@ -8,7 +8,7 @@ class OddsSource(StrEnum):
 
     Attributes:
         JRA: JRA 公式サイト（Playwright で操作する）。最新のオッズ
-        NETKEIBA: netkeiba のオッズ API。発売前は 0 行
+        NETKEIBA: netkeiba のオッズ API
     """
 
     JRA = "jra"

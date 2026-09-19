@@ -106,11 +106,11 @@ from keiba_data_interface import DataInterface, OddsSource
 # JRA公式サイトから最新のオッズを取得（既定）
 di = DataInterface("scraping")
 
-# netkeibaのオッズAPIから取得（発売前は0行）
+# netkeibaのオッズAPIから取得
 di = DataInterface("scraping", odds_source=OddsSource.NETKEIBA)
 ```
 
-取得元は指定したものだけを使い、失敗しても他方へは切り替えません。オッズが無い場合（JRAに該当する開催のオッズページが無い、netkeibaが発売前で0行）は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
+オッズが無い場合（JRAに該当する開催のオッズページが無い、netkeibaが発売前で0行）は `DataNotFoundError` になります。`mykeibadb` プロバイダーで `odds_source` を指定すると `KeibaDataInterfaceError` になります。
 
 馬券発売前は netkeiba の予想単勝オッズを `get_expected_win_show_odds` で取得できます（単複オッズと同じスキーマ。複勝のカラムは NaN）。現在のオッズと予想オッズは切り替えないので、どちらを使うかは呼び出し側で決めます。
 
