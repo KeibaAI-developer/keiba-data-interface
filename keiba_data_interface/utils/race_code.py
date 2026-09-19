@@ -52,6 +52,18 @@ def keibajo_code_to_name(code: str) -> str:
 _KEIBAJO_NAME_TO_CODE: dict[str, str] = {v: k for k, v in _KEIBAJO_CODE_TO_NAME.items()}
 
 
+def is_central_keibajo_code(code: str) -> bool:
+    """競馬場コードが中央競馬（01〜10）かどうかを返す.
+
+    Args:
+        code (str): 競馬場コード（2桁）
+
+    Returns:
+        bool: 中央競馬の競馬場コードなら True
+    """
+    return code in _KEIBAJO_CODE_TO_NAME
+
+
 def keibajo_name_to_code(name: str) -> str:
     """競馬場名を競馬場コード（2桁）に変換する.
 

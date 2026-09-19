@@ -5,7 +5,7 @@ from unittest.mock import call, patch
 import pandas as pd
 import pytest
 
-from keiba_data_interface.exceptions import KeibaDataInterfaceError
+from keiba_data_interface.exceptions import KeibaDataInterfaceError, RaceCodeError
 from keiba_data_interface.interface import DataInterface
 from keiba_data_interface.protocols import DataProvider
 from keiba_data_interface.providers.mykeibadb_provider import MykeibaDBProvider
@@ -267,7 +267,28 @@ def test_get_schedule_delegates(
     pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [10]}))
 
 
+def test_get_race_schedule_delegates(
+    interface_with_mock: tuple[DataInterface, _MockProvider],
+) -> None:
+    """get_race_scheduleがProviderに委譲される."""
+    interface, mock_provider = interface_with_mock
+    result = interface.get_race_schedule("20250105")
+    mock_provider.get_race_schedule.assert_called_once_with("20250105")
+    pd.testing.assert_frame_equal(result, pd.DataFrame({"col": [13]}))
+
+
 # 準正常系
+@pytest.mark.parametrize("date_str", ["2025-01-05", "202501", "abcdefgh", "20250230"])
+def test_get_race_schedule_invalid_date_raises_error(
+    interface_with_mock: tuple[DataInterface, _MockProvider], date_str: str
+) -> None:
+    """日付が8桁の数字でない、または実在しない場合はRaceCodeErrorが発生しProviderを呼ばない."""
+    interface, mock_provider = interface_with_mock
+    with pytest.raises(RaceCodeError):
+        interface.get_race_schedule(date_str)
+    mock_provider.get_race_schedule.assert_not_called()
+
+
 def test_invalid_provider_raises_error() -> None:
     """不正なprovider名でKeibaDataInterfaceErrorが発生する."""
     with pytest.raises(KeibaDataInterfaceError, match="不正なprovider名です"):

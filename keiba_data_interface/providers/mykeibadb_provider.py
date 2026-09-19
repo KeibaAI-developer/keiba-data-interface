@@ -6,7 +6,7 @@ mykeibadb-pythonのRaceGetter/OddsGetterを使用してJRA-VANデータを取得
 
 import logging
 from collections.abc import Sequence
-from datetime import date
+from datetime import date, datetime
 
 import pandas as pd
 from mykeibadb import HyosuGetter, MasterGetter, OddsGetter, RaceGetter, ShussobetsuGetter
@@ -27,6 +27,7 @@ from keiba_data_interface.providers.mykeibadb_converters import (
     convert_race_basic_info_bulk,
     convert_race_result_info,
     convert_race_result_info_bulk,
+    convert_race_schedule,
     convert_result,
     convert_result_bulk,
     convert_schedule,
@@ -483,6 +484,28 @@ class MykeibaDBProvider:
         df = df.sort_values("血統登録番号").reset_index(drop=True)
         self._logger.debug("出走別着度数の取得が完了: race_code=%s", race_code)
         return df
+
+    def get_race_schedule(self, date_str: str) -> pd.DataFrame:
+        """指定日のレース時刻表を取得する.
+
+        RaceGetter.get_race_shosai()で該当日のレース詳細を取得し、統一スキーマに変換する。
+        データ区分が9（レース中止）のレースは含めない。
+
+        Args:
+            date_str (str): 日付（YYYYMMDD形式）
+
+        Returns:
+            pd.DataFrame: レース時刻表（レース数行、RACE_SCHEDULE_COLUMNSのカラム、
+                レースコード昇順）。開催が無い日は0行
+        """
+        target = datetime.strptime(date_str, "%Y%m%d").date()
+        self._logger.debug("RaceGetterでレース時刻表を取得: date=%s", date_str)
+        raw = self._race_getter.get_race_shosai(
+            start_date=target, end_date=target, convert_codes=False
+        )
+        result = convert_race_schedule(raw)
+        self._logger.debug("レース時刻表の取得が完了: date=%s, レース数=%d", date_str, len(result))
+        return result
 
     def get_schedule(self, start_date: str, end_date: str) -> pd.DataFrame:
         """開催スケジュールを取得する.

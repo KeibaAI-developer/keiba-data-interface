@@ -527,3 +527,13 @@ def _generate_chakudosu_columns() -> list[str]:
 
 
 CHAKUDOSU_COLUMNS: list[str] = _generate_chakudosu_columns()
+
+
+# レース時刻表のカラム名リスト（5カラム）
+RACE_SCHEDULE_COLUMNS: list[str] = [
+    "レースコード",
+    "競馬場コード",
+    "レース番号",
+    "発走時刻",
+    "競走名",
+]

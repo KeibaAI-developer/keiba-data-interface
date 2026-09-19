@@ -34,6 +34,7 @@ class _MockProvider:
         )
         self.get_chakudosu = MagicMock(return_value=pd.DataFrame({"col": [9]}))
         self.get_schedule = MagicMock(return_value=pd.DataFrame({"col": [10]}))
+        self.get_race_schedule = MagicMock(return_value=pd.DataFrame({"col": [13]}))
 
 
 @pytest.fixture()

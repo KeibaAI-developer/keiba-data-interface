@@ -17,6 +17,9 @@ from keiba_data_interface.providers.scraping_converters.convert_race_basic_info 
 from keiba_data_interface.providers.scraping_converters.convert_race_result_info import (
     convert_race_result_info,
 )
+from keiba_data_interface.providers.scraping_converters.convert_race_schedule import (
+    convert_race_schedule,
+)
 from keiba_data_interface.providers.scraping_converters.convert_result import convert_result
 from keiba_data_interface.providers.scraping_converters.convert_schedule import convert_schedule
 
@@ -31,5 +34,6 @@ __all__ = [
     "convert_race_basic_info",
     "convert_race_result_info",
     "convert_result",
+    "convert_race_schedule",
     "convert_schedule",
 ]
