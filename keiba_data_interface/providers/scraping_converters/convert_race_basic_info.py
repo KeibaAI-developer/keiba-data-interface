@@ -1,6 +1,7 @@
 """get_race_info用の変換関数."""
 
 import pandas as pd
+from keiba_domain import KEIBAJO_TO_CODE, extract_race_code_parts, keibajo_from_name
 
 from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_converters.common import (
@@ -17,7 +18,6 @@ from keiba_data_interface.schema.columns import RACE_BASIC_INFO_COLUMNS
 from keiba_data_interface.schema.types import RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import extract_race_code_parts, keibajo_name_to_code
 
 
 def convert_race_basic_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
@@ -59,7 +59,7 @@ def convert_race_basic_info(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:
     converted["開催月日"] = parts["月日"]
 
     # そのままマッピングするカラム
-    converted["競馬場コード"] = keibajo_name_to_code(str(row["競馬場"]))
+    converted["競馬場コード"] = KEIBAJO_TO_CODE[keibajo_from_name(str(row["競馬場"]))]
     converted["開催回"] = row["回"]
     converted["開催日目"] = row["開催日"]
     converted["レース番号"] = int(parts["R"])

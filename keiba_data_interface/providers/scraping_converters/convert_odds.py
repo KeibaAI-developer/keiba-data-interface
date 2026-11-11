@@ -1,11 +1,11 @@
 """get_win_show_odds用の変換関数."""
 
 import pandas as pd
+from keiba_domain import extract_race_code_parts
 
 from keiba_data_interface.schema.columns import WIN_SHOW_ODDS_COLUMNS
 from keiba_data_interface.schema.types import ODDS_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import extract_race_code_parts
 
 
 def convert_odds(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:

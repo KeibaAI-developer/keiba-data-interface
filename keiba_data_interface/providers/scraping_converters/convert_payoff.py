@@ -1,12 +1,12 @@
 """get_payoff用の変換関数."""
 
 import pandas as pd
+from keiba_domain import extract_race_code_parts
 from scraping import ResultPageScraper
 
 from keiba_data_interface.schema.columns import PAYOFF_COLUMNS
 from keiba_data_interface.schema.types import PAYOFF_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import extract_race_code_parts
 
 
 def convert_payoff(scraper: ResultPageScraper, race_code: str) -> pd.DataFrame:

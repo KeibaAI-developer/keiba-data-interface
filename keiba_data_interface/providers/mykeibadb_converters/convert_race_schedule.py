@@ -6,12 +6,12 @@ RACE_SHOSAIテーブルの出力からレース時刻表を組み立てる。
 import math
 
 import pandas as pd
+from keiba_domain import is_central_keibajo
 
 from keiba_data_interface.schema.columns import RACE_SCHEDULE_COLUMNS
 from keiba_data_interface.schema.types import RACE_SCHEDULE_TYPES
 from keiba_data_interface.utils.converters import convert_hhmm_to_display
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import is_central_keibajo_code
 
 # レース中止を表すデータ区分
 _DATA_KUBUN_CANCELLED = "9"
@@ -46,7 +46,7 @@ def convert_race_schedule(raw: pd.DataFrame) -> pd.DataFrame:
 
     df = raw[
         (raw["data_kubun"].astype(str) != _DATA_KUBUN_CANCELLED)
-        & raw["keibajo_code"].astype(str).map(is_central_keibajo_code)
+        & raw["keibajo_code"].astype(str).map(is_central_keibajo)
     ]
     df = df.rename(columns=_RACE_SCHEDULE_RENAME)
     df = ensure_columns(df, RACE_SCHEDULE_COLUMNS)
