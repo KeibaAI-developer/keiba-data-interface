@@ -152,6 +152,23 @@ def test_race_code_derived(
     assert result.iloc[0]["レースコード"] == "2025010505011201"
 
 
+def test_non_central_keibajo_name_leaves_keibajo_code_empty(
+    provider_full: ScrapingProvider,
+    mock_past_scraper: MagicMock,
+) -> None:
+    """競馬場名が中央10場でない過去走は、競馬場コードを入れずに変換する."""
+    from .conftest import create_scraping_past_performances
+
+    raw = create_scraping_past_performances()
+    raw["競馬場"] = "大井"
+    mock_past_scraper.get_past_performances.return_value = raw
+
+    result = provider_full.get_past_performances("2021105001")
+
+    assert len(result) == len(raw)
+    assert result["競馬場コード"].isna().all()
+
+
 def test_horse_name_from_horse_basic_info(
     provider_full: ScrapingProvider,
     mock_past_scraper: MagicMock,

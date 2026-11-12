@@ -3,8 +3,8 @@
 from datetime import date
 
 import pandas as pd
+from keiba_domain import KEIBAJO_TO_CODE, KeibaDomainError, keibajo_from_name
 
-from keiba_data_interface.exceptions import RaceCodeError
 from keiba_data_interface.providers.scraping_converters.common import (
     SEIBETSU_TO_CODE,
     TOZAI_SHOZOKU_TO_CODE,
@@ -15,7 +15,6 @@ from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.converters import convert_manyen_to_hyakuyen
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import keibajo_name_to_code
 
 
 def convert_past_performances(
@@ -90,8 +89,8 @@ def convert_past_performances(
 
         keibajo_name = str(row.get("競馬場")) if pd.notna(row.get("競馬場")) else ""
         try:
-            converted["競馬場コード"] = keibajo_name_to_code(keibajo_name)
-        except RaceCodeError:
+            converted["競馬場コード"] = KEIBAJO_TO_CODE[keibajo_from_name(keibajo_name)]
+        except KeibaDomainError:
             pass
         if pd.notna(row.get("回")):
             converted["開催回"] = row["回"]

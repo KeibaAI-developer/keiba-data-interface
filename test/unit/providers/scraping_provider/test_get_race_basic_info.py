@@ -3,6 +3,8 @@
 from unittest.mock import MagicMock
 
 import pandas as pd
+import pytest
+from keiba_domain import KeibaDomainError
 
 from keiba_data_interface.exceptions import DataNotFoundError
 from keiba_data_interface.providers.scraping_provider import ScrapingProvider
@@ -351,12 +353,35 @@ def test_empty_raw_raises_data_not_found_error(
     race_code: str,
 ) -> None:
     """スクレイパが空DataFrameを返した場合にDataNotFoundErrorが発生する."""
-    import pytest
-
     mock_scraper.get_race_info.return_value = pd.DataFrame()
 
     with pytest.raises(DataNotFoundError, match="空のDataFrame"):
         provider.get_race_basic_info(race_code)
+
+
+def test_non_central_keibajo_name_raises_keiba_domain_error(
+    provider: ScrapingProvider,
+    mock_scraper: MagicMock,
+    turf_race_info: pd.DataFrame,
+    race_code: str,
+) -> None:
+    """競馬場名が中央10場でない場合にKeibaDomainErrorが発生する."""
+    race_info = turf_race_info.copy()
+    race_info["競馬場"] = "大井"
+    mock_scraper.get_race_info.return_value = race_info
+
+    with pytest.raises(KeibaDomainError):
+        provider.get_race_basic_info(race_code)
+
+
+@pytest.mark.parametrize("invalid_race_code", ["202505020602121", "202505020602121１"])
+def test_invalid_race_code_raises_keiba_domain_error(
+    provider: ScrapingProvider,
+    invalid_race_code: str,
+) -> None:
+    """レースコードが半角数字16桁でない場合にKeibaDomainErrorが発生する."""
+    with pytest.raises(KeibaDomainError):
+        provider.get_race_basic_info(invalid_race_code)
 
 
 def test_multiple_rows_raw_raises_value_error(
@@ -366,8 +391,6 @@ def test_multiple_rows_raw_raises_value_error(
     race_code: str,
 ) -> None:
     """スクレイパが複数行のDataFrameを返した場合にValueErrorが発生する."""
-    import pytest
-
     mock_scraper.get_race_info.return_value = pd.concat(
         [turf_race_info, turf_race_info], ignore_index=True
     )

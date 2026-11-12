@@ -1,6 +1,7 @@
 """get_entry用の変換関数."""
 
 import pandas as pd
+from keiba_domain import extract_race_code_parts
 
 from keiba_data_interface.providers.scraping_converters.common import (
     SEIBETSU_TO_CODE,
@@ -12,7 +13,6 @@ from keiba_data_interface.providers.scraping_converters.common import (
 from keiba_data_interface.schema.columns import RACE_INFO_BY_HORSE_COLUMNS
 from keiba_data_interface.schema.types import HORSE_RACE_INFO_TYPES
 from keiba_data_interface.utils.dataframe import apply_types, ensure_columns
-from keiba_data_interface.utils.race_code import extract_race_code_parts
 
 
 def convert_entry(raw: pd.DataFrame, race_code: str) -> pd.DataFrame:

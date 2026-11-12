@@ -1,8 +1,9 @@
 """race_code_to_race_id関数のテスト."""
 
 import pytest
+from keiba_domain import KeibaDomainError
 
-from keiba_data_interface.utils.race_code import RaceCodeError, race_code_to_race_id
+from keiba_data_interface.utils.race_code import race_code_to_race_id
 
 
 # 正常系
@@ -20,25 +21,17 @@ def test_race_code_to_race_id_normal(race_code: str, expected: str) -> None:
 
 
 # 準正常系
-def test_race_code_to_race_id_invalid_length_short() -> None:
-    """15桁のレースコードでRaceCodeErrorが発生する."""
-    with pytest.raises(RaceCodeError, match="16桁"):
-        race_code_to_race_id("202505020602121")
-
-
-def test_race_code_to_race_id_invalid_length_long() -> None:
-    """17桁のレースコードでRaceCodeErrorが発生する."""
-    with pytest.raises(RaceCodeError, match="16桁"):
-        race_code_to_race_id("20250502060212111")
-
-
-def test_race_code_to_race_id_non_digit() -> None:
-    """数値以外の文字を含むレースコードでRaceCodeErrorが発生する."""
-    with pytest.raises(RaceCodeError, match="数字のみ"):
-        race_code_to_race_id("202505020602121a")
-
-
-def test_race_code_to_race_id_empty() -> None:
-    """空文字列でRaceCodeErrorが発生する."""
-    with pytest.raises(RaceCodeError, match="16桁"):
-        race_code_to_race_id("")
+@pytest.mark.parametrize(
+    "race_code",
+    [
+        "202505020602121",
+        "20250502060212111",
+        "202505020602121a",
+        "202505020602121１",
+        "",
+    ],
+)
+def test_race_code_to_race_id_with_invalid_race_code_raises_error(race_code: str) -> None:
+    """半角数字16桁でないレースコードでKeibaDomainErrorが発生する."""
+    with pytest.raises(KeibaDomainError):
+        race_code_to_race_id(race_code)

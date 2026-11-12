@@ -218,7 +218,7 @@ def set_header_columns(converted: dict[str, object], race_code: str, parts: dict
     Args:
         converted (dict[str, object]): 変換先の辞書（この辞書にヘッダカラムを追加する）
         race_code (str): 16桁レースコード
-        parts (dict[str, str]): extract_race_code_parts()の戻り値
+        parts (dict[str, str]): keiba_domain.extract_race_code_parts()の戻り値
     """
     converted["レースコード"] = race_code
     converted["開催年"] = parts["年"]

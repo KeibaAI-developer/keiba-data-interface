@@ -102,6 +102,23 @@ def test_keibajo_name_stored(
     assert "08" in keibajo_set
 
 
+def test_non_central_keibajo_name_leaves_keibajo_code_empty(
+    provider_full: ScrapingProvider,
+    mock_schedule_scraper: MagicMock,
+) -> None:
+    """競馬場名が中央10場でない開催は、競馬場コードを入れずに変換する."""
+    from .conftest import create_scraping_schedule
+
+    raw = create_scraping_schedule()
+    raw["競馬場"] = "大井"
+    mock_schedule_scraper.get_race_schedule.return_value = raw
+
+    result = provider_full.get_schedule("2025-01-05", "2025-01-05")
+
+    assert len(result) > 0
+    assert result["競馬場コード"].isna().all()
+
+
 def test_date_to_year_and_monthday(
     provider_full: ScrapingProvider,
     mock_schedule_scraper: MagicMock,
